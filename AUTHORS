@@ -1,0 +1,26 @@
+Filebench was originally developed within SUN Microsystems by several people:
+
+Richard McDougall
+Neelakanth Nadgir
+Shawn Debnath
+Spencer Shepler
+Andrew Wilson
+Dominic Kay
+Jim Mauro
+Matthias Schmidt
+Shawn Debnath
+Eric Kustarz
+Ben Rockwood
+
+After the development has been ceased within SUN, File system and Storage Lab
+(FSL) at Stony Brook University got the permission to maintain and develop the
+benchmark further.
+
+Vasily Tarasov (vass@fsl.cs.sunysb.edu) at FSL is the person responsible
+for Filebench development and support.
+
+Many other people contributed code and thoughts:
+
+Santhosh Kumar
+Gyumin Sim
+Priya Sehgal

@@ -1,0 +1,69 @@
+- tabular distribution, percents as long
+
+- filesizegamma parameter is not needed as we have custom/random variables with
+  gamma distribution.
+
+- Move shm_threadflow_lock to the procflow structure where it belongs to.
+
+- make compilation independent from  parser_gram.y (so that when we touch it...)
+
+- USAGE2 macros redefine
+
+- add posset align attribute
+
+- FINISH IOPRIO in a better way.
+
+- fix compilation on SUN compilers (reported by Drew Schatt)
+
+- fix multiple run invocations and part-by-part Filebench executione
+(create-filset, create-proce, stat_snap, etc.) (reported by Drew Schatt)
+
+- Testing system on calvin: VMs with different OSes.
+- random file reading with seed, not /dev/urandom (Rick req.)
+- fix multiple run invocations and part-by-part Filebench executione
+(create-filset, create-proce, stat_snap, etc.) (Drew Schatt req.)
+- Testing system: VMs with different OSes.
+- On Solaris we get bzero() implicit declaration!
+- On FreeBSD a lot of mutex attributes are not supported:
+46604: 0.001: cannot set mutex attr PROCESS_SHARED on this platform on line 1
+46604: 0.002: cannot set mutex attr PROCESS_SHARED on this platform on line 1
+46604: 0.002: cannot set mutex attr PROCESS_SHARED on this platform on line 1
+46604: 0.002: cannot set mutex attr PROCESS_SHARED on this platform on line 1
+The main problem iS SHARED, that means if we have multiple
+porcesses (not threads) we'll have issues. So, check it and fix if possible.
+- usec/cpu-op is incorrect for oltp workload. OLTP in general works
+    weird. Figure it out, do it only after process model is enabled.
+- Check what happens if pthreads (and others, like lm) are not available
+- Then do validation of thread vs process model (NFS Webproxy was different(?), e.g.)
+- Look more carefully through Solaris-specific functions and data structures
+- -D_REENTRANT, do we need it?
+- FreeBSD, analog for /proc/stat or libkstat and /proc/<pid>/stat?
+- leafdirs attributes for filesets does not work correctly: entry names
+  for files collide with entry names for leafdirs.
+- Ifdefs for all header files
+- print all defines, sizeofs, functions used, or something like that
+- reenable fscheck command later
+- reenable multi_client_sync.c later
+- Filebench does not support aio_read?
+- HAVE_CFTIME -> HAVE_STRFTIME
+- Auto-completio db is outdated
+- Enforce configuration option:
+	#ifdef HAVE_
+		....
+	#elif HAVE_
+	#else
+		ERROR
+	#fi
+
+	but not just if else that can easily fail.
+- eemove config.h on make distclean
+- modify filebench so that it supports reuse properly (even for writes)
+  (then we can use dd of pre-stored  images - but how to store them?...)
+- Sometimes on white we hang right after thread creation:
+927: 7.180: Starting 100 filereaderthread threads
+wchan shows: futex_wait_queue_meroot()
+- add fb_ prefix to all function in order not to pollute namespace
+- rename files properly
+- Use __function__ constant.
+- move random generation from posset.c to fb_random.c
+- make a policy about abd_t usage.

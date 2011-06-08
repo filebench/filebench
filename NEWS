@@ -1,0 +1,43 @@
+* 06/08/2011 * Release 1.4.9
+
+- Filbench FSL Port replaces the mainline
+
+* 12/30/2010 * Release 1.4.8.fsl.0.8
+
+- mmap() with MAP_FIXED can cause various
+  problems if virtual address space randomization
+  is enabled. Warn user about that on Linux machines.
+
+- Thread model is not supported anymore, as depricated.
+
+- Filebench QA framework was used to automatically
+  validate compilation and work on CentOS, Ubuntu,
+  FreeBSD and OpenSolaris for several major workloads.
+
+- iorpio support added.
+
+- Compilation on all OSes fixed.
+
+- Process spanning synchronization is rewritten
+  to avoid possible deadlocks and race conditions.
+
+- Multiple IPC and process spanning code refactoring.
+
+- Adding min and max latency per-flowop to FB
+
+- osprof_enabled flag did not work correctly for worker threads.
+
+* 08/24/2010 * Release 1.4.8.fsl.0.7
+
+- Fixing the bug that caused Filebench to crash due
+  to too large value returned by fb_urandom().
+
+- Fixing dirsizegamma parameter to work.
+
+* 06/18/2010 * Release 1.4.8.fsl.0.6
+
+- Evgeny Budilovksy has fixed potential deadlock
+  during threads creation.  It often happened on Ubuntu.
+- Added a posset feature. You can define position sets
+  at which read/write operations occur. Useful, e.g.,
+  for I/O scheduler benchmarking.

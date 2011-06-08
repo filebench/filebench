@@ -1,0 +1,68 @@
+Filebench - A Model Based File System Workload Generator
+========================================================
+
+* Usage
+
+filebench binary allows to run individual workload personalities. Below is
+an example of individual varmail workload run:
+
+shell# filebench
+filebench> load varmail
+ 8395: 3.898: Varmail personality successfully loaded
+ 8395: 3.899: Usage: set $dir=<dir>
+ 8395: 3.900:        set $filesize=<size>    defaults to 16384
+ 8395: 3.900:        set $nfiles=<value>     defaults to 1000
+ 8395: 3.901:        set $dirwidth=<value>   defaults to 20
+ 8395: 3.901:        set $nthreads=<value>   defaults to 1
+ 8395: 3.902:        set $meaniosize=<value> defaults to 16384
+ 8395: 3.902:        run <runtime>
+filebench> set $dir=/tmp
+filebench> run 10
+ 8395: 14.886: Fileset mailset: 1000 files, avg dir = 20, avg depth = 2.305865, mbytes=15
+ 8395: 15.301: Preallocated fileset mailset in 1 seconds
+ 8395: 15.301: Starting 1 filereader instances
+ 8396: 16.313: Starting 1 filereaderthread threads
+ 8395: 19.323: Running for 10 seconds...
+ 8395: 29.333: Stats period = 10s
+ 8395: 29.347: IO Summary:      21272 iops 2126.0 iops/s, (1063/1063 r/w)  32.1mb/s,    338us cpu/op,   0.3ms latency
+ 8395: 29.348: Shutting down processes
+filebench> quit
+
+* Peculiarities
+
+If you get an ENOMEM error on pthread_create() and you use a thread model,
+there is a chance that Filebench runs out of virtual memory. E.g., under OLTP
+workload we have more than 400 threads (200 processes, each has 2 threads,
+where one thread is a control thread). By default NPTL mmaps current stack
+ulimit bytes for each thread, which is 8MB by default on Linux. So, in total
+this process uses 400 \* 8MB = 3.2G, which is more than a process can address
+on Linux.
+
+One workaround is to set stack ulimit to unlimited, which will cause NPTL to
+use only 2MB of mmaped memory for each thread.  Notice, that you need to set
+ulimit in the shell, which invokes the executable. It won't help you doing it
+in the main() function, because NTPL reads the ulimits before main() is
+invoked.
+
+*  New features added to this port
+
+You can define position sets:
+
+  define posset name=myposset,entries=50,type=rnd,max=7516192768,seed=2 
+
+This will create a possition set of 50 entries. Each position
+will be generated using rand() function with seed 2 and will
+be in the range [0 - 7516192768]. We round every generated
+position to 512 at the moment.
+
+After position set is defined, it can be attributed to a read or write flowop:
+
+ flowop write name=myfop,filesetname=myfst,possetname=myposset,random,iosize=2k
+
+In this case, every write will happen at the position randomly selected from
+the position set.  Important to notice, that both possetname and random
+attributes must be specified. If only possetname is specified, it is
+ignored.
+
+===========================================================
+

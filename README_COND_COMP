@@ -1,0 +1,272 @@
+This file contains the list of constants, depending on which the source is
+compiled. Notice that 'config.in' template has a greater number of these
+constants, because Autoconfig generates some of them "automatically", despite
+the fact that we dont use it.
+
+Here we have  the list of constants used by Filebench's code only.  There might
+be different constants used in the included system headers (which vary from one
+target machine to another). We assume it is OK, but we keep in mind that it can
+be a potential problem.
+
+The list is important for checking that compilations on all target platforms
+happens identically, to ensure the validity of benchmark results' comparison.
+The list below must be mantained in alphabetic orded.
+
+HAVE_AIO
+
+	We know that librt with aio_write() and consequently aio_return()
+	functions is installed on the system.  In this case aiowrite
+	and aiowait flowops become available.
+
+HAVE_AIO_ERROR64
+
+	On FreeBSD function aio_error64() is not available. So we
+	use the aio_error() instead.
+
+HAVE_AIO_RETURN64
+
+	On FreeBSD function aio_return64() is not available. So we
+	use the aio_return() instead.
+
+HAVE_AIO_WRITE64
+
+	On FreeBSD function aio_write64() is not available. So we
+	use the aio_write() instead. This is also used for defining
+	aiocb64 if necessary. We do not do a separate check
+	for this type.
+
+HAVE_AIOCB64_T
+
+	We check if struct aiocb64 is available. If not (FreeBSD), then
+	typedef it just as aiocb.
+
+HAVE_AIOWAITN
+
+	We know that librt with aio_waitn() function is installed on the system
+	(typically on Solaris). Filebench uses it instead of aio_return() to wait
+	for the aio completion.
+
+_BIG_ENDIAN
+
+	Used to correctly initialize erand48() seed.
+
+HAVE_BOOLEAN_T
+
+	On OpenSolaris we have boolean_t. Detect it and don't redefine boolean_t
+	type in this case.
+
+HAVE_CFTIME
+
+	cftime() function is obsoleted by strftime. Still we use it, if it
+	is available.
+
+HAVE_DIRECTIO
+
+	Solaris has a special system call directio() to specify
+	that IO should happen in the direct manner. This is
+	the equivalent of O_DIRECT on linux. Use directio()
+	if available, otherwise O_DIRECT.
+
+HAVE_FADVISE
+
+	FreeBSD doesn't have posix_fadvise(). Just not
+	use it at all with printing the warning in this case.
+
+HAVE_FSTAT64
+
+	On FreeBSD function fstat64() is not available. So we
+	use the fstat() instead.
+
+HAVE_FORK
+
+	Without fork() Filebench won't be able to fork any workers!
+
+HAVE_FORK1
+
+	User fork1(), if available (Solaris). fork1() forks only
+	current thread (fork() on some implementations of Solaris
+	forks all threads in the process!)
+
+HAVE_FTRUNCATE64
+
+	Use ftruncate64() if possible. Otherwise, we use ftruncate()
+	converting off64_t to off_t, which might be a possible
+	problem.
+
+HAVE_GETHRTIME
+
+	If gethrtime() function is not available (only on Solaris),
+	use either gettimeofdate() or  RDTSC instruction (if USE_RDTSC
+	is defined during compilation, see below).
+
+HAVE_LSEEK64
+
+	On FreeBSD function lseek64() is not available. So we
+	use the lseek() instead.
+
+
+HAVE_LIBKSTAT
+
+	If libkstat library is available (usually only on Solaris), Filebench 
+	uses it to obtain global (per-system) _CPU_ usage statistics (user time,
+	system time).  Tries to use /proc/stat (see HAVE_PROC_STAT below), if
+	libkstat is not available.
+	Notice, that libkstat or /proc/stat are not used for obtaining
+	per-flowop statistics or for getting the total execution time:
+	gethrtime() and /proc/<pid>/stat or /proc/<pid>/lwp are used for it.
+	
+
+HAVE_LIBTECLA
+
+	If libtecla library is installed, use it for facilitating 
+	auto-completion.
+
+HAVE_LWPS
+
+	On Solaris _lwp_self() function might be available, that
+	returns the id of the current thread. Use it, if possible, but only
+	for printing additional log information.
+
+HAVE_MMAP64
+
+	On FreeBSD function mmap64() is not available. So we
+	use the refular mmap64() instead.
+
+HAVE_OFF64_T
+
+	On FreeBSD off64_t is not available. off_t is already 64 bit.
+	We define off64_t as off_t in this case.
+
+HAVE_OPEN64
+
+	On FreeBSD function open64() is not available. So we
+	use the refular open() instead.
+
+HAVE_PROCSCOPE_PTHREADS
+
+	If you have POSIX process scope threads, use them.
+
+HAVE_PROC_PID_LWP
+
+	On Solaris, /proc/<pid>/lwp/ subdirectory allows to pull out
+	per-thread CPU usage statistics. If possible, we use it. 
+	On Linux, /proc/<pid>/stat is used (see HAVE_PROC_PID_STAT).
+	We also use this parameter to determine if we can utilize gettid()
+	syscall.
+
+HAVE_PROC_STAT
+
+	If /proc/stat file is available (usually only on Linux), Filebench 
+	uses it to obtain global (per-system) _CPU_ usage statistics (user time,
+	system time).  Prefers to use libkstat (see HAVE_PROC_STAT above)
+	instead.
+	Notice, that libkstat or /proc/stat are not used for obtaining
+	per-flowop statistics or for getting the total execution time:
+	gethrtime() and /proc/<pid>/stat or /proc/<pid>/lwp are used for it.
+
+HAVE_PROC_SYS_KERNEL_SHMMAX
+	We increase the maximum size of a shared memory segment through 
+	/proc/sys/kernel/shmmax, if this file exists.
+
+HAVE_PTHREAD_MUTEXATTR_SETPROTOCOL
+
+	Use POSIX setprotocol if available.
+
+HAVE_PWRITE64
+
+	On FreeBSD function pwrite64() is not available.
+	So we use refular pwrite() instead.
+
+HAVE_PREAD64
+
+	On FreeBSD function pread64() is not available.
+	So we use refular pread() instead.
+
+HAVE_ROBUST_MUTEX
+
+	 Use robust mutexes if available.
+
+HAVE_SEMTIMEDOP
+
+	If you have the `semtimedop' function.
+
+HAVE_SEM_RMID
+
+	If semctl() has IPC_RMID control, use it.
+
+HAVE_SETRLIMIT
+
+	We set the limit of opened files per process to
+	maximum if set/getrlimit functions are availble
+
+HAVE_SHM_SHARE_MMU
+
+	SHM_SHARE_MMU flag for shmat() is defined on Solaris.
+	Use it, if possible.
+
+HAVE_SIGIGNORE
+
+	On FreeBSD sigignore is not available, so we emulate
+	it via sigaction()
+
+HAVE_SIGSEND
+
+	Solaris has sigsend() syscall that allows to
+	specify more precisely the enity to which the
+	signal is send (process, process group, session, etc.
+	Use it if available instead of the kill().
+
+HAVE_STAT64
+
+	On FreeBSD function stat64() and struct stat64 are not available.
+	So we use refular stat() and struct stat instead.
+
+HAVE_STDINT_H
+
+	Include <stdint.h> if it is available.
+
+HAVE_STRLCAT
+
+	If we have strlcat() function, use it, otherwise implement
+	it by ourselves.
+
+HAVE_STRLCPY
+
+	If we have strlcpy() function, use it, otherwise implement
+	it by ourselves
+
+HAVE_SYSV_SEM
+
+	Use SYSV semaphores instead POSIX semaphores if possible.
+
+HAVE_WAITID
+
+	FreeBSD doesn't have waitid() system call. Emulate it
+	via waitpid().
+
+_LP64
+
+	Used (together with __WORDSIZE) to determine if atchitecture
+	is 64 bit and implement AVL tree more effectively.
+
+__STDC__
+
+	Used only to figure out how to handle functions with
+	variable number of arguments (filebench_log()).
+
+USE_RDTSC
+
+	On non-Solaris platforms, use RDTSC instruction instead of 
+	gettimeofday() to get high resolution time.  Enabled
+	by configure with --enable-rdtsc parameter.
+
+USE_SYSTEM
+
+	Allows to use system() function instead of execlp() to
+	run external program. Enabled by configure with --enable-system
+	parameter.
+
+__WORDSIZE
+
+	Used (together with _LP64) to determine if atchitecture
+	is 64 bit and implement AVL tree more effectively.
