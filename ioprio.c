@@ -1,21 +1,7 @@
 #include "filebench.h"
 #include "ioprio.h"
 
-#if defined(__i386__)
-#define __NR_ioprio_set		289
-#define __NR_ioprio_get		290
-#elif defined(__ppc__)
-#define __NR_ioprio_set		273
-#define __NR_ioprio_get		274
-#elif defined(__x86_64__)
-#define __NR_ioprio_set		251
-#define __NR_ioprio_get		252
-#elif defined(__ia64__)
-#define __NR_ioprio_set		1274
-#define __NR_ioprio_get		1275
-#else
-#error "Unsupported arch"
-#endif
+#ifdef HAVE_IOPRIO
 
 static inline int ioprio_set(int which, int who, int ioprio)
 {
@@ -62,3 +48,5 @@ void set_thread_ioprio(threadflow_t *tf)
 	filebench_log(LOG_INFO, "ioprio set to %d for thread %s",
 						ioprio, tf->tf_name);
 }
+
+#endif /* HAVE_IOPRIO */
