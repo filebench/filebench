@@ -26,12 +26,12 @@
 
 #include "filebench.h"
 #include "multi_client_sync.h"
+#if 0
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
 
-#if 0
 #define	MCS_NAMELENGTH	128
 #define	MCS_MSGLENGTH	(MCS_NAMELENGTH * 8)
 

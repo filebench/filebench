@@ -27,8 +27,8 @@
 #define	_MULTI_CLIENT_SYNC_H
 
 #include <sys/types.h>
-#include <sys/socket.h>
 #if 0
+#include <sys/socket.h>
 XXX: we do not support this so far
 #include <inet/ip.h>
 #endif
