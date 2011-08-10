@@ -208,7 +208,7 @@ procflow_create_all_procs(void)
 			}
 		}
 
-		if (!ret)
+		if (ret)
 			break;
 
 		procflow = procflow->pf_next;
