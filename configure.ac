@@ -30,6 +30,11 @@ AC_CHECK_HEADERS([malloc.h])
 AC_CHECK_HEADERS([netdb.h])
 AC_CHECK_HEADERS([netinet/in.h])
 AC_CHECK_HEADERS([stddef.h])
+AC_CHECK_HEADERS([math.h])
+if test "$ac_cv_header_math_h" == no
+then
+	AC_MSG_ERROR([The math.h header is missing! If you use OpenIndiana b148, install "header-math" package.])
+fi
 AC_CHECK_HEADERS([sys/param.h])
 AC_CHECK_HEADERS([sys/socket.h])
 AC_CHECK_HEADERS([sys/statvfs.h])
