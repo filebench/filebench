@@ -324,7 +324,7 @@ void ipc_init(void)
 	(void) pthread_mutex_init(&filebench_shm->shm_msg_lock,
 	    ipc_mutexattr(IPC_MUTEX_NORMAL));
 
-	filebench_log(LOG_INFO, "Allocated %dMB of shared memory",
+	filebench_log(LOG_INFO, "Allocated %lldMB of shared memory",
 			(sizeof(filebench_shm_t) + MB) / MB);
 
 	filebench_shm->shm_rmode = FILEBENCH_MODE_TIMEOUT;
