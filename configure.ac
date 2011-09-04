@@ -93,9 +93,6 @@ AC_CHECK_FUNCS([getrlimit] [setrlimit])
 # signal is send (process, process group, session, etc.
 # Use it if available instead of the kill().
 AC_CHECK_FUNCS([sigsend])
-# Solaris has directio() syscall that allows to
-# specify direct I/O (as O_DIRECT on Linux).
-AC_CHECK_FUNCS([directio])
 
 # We use SYSV semaphores if available, otherwise us POSIX semaphores
 AC_CHECK_FUNCS(
@@ -438,6 +435,39 @@ AC_TRY_COMPILE([
   ], AC_MSG_RESULT(no)
 )
 
+#
+# Configuring direct I/O. There are 3 main options:
+# 1) O_DIRECT open flag is supported (Linux and FreeBSD)
+# 2) directio() call is supported (Solaris)
+# 3) O_NOCACHE is supported (MacOS X)
+#
+# O_DIRECT open flag:
+AC_MSG_CHECKING(for DIRECT open flag)
+AC_TRY_COMPILE([
+#define _GNU_SOURCE
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+],
+[ int oflag = O_DIRECT;
+],[
+    AC_DEFINE(HAVE_O_DIRECT,1,[ Define if DIRECT open flag is supported])
+    AC_MSG_RESULT(yes)
+  ], AC_MSG_RESULT(no)
+)
+# directio() call:
+AC_CHECK_FUNCS([directio])
+# F_NOCACHE fcntl():
+AC_MSG_CHECKING(for NOCACHE fcntl)
+AC_TRY_COMPILE([
+#include <fcntl.h>
+],
+[ int cmd = F_NOCACHE;
+],[
+    AC_DEFINE(HAVE_NOCACHE_FCNTL,1,[ Define if NOCACHE fcntl() is supported])
+    AC_MSG_RESULT(yes)
+  ], AC_MSG_RESULT(no)
+)
 
 ####
 #### Check for structure members

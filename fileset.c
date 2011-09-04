@@ -483,10 +483,10 @@ fileset_openfile(fb_fdesc_t *fdesc, fileset_t *fileset,
 	if (attrs & FLOW_ATTR_DSYNC)
 		open_attrs |= O_SYNC;
 
-#ifndef HAVE_DIRECTIO
+#ifdef HAVE_O_DIRECT
 	if (attrs & FLOW_ATTR_DIRECTIO)
 		open_attrs |= O_DIRECT;
-#endif
+#endif /* HAVE_O_DIRECT */
 
 	if (FB_OPEN(fdesc, path, flag | open_attrs, filemode)
 	    == FILEBENCH_ERROR) {
@@ -500,10 +500,13 @@ fileset_openfile(fb_fdesc_t *fdesc, fileset_t *fileset,
 
 #ifdef HAVE_DIRECTIO
 	if (attrs & FLOW_ATTR_DIRECTIO)
-		(void) directio(fdesc->fd_num, DIRECTIO_ON);
-	else
-		(void) directio(fdesc->fd_num, DIRECTIO_OFF);
-#endif
+		(void)directio(fdesc->fd_num, DIRECTIO_ON);
+#endif /* HAVE_DIRECTIO */
+
+#ifdef HAVE_NOCACHE_FCNTL
+	if (attrs & FLOW_ATTR_DIRECTIO)
+		(void)fcntl(fdesc->fd_num, F_NOCACHE, 1);
+#endif /* HAVE_NOCACHE_FCNTL */
 
 	/* Disable read ahead with the help of fadvise, if asked for */
 	if (attrs & FLOW_ATTR_FADV_RANDOM) {

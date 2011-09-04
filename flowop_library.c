@@ -1562,10 +1562,10 @@ flowoplib_openfile_common(threadflow_t *threadflow, flowop_t *flowop, int fd)
 		if (avd_get_bool(flowop->fo_dsync))
 			open_attrs |= O_SYNC;
 
-#ifndef HAVE_DIRECTIO
+#ifdef HAVE_O_DIRECT
 		if (flowoplib_fileattrs(flowop) & FLOW_ATTR_DIRECTIO)
 			open_attrs |= O_DIRECT;
-#endif
+#endif /* HAVE_O_DIRECT */
 
 		filebench_log(LOG_DEBUG_SCRIPT,
 		    "open raw device %s flags %d = %d", name, open_attrs, fd);
@@ -1580,10 +1580,13 @@ flowoplib_openfile_common(threadflow_t *threadflow, flowop_t *flowop, int fd)
 
 #ifdef HAVE_DIRECTIO
 		if (flowoplib_fileattrs(flowop) & FLOW_ATTR_DIRECTIO)
-			(void) directio(threadflow->tf_fd[fd].fd_num, DIRECTIO_ON);
-		else
-			(void) directio(threadflow->tf_fd[fd].fd_num, DIRECTIO_OFF);
-#endif
+			(void)directio(threadflow->tf_fd[fd].fd_num, DIRECTIO_ON);
+#endif /* HAVE_DIRECTIO */
+
+#ifdef HAVE_NOCACHE_FCNTL
+		if (flowoplib_fileattrs(flowop) & FLOW_ATTR_DIRECTIO)
+			(void)fcntl(threadflow->tf_fd[fd].fd_num, F_NOCACHE, 1);
+#endif /* HAVE_NOCACHE_FCNTL */
 
 		/* Disable read ahead with the help of fadvise, if asked for */
 		if (flowoplib_fileattrs(flowop) & FLOW_ATTR_FADV_RANDOM) {
