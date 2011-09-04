@@ -156,6 +156,7 @@ randsrc			{ return FSA_RANDSRC; }
 randtable		{ return FSA_RANDTABLE; }
 rate                    { return FSA_RATE;}
 readonly		{ return FSA_READONLY; }
+writeonly		{ return FSA_WRITEONLY; }
 reuse                   { return FSA_REUSE; }
 round			{ return FSA_RANDROUND; }
 seed			{ return FSA_RANDSEED; }

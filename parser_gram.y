@@ -201,6 +201,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %token FSC_OSPROF_ENABLE FSC_OSPROF_DISABLE
 %token FSA_NOREADAHEAD
 %token FSA_IOPRIO
+%token FSA_WRITEONLY
 
 %type <ival> FSV_VAL_INT
 %type <bval> FSV_VAL_BOOLEAN
@@ -1602,6 +1603,7 @@ attrs_define_file:
 | FSA_REUSE { $$ = FSA_REUSE;}
 | FSA_PREALLOC { $$ = FSA_PREALLOC;}
 | FSA_PARALLOC { $$ = FSA_PARALLOC;};
+| FSA_WRITEONLY { $$ = FSA_WRITEONLY;}
 
 attrs_define_fileset:
   FSA_SIZE { $$ = FSA_SIZE;}
@@ -1619,6 +1621,7 @@ attrs_define_fileset:
 | FSA_CACHED { $$ = FSA_CACHED;}
 | FSA_ENTRIES { $$ = FSA_ENTRIES;}
 | FSA_LEAFDIRS { $$ = FSA_LEAFDIRS;};
+| FSA_WRITEONLY { $$ = FSA_WRITEONLY;}
 
 attrs_define_posset:
   FSA_NAME { $$ = FSA_NAME;}
@@ -3085,6 +3088,18 @@ parser_fileset_define_common(cmd_t *cmd)
 		fileset->fs_readonly = attr->attr_avd;
 	else
 		fileset->fs_readonly = avd_bool_alloc(FALSE);
+
+	if ((attr = get_attr_bool(cmd, FSA_WRITEONLY)))
+		fileset->fs_writeonly = attr->attr_avd;
+	else
+		fileset->fs_writeonly = avd_bool_alloc(FALSE);
+
+	if ((avd_get_bool(fileset->fs_readonly) == TRUE) &&
+		(avd_get_bool(fileset->fs_writeonly) == TRUE)) {
+		filebench_log(LOG_ERROR, "fileset can't be read-only and "
+					"write-only at the same time!");
+		return NULL;
+	}
 
 	/* Should we reuse the existing file? */
 	if ((attr = get_attr_bool(cmd, FSA_REUSE)))

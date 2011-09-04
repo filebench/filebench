@@ -1533,6 +1533,8 @@ flowoplib_openfile_common(threadflow_t *threadflow, flowop_t *flowop, int fd)
 	 */
 	if (avd_get_bool(flowop->fo_fileset->fs_readonly) == TRUE)
 		openflag = O_RDONLY;
+	else if (avd_get_bool(flowop->fo_fileset->fs_writeonly) == TRUE)
+		openflag = O_WRONLY;
 	else
 		openflag = O_RDWR;
 
@@ -1654,6 +1656,7 @@ flowoplib_createfile(threadflow_t *threadflow, flowop_t *flowop)
 {
 	filesetentry_t *file;
 	int fd = flowop->fo_fdnumber;
+	int openflag = O_CREAT;
 	int err;
 
 	if (threadflow->tf_fd[fd].fd_ptr != NULL) {
@@ -1668,12 +1671,12 @@ flowoplib_createfile(threadflow_t *threadflow, flowop_t *flowop)
 		return (FILEBENCH_ERROR);
 	}
 
-	if (avd_get_bool(flowop->fo_fileset->fs_readonly) == TRUE) {
-		filebench_log(LOG_ERROR, "Can not CREATE the READONLY file %s",
-		    avd_get_str(flowop->fo_fileset->fs_name));
-		return (FILEBENCH_ERROR);
-	}
-
+	if (avd_get_bool(flowop->fo_fileset->fs_readonly) == TRUE)
+		openflag |= O_RDONLY;
+	else if (avd_get_bool(flowop->fo_fileset->fs_writeonly) == TRUE)
+		openflag |= O_WRONLY;
+	else
+		openflag |= O_RDWR;
 
 	/* can't be used with raw devices */
 	if (flowop->fo_fileset->fs_attrs & FILESET_IS_RAW_DEV) {
@@ -1696,7 +1699,7 @@ flowoplib_createfile(threadflow_t *threadflow, flowop_t *flowop)
 
 	flowop_beginop(threadflow, flowop);
 	err = fileset_openfile(&threadflow->tf_fd[fd], flowop->fo_fileset,
-	    file, O_RDWR | O_CREAT, 0666, flowoplib_fileattrs(flowop));
+		file, openflag, 0666, flowoplib_fileattrs(flowop));
 	flowop_endop(threadflow, flowop, 0);
 
 	if (err == FILEBENCH_ERROR) {
