@@ -1,3 +1,10 @@
+* 09/06/2011 * Release 1.4.9.1
+
+- I/O priority support detection
+- Compilation on Solaris SPARC, OpenIndiana, MacOS
+- Major bug fix: only the last defined process was created
+- Write-only filesets feature added
+
 * 06/08/2011 * Release 1.4.9
 
 - Filbench FSL Port replaces the mainline
