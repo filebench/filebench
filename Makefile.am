@@ -14,6 +14,8 @@ filebench_SOURCES = eventgen.c fb_avl.c fb_localfs.c \
 		    utils.h config.h fb_avl.h filebench.h flowop.h gamma_dist.h \
 		    misc.h procflow.h threadflow.h vars.h posset.h ioprio.h flag.h
 
+EXTRA_DIST = LICENSE
+
 if AUTOCOMP_LIBTECLA
 filebench_SOURCES += auto_comp.c auto_comp.h
 endif
