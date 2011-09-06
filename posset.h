@@ -1,3 +1,9 @@
+/*
+ * Copyright 2010-2011 File systems and Storage Lab, Stony Brook University.
+ * All rights reserved. Use is subject to license terms.
+ *
+ */
+
 #ifndef _FB_POSSET_H
 #define	_FB_POSSET_H
 
