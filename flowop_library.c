@@ -491,7 +491,7 @@ flowoplib_iobufsetup(threadflow_t *threadflow, flowop_t *flowop,
 	}
 
 	if (flowoplib_fileattrs(flowop) & FLOW_ATTR_DIRECTIO)
-		*iobufp = (caddr_t)((((unsigned long)(*iobufp)) / 512) * 512);
+		*iobufp = (caddr_t)((((unsigned long)(*iobufp) + 512) / 512) * 512);
 
 	return (FILEBENCH_OK);
 }
