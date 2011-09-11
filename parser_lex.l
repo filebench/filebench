@@ -46,7 +46,6 @@
 
 int lex_lineno = 1;		/* line-number for error reporting */
 extern void yyerror(char *s);
-extern int dofile;			/* are we processing a file? */
 %}
 
 %s WHITESTRINGSTATE
@@ -333,25 +332,12 @@ $[({A-Za-z][A-Za-z0-9_]*"."[A-Za-z0-9][)}]*	{
 void
 yyerror(char *s)
 {
-	if (dofile == DOFILE_TRUE) {
-		if (yytext[0] == '\0') {
-			filebench_log(LOG_ERROR, 
-				      "%s, token expected",
-				      s);
-			return;
-		}
-		(void) filebench_log(LOG_ERROR, 
-				     "%s at '%s'", 
-				     s,
-				     yytext);
-	} else {
-		if (yytext[0] == '\0') {
-			(void) filebench_log(LOG_ERROR, 
-					     "%s, token expected", s);
-			return;
-		}
-		(void) filebench_log(LOG_ERROR, "%s at '%s'", s, yytext);
+	if (yytext[0] == '\0') {
+		(void)filebench_log(LOG_ERROR, "%s, token expected", s);
+		return;
 	}
+
+	(void)filebench_log(LOG_ERROR, "%s at '%s'", s, yytext);
 }
 
 struct yy_buffer_state *parent;
