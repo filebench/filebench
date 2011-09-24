@@ -3331,6 +3331,8 @@ parser_proc_create(cmd_t *cmd)
 	filebench_shm->shm_1st_err = 0;
 	filebench_shm->shm_f_abort = FILEBENCH_OK;
 
+	(void) pthread_rwlock_rdlock(&filebench_shm->shm_run_lock);
+
 	if (procflow_init() != 0) {
 		filebench_log(LOG_ERROR, "Failed to create processes\n");
 		filebench_shutdown(1);
