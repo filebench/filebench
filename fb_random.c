@@ -279,12 +279,12 @@ randdist_alloc(void)
 }
 
 /*
- * Initializes a random distribution entity, converting avd_t
- * parameters to doubles, and converting the list of probability density
- * function table entries, if supplied, into a probablilty function table
+ * Initializes a random distribution entity, converting avd_t parameters to
+ * doubles, and converting the list of probability density function table
+ * entries, if supplied, into a probablilty function table.
  */
-static void
-randdist_init_one(randdist_t *rndp)
+void
+randdist_init(randdist_t *rndp)
 {
 	probtabent_t	*rdte_hdp, *ptep;
 	double		tablemean, tablemin = 0;
@@ -396,16 +396,4 @@ randdist_init_one(randdist_t *rndp)
 		rndp->rnd_rft[pteidx].rf_range =
 		    (rndp->rnd_rft[pteidx].rf_range / tablemean);
 	}
-}
-
-/*
- * initialize all the random distribution entities
- */
-void
-randdist_init(void)
-{
-	randdist_t *rndp;
-
-	for (rndp = filebench_shm->shm_rand_list; rndp; rndp = rndp->rnd_next)
-		randdist_init_one(rndp);
 }

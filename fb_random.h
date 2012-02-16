@@ -102,6 +102,6 @@ extern void fb_urandom32(uint32_t *, uint32_t, uint32_t, avd_t);
 extern double fb_urandom_probability();
 
 extern randdist_t *randdist_alloc(void);
-extern void randdist_init(void);
+extern void randdist_init(randdist_t *rndp);
 
 #endif	/* _FB_RANDOM_H */

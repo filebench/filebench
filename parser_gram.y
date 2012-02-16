@@ -3369,9 +3369,6 @@ parser_fileset_create(cmd_t *cmd)
 	if (!filecreate_done) {
 		filecreate_done = 1;
 
-		/* initialize the random number system first */
-		randdist_init();
-
 		/* create all the filesets */
 		if (fileset_createset(NULL) != 0) {
 			filebench_log(LOG_ERROR, "Failed to create filesets");
@@ -4454,7 +4451,7 @@ parser_randvar_define(cmd_t *cmd)
 		rndp->rnd_type |= RAND_TYPE_TABLE;
 
 		/* no need for the rest of the attributes */
-		return;
+		goto randdist_init;
 	} else {
 		rndp->rnd_probtabs = NULL;
 	}
@@ -4500,6 +4497,9 @@ parser_randvar_define(cmd_t *cmd)
 	} else {
 		rndp->rnd_mean = avd_int_alloc(0);
 	}
+
+randdist_init:
+	randdist_init(rndp);
 }
 
 /*
