@@ -1746,81 +1746,49 @@ fileset_define(avd_t name)
 }
 
 /*
- * If supplied with a pointer to a fileset and the fileset's
- * fileset_prealloc flag is set, calls fileset_populate() to populate
- * the fileset with filesetentries, then calls fileset_create()
- * to make actual directories and files for the filesetentries.
- * Otherwise, it applies fileset_populate() and fileset_create()
- * to all the filesets on the master fileset list. It always
- * returns zero (0) if one fileset is populated / created,
- * otherwise it returns the sum of returned values from
- * fileset_create() and fileset_populate(), which
- * will be a negative one (-1) times the number of
- * fileset_create() calls which failed.
+ * Calls fileset_populate() and fileset_create() for all filesets on the
+ * fileset list. Returns when any of fileset_populate() or fileset_create()
+ * fail.
  */
 int
-fileset_createset(fileset_t *fileset)
+fileset_createsets()
 {
 	fileset_t *list;
 	int ret = 0;
 
-	/* set up for possible parallel allocate */
+	/* Set up for possible parallel pre-allocation */
 	filebench_shm->shm_fsparalloc_count = 0;
-	(void) pthread_cond_init(
-	    &filebench_shm->shm_fsparalloc_cv,
-	    ipc_condattr());
+	(void) pthread_cond_init(&filebench_shm->shm_fsparalloc_cv,
+							ipc_condattr());
 
-	if (fileset && avd_get_bool(fileset->fs_prealloc)) {
+	filebench_log(LOG_INFO, "Populating and pre-allocating filesets");
 
+	list = filebench_shm->shm_filesetlist;
+	while (list) {
 		/* check for raw files */
-		if (fileset_checkraw(fileset)) {
+		if (fileset_checkraw(list)) {
 			filebench_log(LOG_INFO,
-			    "file %s/%s is a RAW device",
-			    avd_get_str(fileset->fs_path),
-			    avd_get_str(fileset->fs_name));
-			return (FILEBENCH_OK);
-		}
-
-		filebench_log(LOG_INFO,
-		    "creating/pre-allocating %s %s",
-		    fileset_entity_name(fileset),
-		    avd_get_str(fileset->fs_name));
-
-		if ((ret = fileset_populate(fileset)) != FILEBENCH_OK)
-			return (ret);
-
-		if ((ret = fileset_create(fileset)) != FILEBENCH_OK)
-			return (ret);
-	} else {
-
-		filebench_log(LOG_INFO,
-		    "Creating/pre-allocating files and filesets");
-
-		list = filebench_shm->shm_filesetlist;
-		while (list) {
-			/* check for raw files */
-			if (fileset_checkraw(list)) {
-				filebench_log(LOG_INFO,
-				    "file %s/%s is a RAW device",
-				    avd_get_str(list->fs_path),
-				    avd_get_str(list->fs_name));
-				list = list->fs_next;
-				continue;
-			}
-
-			if ((ret = fileset_populate(list)) != FILEBENCH_OK)
-				return (ret);
-
-			if ((ret = fileset_create(list)) != FILEBENCH_OK)
-				return (ret);
-
+			    "File %s/%s is a RAW device",
+			    avd_get_str(list->fs_path),
+			    avd_get_str(list->fs_name));
 			list = list->fs_next;
+			continue;
 		}
+
+		ret = fileset_populate(list);
+		if (ret)
+			return ret;
+
+		ret = fileset_create(list);
+		if (ret)
+			return ret;
+
+		list = list->fs_next;
 	}
 
 	/* wait for allocation threads to finish */
 	filebench_log(LOG_INFO,
-	    "waiting for fileset pre-allocation to finish");
+	    "Waiting for fileset pre-allocation to finish");
 
 	(void) pthread_mutex_lock(&filebench_shm->shm_fsparalloc_lock);
 	while (filebench_shm->shm_fsparalloc_count > 0)
@@ -1832,7 +1800,7 @@ fileset_createset(fileset_t *fileset)
 	if (filebench_shm->shm_fsparalloc_count < 0)
 		return (FILEBENCH_ERROR);
 
-	return (FILEBENCH_OK);
+	return 0;
 }
 
 /*

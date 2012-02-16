@@ -3358,10 +3358,9 @@ parser_proc_create(cmd_t *cmd)
 }
 
 /*
- * Calls fileset_createset() to populate all files and filesets and
- * create all associated, initially existant,  files and subdirectories.
- * If errors are encountered, calls filebench_shutdown()
- * to exit filebench.
+ * Calls fileset_createsets() to populate all filesets and create all
+ * associated, initially existant,  files and subdirectories.
+ * If errors are encountered, calls filebench_shutdown() to exit Filebench.
  */
 static void
 parser_fileset_create(cmd_t *cmd)
@@ -3369,8 +3368,7 @@ parser_fileset_create(cmd_t *cmd)
 	if (!filecreate_done) {
 		filecreate_done = 1;
 
-		/* create all the filesets */
-		if (fileset_createset(NULL) != 0) {
+		if (fileset_createsets()) {
 			filebench_log(LOG_ERROR, "Failed to create filesets");
 			filebench_shutdown(1);
 		}
