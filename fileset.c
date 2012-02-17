@@ -334,7 +334,7 @@ fileset_alloc_file(filesetentry_t *entry)
 
 		if (trust_tree || (sb.st_size == (off64_t)entry->fse_size)) {
 			filebench_log(LOG_DEBUG_IMPL,
-			    "Re-using file %s", path);
+			    "Reusing file %s", path);
 
 			if (!avd_get_bool(fileset->fs_cached))
 				(void) FB_FREEMEM(&fdesc, entry->fse_size);
@@ -1047,22 +1047,20 @@ fileset_create(fileset_t *fileset)
 
 	if (!reusing) {
 		/* Remove existing */
+		filebench_log(LOG_INFO,
+		    "Removing %s tree (if exists)", fileset_name);
+
 		FB_RECUR_RM(path);
-		filebench_log(LOG_VERBOSE,
-		    "Removed any existing %s %s in %llu seconds",
-		    fileset_entity_name(fileset), fileset_name,
-		    (u_longlong_t)(((gethrtime() - start) /
-		    1000000000) + 1));
 	} else {
 		/* we are re-using */
-		filebench_log(LOG_VERBOSE, "Re-using %s %s.",
-		    fileset_entity_name(fileset), fileset_name);
+		filebench_log(LOG_INFO, "Reusing existing %s tree",
+							fileset_name);
 	}
 
 	/* make the filesets directory tree unless in reuse mode */
 	if (!reusing && (avd_get_bool(fileset->fs_prealloc))) {
-		filebench_log(LOG_VERBOSE,
-		    "making tree for filset %s", path);
+		filebench_log(LOG_INFO,
+			"Pre-allocating directories in %s tree", fileset_name);
 
 		(void) FB_MKDIR(path, 0755);
 
@@ -1072,8 +1070,8 @@ fileset_create(fileset_t *fileset)
 
 	start = gethrtime();
 
-	filebench_log(LOG_VERBOSE, "Creating %s %s...",
-	    fileset_entity_name(fileset), fileset_name);
+	filebench_log(LOG_INFO,
+		"Pre-allocating files in %s tree", fileset_name);
 
 	randno = ((RAND_MAX * (100
 	    - avd_get_int(fileset->fs_preallocpercent))) / 100);
@@ -1172,10 +1170,10 @@ fileset_create(fileset_t *fileset)
 	}
 
 	filebench_log(LOG_VERBOSE,
-	    "Preallocated %d of %llu of %s %s in %llu seconds",
+	    "Pre-allocated %d of %llu files in %s in %llu seconds",
 	    preallocated,
 	    (u_longlong_t)fileset->fs_constentries,
-	    fileset_entity_name(fileset), fileset_name,
+	    fileset_name,
 	    (u_longlong_t)(((gethrtime() - start) / 1000000000) + 1));
 
 	return (FILEBENCH_OK);
@@ -1678,15 +1676,15 @@ fileset_populate(fileset_t *fileset)
 	if ((ret = fileset_populate_subdir(fileset, NULL, 1, 0)) != 0)
 		return (ret);
 
-
 exists:
 	if (fileset->fs_attrs & FILESET_IS_FILE) {
 		filebench_log(LOG_VERBOSE, "File %s: %.3lfMB",
 		    avd_get_str(fileset->fs_name),
 		    (double)fileset->fs_bytes / 1024UL / 1024UL);
 	} else {
-		filebench_log(LOG_VERBOSE, "Fileset %s: %llu files, %llu leafdirs, "
-		    "avg dir width = %d, avg dir depth = %.1lf, %.3lfMB",
+		filebench_log(LOG_INFO, "%s populated: %llu files, "
+		    "avg. dir. width = %d, avg. dir. depth = %.1lf, "
+			"%llu leafdirs, %.3lfMB total size",
 		    avd_get_str(fileset->fs_name), entries, leafdirs,
 		    meandirwidth,
 		    fileset->fs_meandepth,
@@ -1787,8 +1785,8 @@ fileset_createsets()
 	}
 
 	/* wait for allocation threads to finish */
-	filebench_log(LOG_INFO,
-	    "Waiting for fileset pre-allocation to finish");
+	filebench_log(LOG_INFO, "Waiting for pre-allocation to finish "
+			"(in case of a parallel pre-allocation)");
 
 	(void) pthread_mutex_lock(&filebench_shm->shm_fsparalloc_lock);
 	while (filebench_shm->shm_fsparalloc_count > 0)
@@ -1796,6 +1794,9 @@ fileset_createsets()
 		    &filebench_shm->shm_fsparalloc_cv,
 		    &filebench_shm->shm_fsparalloc_lock);
 	(void) pthread_mutex_unlock(&filebench_shm->shm_fsparalloc_lock);
+
+	filebench_log(LOG_INFO,
+	    "Population and pre-allocation of filesets completed");
 
 	if (filebench_shm->shm_fsparalloc_count < 0)
 		return (FILEBENCH_ERROR);
