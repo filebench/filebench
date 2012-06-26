@@ -1218,7 +1218,7 @@ run_command: FSC_RUN FSV_VAL_INT
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
 	$$->cmd = parser_run;
-	$$->cmd_qty = 60UL;
+	$$->cmd_qty = 0;
 };
 
 help_command: FSC_HELP
@@ -3425,18 +3425,16 @@ parser_filebench_shutdown(cmd_t *cmd)
 }
 
 /*
- * This is Used for timing runs.Pauses the master thread in one second
+ * This is used for timing runs. Pauses the master thread in one second
  * intervals until the supplied ptime runs out or the f_abort flag
- * is raised. If given a time of zero or less, or the mode is stop on
- * lack of resources, it will pause until f_abort is raised.
+ * is raised. If given a time of zero, it will pause until f_abort is raised.
  */
 static int
 parser_pause(int ptime)
 {
 	int timeslept = 0;
 
-	if ((filebench_shm->shm_rmode == FILEBENCH_MODE_TIMEOUT) &&
-	    (ptime > 0)) {
+	if (ptime) {
 		while (timeslept < ptime) {
 			(void) sleep(1);
 			timeslept++;
@@ -3453,8 +3451,11 @@ parser_pause(int ptime)
 				break;
 		}
 	}
+
 	return (timeslept);
 }
+
+#define TIMED_RUNTIME_DEFAULT 60 /* In seconds */
 
 /*
  * Do a file bench run. Calls routines to create file sets, files, and
@@ -3480,6 +3481,10 @@ parser_run(cmd_t *cmd)
 
 	filebench_log(LOG_INFO, "Running...");
 	stats_clear();
+
+	/* If it is a timed mode and timeout is not specified use default */
+	if (filebench_shm->shm_rmode == FILEBENCH_MODE_TIMEOUT && !runtime)
+		runtime = TIMED_RUNTIME_DEFAULT;
 
 	timeslept = parser_pause(runtime);
 
@@ -3517,6 +3522,10 @@ parser_run_variable(cmd_t *cmd)
 
 	filebench_log(LOG_INFO, "Running...");
 	stats_clear();
+
+	/* If it is a timed mode and timeout is not specified use default */
+	if (filebench_shm->shm_rmode == FILEBENCH_MODE_TIMEOUT && !runtime)
+		runtime = TIMED_RUNTIME_DEFAULT;
 
 	timeslept = parser_pause(runtime);
 
