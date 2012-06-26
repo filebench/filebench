@@ -3508,6 +3508,9 @@ parser_run_variable(cmd_t *cmd)
 
 	runtime = avd_get_int(integer);
 
+	parser_fileset_create(cmd);
+	parser_proc_create(cmd);
+
 	/* check for startup errors */
 	if (filebench_shm->shm_f_abort)
 		return;
@@ -3520,6 +3523,7 @@ parser_run_variable(cmd_t *cmd)
 	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
 	parser_statssnap(cmd);
 	parser_proc_shutdown(cmd);
+	parser_filebench_shutdown((cmd_t *)0);
 }
 
 char *usagestr = NULL;
