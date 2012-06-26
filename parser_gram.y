@@ -1197,7 +1197,14 @@ sleep_command: FSC_SLEEP FSV_VAL_INT
 		YYERROR;
 	$$->cmd = parser_sleep_variable;
 	$$->cmd_tgt1 = fb_stralloc($2);
-};
+}
+| FSC_SLEEP
+{
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+	$$->cmd = parser_sleep;
+	$$->cmd_qty = 0;
+}
 
 run_command: FSC_RUN FSV_VAL_INT
 {
