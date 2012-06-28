@@ -56,6 +56,7 @@ typedef struct cmd {
 	char		*thread_name;
 	int		cmd_subtype;
 	uint64_t	cmd_qty;
+	int64_t		cmd_qty1;
 	struct cmd	*cmd_list;
 	struct cmd	*cmd_next;
 	attr_t		*cmd_attr_list;

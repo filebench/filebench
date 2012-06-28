@@ -145,6 +145,7 @@ static void parser_enable_mc(cmd_t *cmd);
 static void parser_domultisync(cmd_t *cmd);
 static void parser_run(cmd_t *cmd);
 static void parser_run_variable(cmd_t *cmd);
+static void parser_psrun(cmd_t *cmd);
 static void parser_sleep(cmd_t *cmd);
 static void parser_sleep_variable(cmd_t *cmd);
 static void parser_warmup(cmd_t *cmd);
@@ -174,10 +175,10 @@ static void parser_osprof_disable(cmd_t *cmd);
 
 %token FSC_LIST FSC_DEFINE FSC_EXEC FSC_QUIT FSC_DEBUG FSC_CREATE
 %token FSC_SLEEP FSC_STATS FSC_FOREACH FSC_SET FSC_SHUTDOWN FSC_LOG
-%token FSC_SYSTEM FSC_FLOWOP FSC_EVENTGEN FSC_ECHO FSC_LOAD FSC_RUN
+%token FSC_SYSTEM FSC_FLOWOP FSC_EVENTGEN FSC_ECHO FSC_LOAD FSC_RUN FSC_PSRUN
 %token FSC_WARMUP FSC_NOUSESTATS FSC_FSCHECK FSC_FSFLUSH
 %token FSC_USAGE FSC_HELP FSC_VARS FSC_VERSION FSC_ENABLE FSC_DOMULTISYNC
-%token FSV_STRING FSV_VAL_INT FSV_VAL_BOOLEAN FSV_VARIABLE FSV_WHITESTRING
+%token FSV_STRING FSV_VAL_INT FSV_VAL_NEGINT FSV_VAL_BOOLEAN FSV_VARIABLE FSV_WHITESTRING
 %token FSV_RANDUNI FSV_RANDTAB FSV_RANDVAR FSV_URAND FSV_RAND48
 %token FST_INT FST_BOOLEAN
 %token FSE_FILE FSE_PROC FSE_THREAD FSE_CLEAR FSE_ALL FSE_SNAP FSE_DUMP
@@ -203,7 +204,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %token FSA_IOPRIO
 %token FSA_WRITEONLY
 
-%type <ival> FSV_VAL_INT
+%type <ival> FSV_VAL_INT FSV_VAL_NEGINT
 %type <bval> FSV_VAL_BOOLEAN
 %type <sval> FSV_STRING
 %type <sval> FSV_WHITESTRING
@@ -212,7 +213,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <sval> FSK_ASSIGN
 %type <sval> FSV_SET_LOCAL_VAR
 
-%type <ival> FSC_LIST FSC_DEFINE FSC_SET FSC_LOAD FSC_RUN FSC_ENABLE
+%type <ival> FSC_LIST FSC_DEFINE FSC_SET FSC_LOAD FSC_RUN FSC_ENABLE FSC_PSRUN
 %type <ival> FSC_DOMULTISYNC
 %type <ival> FSE_FILE FSE_PROC FSE_THREAD FSE_CLEAR FSC_HELP FSC_VERSION
 
@@ -220,7 +221,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <ival> entity
 %type <val>  value
 
-%type <cmd> command inner_commands load_command run_command list_command
+%type <cmd> command inner_commands load_command run_command list_command psrun_command
 %type <cmd> proc_define_command files_define_command posset_define_command randvar_define_command
 %type <cmd> fo_define_command debug_command create_command
 %type <cmd> sleep_command stats_command set_command shutdown_command
@@ -310,6 +311,7 @@ command:
 | load_command
 | log_command
 | run_command
+| psrun_command
 | set_command
 | shutdown_command
 | sleep_command
@@ -1226,6 +1228,49 @@ run_command: FSC_RUN FSV_VAL_INT
 		YYERROR;
 	$$->cmd = parser_run;
 	$$->cmd_qty = 0;
+};
+
+psrun_command: FSC_PSRUN
+{
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+	$$->cmd = parser_psrun;
+	$$->cmd_qty1 = 0;
+	$$->cmd_qty = 0;
+}
+| FSC_PSRUN FSV_VAL_NEGINT
+{
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+	$$->cmd = parser_psrun;
+	$$->cmd_qty1 = $2;
+	$$->cmd_qty = 0;
+
+}
+| FSC_PSRUN FSV_VAL_INT
+{
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+	$$->cmd = parser_psrun;
+	$$->cmd_qty1 = $2;
+	$$->cmd_qty = 0;
+
+}
+| FSC_PSRUN FSV_VAL_NEGINT FSV_VAL_INT
+{
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+	$$->cmd = parser_psrun;
+	$$->cmd_qty1 = $2;
+	$$->cmd_qty = $3;
+}
+| FSC_PSRUN FSV_VAL_INT FSV_VAL_INT
+{
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+	$$->cmd = parser_psrun;
+	$$->cmd_qty1 = $2;
+	$$->cmd_qty = $3;
 };
 
 help_command: FSC_HELP
@@ -3463,6 +3508,7 @@ parser_pause(int ptime)
 }
 
 #define TIMED_RUNTIME_DEFAULT 60 /* In seconds */
+#define PERIOD_DEFAULT 10 /* In seconds */
 
 /*
  * Do a file bench run. Calls routines to create file sets, files, and
@@ -3494,6 +3540,73 @@ parser_run(cmd_t *cmd)
 		runtime = TIMED_RUNTIME_DEFAULT;
 
 	timeslept = parser_pause(runtime);
+
+	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
+	parser_statssnap(cmd);
+	parser_proc_shutdown(cmd);
+	parser_filebench_shutdown((cmd_t *)0);
+}
+
+static void
+parser_psrun(cmd_t *cmd)
+{
+	int runtime;
+	int period;
+	int timeslept = 0;
+	int reset_stats = 0;
+
+	runtime = cmd->cmd_qty;
+
+	/*
+	 * If period is negative then
+	 * we want to reset statistics
+	 * at the end of the every period
+	 */
+	if (cmd->cmd_qty1 < 0) {
+		period = -cmd->cmd_qty1;
+		reset_stats = 1;	
+	} else if (cmd->cmd_qty1 > 0) {
+		period = cmd->cmd_qty1;
+		reset_stats = 0;
+	} else { /* (cmd->cmd_qty1) == 0 */
+		period = PERIOD_DEFAULT;
+		reset_stats = 0;
+	}
+
+	parser_fileset_create(cmd);
+	parser_proc_create(cmd);
+
+	/* check for startup errors */
+	if (filebench_shm->shm_f_abort)
+		return;
+
+	filebench_log(LOG_INFO, "Running...");
+	stats_clear();
+
+	/* If it is a timed mode and timeout is not specified use default */
+	if (filebench_shm->shm_rmode == FILEBENCH_MODE_TIMEOUT && !runtime)
+		runtime = TIMED_RUNTIME_DEFAULT;
+
+	if (!period)
+		runtime = TIMED_RUNTIME_DEFAULT;
+
+	while (1) {
+		/* sleep the remaining time if a period is smaller */
+		period = period > (runtime - timeslept) ? (runtime - timeslept) : period;
+
+		timeslept += parser_pause(period);
+
+		if (filebench_shm->shm_f_abort)
+			break;
+
+		if (timeslept >= runtime)
+			break;
+
+		parser_statssnap(cmd);
+
+		if (reset_stats)
+			stats_clear();
+	}
 
 	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
 	parser_statssnap(cmd);

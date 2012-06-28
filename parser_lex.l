@@ -81,6 +81,7 @@ load                    { return FSC_LOAD; }
 log		        { return FSC_LOG; }
 nousestats		{ return FSC_NOUSESTATS; }
 run                     { return FSC_RUN; }
+psrun                   { return FSC_PSRUN; }
 set                     { return FSC_SET; }
 shutdown                { return FSC_SHUTDOWN; }
 sleep                   { return FSC_SLEEP; }
@@ -243,6 +244,17 @@ noreadahead             { return FSA_NOREADAHEAD; }
 						strerror(errno));
 				}
                                 return FSV_VAL_INT;
+}
+
+<INITIAL>-[0-9]+	{
+                                errno = 0;
+				yylval.ival = strtoll(yytext, NULL, 10);
+				if (errno == EINVAL || errno == ERANGE) {
+                                        (void) filebench_log(LOG_ERROR, 
+						"Invalid I value '%s':%s", yytext,
+						strerror(errno));
+				}
+                                return FSV_VAL_NEGINT;
 }
 
 <INITIAL>[0-9]+k	{
