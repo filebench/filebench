@@ -3587,19 +3587,19 @@ parser_psrun(cmd_t *cmd)
 	if (filebench_shm->shm_rmode == FILEBENCH_MODE_TIMEOUT && !runtime)
 		runtime = TIMED_RUNTIME_DEFAULT;
 
-	if (!period)
-		runtime = TIMED_RUNTIME_DEFAULT;
-
 	while (1) {
 		/* sleep the remaining time if a period is smaller */
-		period = period > (runtime - timeslept) ? (runtime - timeslept) : period;
+		if (filebench_shm->shm_rmode == FILEBENCH_MODE_TIMEOUT)
+			period = period > (runtime - timeslept) ?
+						(runtime - timeslept) : period;
 
 		timeslept += parser_pause(period);
 
 		if (filebench_shm->shm_f_abort)
 			break;
 
-		if (timeslept >= runtime)
+		if (filebench_shm->shm_rmode == FILEBENCH_MODE_TIMEOUT &&
+							timeslept >= runtime)
 			break;
 
 		parser_statssnap(cmd);
