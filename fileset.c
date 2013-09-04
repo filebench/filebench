@@ -1085,7 +1085,7 @@ fileset_create(fileset_t *fileset)
 
 		newrand = rand();
 
-		if (newrand < randno) {
+		if (randno && newrand <= randno) {
 			/* unbusy the unallocated entry */
 			fileset_unbusy(entry, TRUE, FALSE, 0);
 			continue;
