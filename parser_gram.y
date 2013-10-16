@@ -110,13 +110,6 @@ static void parser_composite_flowop_define(cmd_t *);
 static void parser_proc_create(cmd_t *);
 static void parser_fileset_create(cmd_t *);
 
-/* set commands */
-static void parser_set_integer(cmd_t *cmd);
-static void parser_set_var(cmd_t *cmd);
-static void parser_set_var_op_int(cmd_t *cmd);
-static void parser_set_int_op_var(cmd_t *cmd);
-static void parser_set_var_op_var(cmd_t *cmd);
-
 /* Shutdown Commands */
 static void parser_proc_shutdown(cmd_t *);
 static void parser_filebench_shutdown(cmd_t *cmd);
@@ -227,7 +220,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> thread echo_command usage_command help_command
 %type <cmd> version_command enable_command multisync_command
 %type <cmd> warmup_command fscheck_command fsflush_command
-%type <cmd> set_integer_command set_other_command
+%type <cmd> set_variable set_mode set_randvar
 %type <cmd> osprof_enable_command osprof_disable_command
 
 %type <attr> files_attr_op files_attr_ops posset_attr_ops posset_attr_op pt_attr_op pt_attr_ops
@@ -798,134 +791,124 @@ debug_command: FSC_DEBUG FSV_VAL_INT
 		yydebug = 1;
 };
 
-set_command:
-   set_integer_command
- | set_other_command;
+set_command: set_variable | set_mode | set_randvar;
 
-set_integer_command: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_INT
+set_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_INT
 {
 	$$ = alloc_cmd();
 	if (!$$)
 		YYERROR;
-	$$->cmd_tgt1 = $2;
-	$$->cmd_qty = $4;
-	$$->cmd = parser_set_integer;
-}| FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VARIABLE
+
+	var_assign_integer($2, $4);
+
+	$$->cmd = NULL;
+}
+|
+FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
 {
 	$$ = alloc_cmd();
 	if (!$$)
 		YYERROR;
-	var_assign_var($2, $4);
-	$$->cmd_tgt1 = $2;
-	$$->cmd_tgt2 = $4;
-	$$->cmd = parser_set_var;
-}
-| set_integer_command binary_op FSV_VAL_INT
-{
-	if ($1->cmd == parser_set_integer) {
-		switch ($2) {
-		case FSK_PLUS:
-			var_assign_integer($1->cmd_tgt1, $1->cmd_qty + $3);
-			break;
-		case FSK_MINUS:
-			var_assign_integer($1->cmd_tgt1, $1->cmd_qty - $3);
-			break;
-		case FSK_MULTIPLY:
-			var_assign_integer($1->cmd_tgt1, $1->cmd_qty * $3);
-			break;
-		case FSK_DIVIDE:
-			var_assign_integer($1->cmd_tgt1, $1->cmd_qty / $3);
-			break;
-		}
-		$$->cmd = NULL;
-	} else {
-		$1->cmd_qty = $3;
-		$1->cmd_subtype = $2;
-		$1->cmd = parser_set_var_op_int;
-	}
-}
-| set_integer_command binary_op FSV_VARIABLE
-{
-	$1->cmd_tgt3 = $3;
-	$1->cmd_subtype = $2;
-	if ($1->cmd == parser_set_integer) {
-		$$->cmd = parser_set_int_op_var;
-	} else {
-		$1->cmd = parser_set_var_op_var;
-	}
-};
 
-set_other_command: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
 	var_assign_boolean($2, $4);
+
 	$$->cmd = NULL;
 }
 | FSC_SET FSV_VARIABLE FSK_ASSIGN FSK_QUOTE FSV_WHITESTRING FSK_QUOTE
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
+
 	var_assign_string($2, $5);
+
 	$$->cmd = NULL;
-}| FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_STRING
+}
+| FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_STRING
 {
-	if (($$ = alloc_cmd()) == NULL)
+	$$ = alloc_cmd();
+	if (!$$)
 		YYERROR;
+
 	var_assign_string($2, $4);
+
 	$$->cmd = NULL;
-} | FSC_SET FSE_MODE FSC_QUIT FSA_TIMEOUT
+};
+
+set_mode: FSC_SET FSE_MODE FSC_QUIT FSA_TIMEOUT
 {
+	$$ = alloc_cmd();
+	if (!$$)
+		YYERROR;
+
 	filebench_shm->shm_rmode = FILEBENCH_MODE_TIMEOUT;
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
+
 	$$->cmd = NULL;
-} | FSC_SET FSE_MODE FSC_QUIT FSA_ALLDONE
+}
+| FSC_SET FSE_MODE FSC_QUIT FSA_ALLDONE
 {
+	$$ = alloc_cmd();
+	if (!$$)
+		YYERROR;
+
 	filebench_shm->shm_rmode = FILEBENCH_MODE_QALLDONE;
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
+
 	$$->cmd = NULL;
-} | FSC_SET FSE_MODE FSC_QUIT FSA_FIRSTDONE
+}
+| FSC_SET FSE_MODE FSC_QUIT FSA_FIRSTDONE
 {
+	$$ = alloc_cmd();
+	if (!$$)
+		YYERROR;
+
 	filebench_shm->shm_rmode = FILEBENCH_MODE_Q1STDONE;
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
+
 	$$->cmd = NULL;
-} | FSC_SET FSE_MODE FSC_NOUSESTATS
+}
+| FSC_SET FSE_MODE FSC_NOUSESTATS
 {
+	$$ = alloc_cmd();
+	if (!$$)
+		YYERROR;
+
+	filebench_log(LOG_INFO, "Disabling CPU usage statistics");
 	filebench_shm->shm_mmode |= FILEBENCH_MODE_NOUSAGE;
-	filebench_log(LOG_INFO, "disabling CPU usage statistics");
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
+
 	$$->cmd = NULL;
-} | FSC_SET FSV_RANDVAR FSS_TYPE FSK_ASSIGN randvar_attr_typop
+};
+
+set_randvar: FSC_SET FSV_RANDVAR FSS_TYPE FSK_ASSIGN randvar_attr_typop
 {
-	if (($$ = alloc_cmd()) == NULL)
+	$$ = alloc_cmd();
+	if (!$$)
 		YYERROR;
+
 	$$->cmd = &parser_randvar_set;
 	$$->cmd_tgt1 = $2;
 	$$->cmd_qty = FSS_TYPE;
 	$$->cmd_attr_list = $5;
-
-} | FSC_SET FSV_RANDVAR FSS_SRC FSK_ASSIGN randvar_attr_srcop
+}
+| FSC_SET FSV_RANDVAR FSS_SRC FSK_ASSIGN randvar_attr_srcop
 {
-	if (($$ = alloc_cmd()) == NULL)
+	$$ = alloc_cmd();
+	if (!$$)
 		YYERROR;
+
 	$$->cmd = &parser_randvar_set;
 	$$->cmd_tgt1 = $2;
 	$$->cmd_qty = FSS_SRC;
 	$$->cmd_attr_list = $5;
 
-} | FSC_SET FSV_RANDVAR randvar_attr_param FSK_ASSIGN attr_value
+}
+| FSC_SET FSV_RANDVAR randvar_attr_param FSK_ASSIGN attr_value
 {
-	if (($$ = alloc_cmd()) == NULL)
+	$$ = alloc_cmd();
+	if (!$$)
 		YYERROR;
+
 	$$->cmd = &parser_randvar_set;
 	$$->cmd_tgt1 = $2;
 	$$->cmd_qty = $3;
 	$$->cmd_attr_list = $5;
-	
 };
 
 stats_command: FSC_STATS FSE_SNAP
@@ -3661,119 +3644,6 @@ parser_domultisync(cmd_t *cmd)
 
 	mc_sync_synchronize((int)value);
 }
-
-/*
- * used by the set command to set the integer part of a regular
- * variable, or the appropriate field of a random variable
- */
-static void
-parser_set_integer(cmd_t *cmd)
-{
-	var_assign_integer(cmd->cmd_tgt1, cmd->cmd_qty);
-}
-
-/*
- * used by the set command to set the integer part of a regular
- * variable from another variable, or the appropriate field of a
- * random variable from another variable
- */
-static void
-parser_set_var(cmd_t *cmd)
-{
-	var_assign_var(cmd->cmd_tgt1, cmd->cmd_tgt2);
-}
-
-/*
- * Used by the set command to set up for a binary operation of a
- * variable from a var, with an integer
- */
-static void
-parser_set_var_op_int(cmd_t *cmd)
-{
-	printf("parser_set_var_op_int: Called\n");
-	switch (cmd->cmd_subtype) {
-	case FSK_PLUS:
-		var_assign_op_var_int(cmd->cmd_tgt1, VAR_IND_INT_SUM_IV,
-		    cmd->cmd_tgt2, cmd->cmd_qty);
-		break;
-
-	case FSK_MINUS:
-		var_assign_op_var_int(cmd->cmd_tgt1, VAR_IND_IV_DIF_INT,
-		    cmd->cmd_tgt2, cmd->cmd_qty);
-		break;
-
-	case FSK_MULTIPLY:
-		var_assign_op_var_int(cmd->cmd_tgt1, VAR_IND_INT_MUL_IV,
-		    cmd->cmd_tgt2, cmd->cmd_qty);
-		break;
-
-	case FSK_DIVIDE:
-		var_assign_op_var_int(cmd->cmd_tgt1, VAR_IND_IV_DIV_INT,
-		    cmd->cmd_tgt2, cmd->cmd_qty);
-		break;
-	}
-}
-
-/*
- * Used by the set command to set up for a binary operation of an
- * integer with a variable from a var
- */
-static void
-parser_set_int_op_var(cmd_t *cmd)
-{
-	switch (cmd->cmd_subtype) {
-	case FSK_PLUS:
-		var_assign_op_var_int(cmd->cmd_tgt1, VAR_IND_INT_SUM_IV,
-		    cmd->cmd_tgt3, cmd->cmd_qty);
-		break;
-
-	case FSK_MINUS:
-		var_assign_op_var_int(cmd->cmd_tgt1, VAR_IND_INT_DIF_IV,
-		    cmd->cmd_tgt3, cmd->cmd_qty);
-		break;
-
-	case FSK_MULTIPLY:
-		var_assign_op_var_int(cmd->cmd_tgt1, VAR_IND_INT_MUL_IV,
-		    cmd->cmd_tgt3, cmd->cmd_qty);
-		break;
-
-	case FSK_DIVIDE:
-		var_assign_op_var_int(cmd->cmd_tgt1, VAR_IND_INT_DIV_IV,
-		    cmd->cmd_tgt3, cmd->cmd_qty);
-		break;
-	}
-}
-
-/*
- * Used by the set command to set up for a binary operation of two
- * variables from other vars.
- */
-static void
-parser_set_var_op_var(cmd_t *cmd)
-{
-	switch (cmd->cmd_subtype) {
-	case FSK_PLUS:
-		var_assign_op_var_var(cmd->cmd_tgt1, VAR_IND_IV_SUM_IV,
-		    cmd->cmd_tgt2, cmd->cmd_tgt3);
-		break;
-
-	case FSK_MINUS:
-		var_assign_op_var_var(cmd->cmd_tgt1, VAR_IND_IV_DIF_IV,
-		    cmd->cmd_tgt2, cmd->cmd_tgt3);
-		break;
-
-	case FSK_MULTIPLY:
-		var_assign_op_var_var(cmd->cmd_tgt1, VAR_IND_IV_MUL_IV,
-		    cmd->cmd_tgt2, cmd->cmd_tgt3);
-		break;
-
-	case FSK_DIVIDE:
-		var_assign_op_var_var(cmd->cmd_tgt1, VAR_IND_IV_DIV_IV,
-		    cmd->cmd_tgt2, cmd->cmd_tgt3);
-		break;
-	}
-}
-
 
 /*
  * Sleeps for cmd->cmd_qty seconds, one second at a time.
