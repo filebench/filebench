@@ -308,23 +308,6 @@ $[({A-Za-z][A-Za-z0-9_]*[A-Za-z0-9][)}]*	{
  				return FSV_VARIABLE;
 			}
 
-
-$[({A-Za-z][A-Za-z0-9_]*"."[A-Za-z0-9][)}]*	{
-				int backtrack;
-
-				if ((backtrack =
-				    var_is_set4_randvar(yytext)) != 0)
-					yyless(yyleng - backtrack);
-
-				if ((yylval.sval = strdup(yytext)) == NULL) {
-					yyerror("Out of memory");
-					filebench_shutdown(1);
-				}
-
- 				return FSV_RANDVAR;
-			}
-
-
 <INITIAL>[/A-Za-z-][/A-Za-z0-9._-]*	{
 				if ((yylval.sval = strdup(yytext)) == NULL) {
 					yyerror("Out of memory");

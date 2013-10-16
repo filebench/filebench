@@ -103,7 +103,6 @@ static void parser_file_define(cmd_t *);
 static void parser_fileset_define(cmd_t *);
 static void parser_posset_define(cmd_t *);
 static void parser_randvar_define(cmd_t *);
-static void parser_randvar_set(cmd_t *);
 static void parser_composite_flowop_define(cmd_t *);
 
 /* Create Commands */
@@ -169,7 +168,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %token FSC_WARMUP FSC_NOUSESTATS FSC_FSCHECK FSC_FSFLUSH
 %token FSC_USAGE FSC_HELP FSC_VARS FSC_VERSION FSC_ENABLE FSC_DOMULTISYNC
 %token FSV_STRING FSV_VAL_INT FSV_VAL_NEGINT FSV_VAL_BOOLEAN FSV_VARIABLE FSV_WHITESTRING
-%token FSV_RANDUNI FSV_RANDTAB FSV_RANDVAR FSV_URAND FSV_RAND48
+%token FSV_RANDUNI FSV_RANDTAB FSV_URAND FSV_RAND48
 %token FST_INT FST_BOOLEAN
 %token FSE_FILE FSE_PROC FSE_THREAD FSE_CLEAR FSE_ALL FSE_SNAP FSE_DUMP
 %token FSE_DIRECTORY FSE_COMMAND FSE_FILESET FSE_POSSET FSE_XMLDUMP FSE_RAND FSE_MODE
@@ -199,7 +198,6 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <sval> FSV_STRING
 %type <sval> FSV_WHITESTRING
 %type <sval> FSV_VARIABLE
-%type <sval> FSV_RANDVAR
 %type <sval> FSK_ASSIGN
 %type <sval> FSV_SET_LOCAL_VAR
 
@@ -220,7 +218,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> thread echo_command usage_command help_command
 %type <cmd> version_command enable_command multisync_command
 %type <cmd> warmup_command fscheck_command fsflush_command
-%type <cmd> set_variable set_mode set_randvar
+%type <cmd> set_variable set_mode
 %type <cmd> osprof_enable_command osprof_disable_command
 
 %type <attr> files_attr_op files_attr_ops posset_attr_ops posset_attr_op pt_attr_op pt_attr_ops
@@ -661,24 +659,6 @@ whitevar_string_list: whitevar_string FSV_WHITESTRING
 		list_end = list;
 	list_end->list_next = $$;
 	$$ = $1;
-}| whitevar_string FSV_RANDVAR randvar_attr_tsp
-{
-	list_t *list = NULL;
-	list_t *list_end = NULL;
-
-	/* Add variable */
-	if (($$ = alloc_list()) == NULL)
-		YYERROR;
-
-	$$->list_string = avd_str_alloc($2);
-	$$->list_integer = avd_int_alloc($3);
-
-	/* Find end of list */
-	for (list = $1; list != NULL;
-	    list = list->list_next)
-		list_end = list;
-	list_end->list_next = $$;
-	$$ = $1;
 }| whitevar_string_list FSV_WHITESTRING
 {
 	list_t *list = NULL;
@@ -707,24 +687,6 @@ whitevar_string_list: whitevar_string FSV_WHITESTRING
 		YYERROR;
 
 	$$->list_string = avd_str_alloc($2);
-
-	/* Find end of list */
-	for (list = $1; list != NULL;
-	    list = list->list_next)
-		list_end = list;
-	list_end->list_next = $$;
-	$$ = $1;
-}| whitevar_string_list FSV_RANDVAR randvar_attr_tsp
-{
-	list_t *list = NULL;
-	list_t *list_end = NULL;
-
-	/* Add variable */
-	if (($$ = alloc_list()) == NULL)
-		YYERROR;
-
-	$$->list_string = avd_str_alloc($2);
-	$$->list_integer = avd_int_alloc($3);
 
 	/* Find end of list */
 	for (list = $1; list != NULL;
@@ -791,7 +753,7 @@ debug_command: FSC_DEBUG FSV_VAL_INT
 		yydebug = 1;
 };
 
-set_command: set_variable | set_mode | set_randvar;
+set_command: set_variable | set_mode;
 
 set_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_INT
 {
@@ -874,41 +836,6 @@ set_mode: FSC_SET FSE_MODE FSC_QUIT FSA_TIMEOUT
 	filebench_shm->shm_mmode |= FILEBENCH_MODE_NOUSAGE;
 
 	$$->cmd = NULL;
-};
-
-set_randvar: FSC_SET FSV_RANDVAR FSS_TYPE FSK_ASSIGN randvar_attr_typop
-{
-	$$ = alloc_cmd();
-	if (!$$)
-		YYERROR;
-
-	$$->cmd = &parser_randvar_set;
-	$$->cmd_tgt1 = $2;
-	$$->cmd_qty = FSS_TYPE;
-	$$->cmd_attr_list = $5;
-}
-| FSC_SET FSV_RANDVAR FSS_SRC FSK_ASSIGN randvar_attr_srcop
-{
-	$$ = alloc_cmd();
-	if (!$$)
-		YYERROR;
-
-	$$->cmd = &parser_randvar_set;
-	$$->cmd_tgt1 = $2;
-	$$->cmd_qty = FSS_SRC;
-	$$->cmd_attr_list = $5;
-
-}
-| FSC_SET FSV_RANDVAR randvar_attr_param FSK_ASSIGN attr_value
-{
-	$$ = alloc_cmd();
-	if (!$$)
-		YYERROR;
-
-	$$->cmd = &parser_randvar_set;
-	$$->cmd_tgt1 = $2;
-	$$->cmd_qty = $3;
-	$$->cmd_attr_list = $5;
 };
 
 stats_command: FSC_STATS FSE_SNAP
@@ -4390,90 +4317,6 @@ parser_randvar_define(cmd_t *cmd)
 
 randdist_init:
 	randdist_init(rndp);
-}
-
-/*
- * Set a specified random distribution parameter in a random variable.
- */
-static void
-parser_randvar_set(cmd_t *cmd)
-{
-	var_t		*randvar;
-	randdist_t	*rndp;
-	avd_t	value;
-
-	if ((randvar = var_find_randvar(cmd->cmd_tgt1)) == NULL) {
-		filebench_log(LOG_ERROR,
-		    "set randvar: failed",
-		    cmd->cmd_tgt1);
-		return;
-	}
-
-	rndp = randvar->var_val.randptr;
-	value = cmd->cmd_attr_list->attr_avd;
-
-	switch (cmd->cmd_qty) {
-	case FSS_TYPE:
-		{
-			int disttype = (int)avd_get_int(value);
-
-			rndp->rnd_type &= (~RAND_TYPE_MASK);
-
-			switch (disttype) {
-			case FSV_RANDUNI:
-				rndp->rnd_type |= RAND_TYPE_UNIFORM;
-				break;
-			case FSA_RANDGAMMA:
-				rndp->rnd_type |= RAND_TYPE_GAMMA;
-				break;
-			case FSV_RANDTAB:
-				rndp->rnd_type |= RAND_TYPE_TABLE;
-				break;
-			}
-			break;
-		}
-
-	case FSS_SRC:
-		{
-			int randsrc = (int)avd_get_int(value);
-
-			rndp->rnd_type &=
-			    (~(RAND_SRC_URANDOM | RAND_SRC_GENERATOR));
-
-			switch (randsrc) {
-			case FSV_URAND:
-				rndp->rnd_type |= RAND_SRC_URANDOM;
-				break;
-			case FSV_RAND48:
-				rndp->rnd_type |= RAND_SRC_GENERATOR;
-				break;
-			}
-			break;
-		}
-
-	case FSS_SEED:
-		rndp->rnd_seed = value;
-		break;
-
-	case FSS_GAMMA:
-		rndp->rnd_gamma = value;
-		break;
-
-	case FSS_MEAN:
-		rndp->rnd_mean = value;
-		break;
-
-	case FSS_MIN:
-		rndp->rnd_min = value;
-		break;
-
-	case FSS_ROUND:
-		rndp->rnd_round = value;
-		break;
-
-	default:
-		filebench_log(LOG_ERROR, "setrandvar: undefined attribute");
-	}
 }
 
 /*

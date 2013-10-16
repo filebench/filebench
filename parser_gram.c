@@ -146,7 +146,6 @@ static void parser_file_define(cmd_t *);
 static void parser_fileset_define(cmd_t *);
 static void parser_posset_define(cmd_t *);
 static void parser_randvar_define(cmd_t *);
-static void parser_randvar_set(cmd_t *);
 static void parser_composite_flowop_define(cmd_t *);
 
 /* Create Commands */
@@ -193,7 +192,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 
 
 /* Line 189 of yacc.c  */
-#line 197 "parser_gram.c"
+#line 196 "parser_gram.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -257,106 +256,105 @@ static void parser_osprof_disable(cmd_t *cmd);
      FSV_WHITESTRING = 292,
      FSV_RANDUNI = 293,
      FSV_RANDTAB = 294,
-     FSV_RANDVAR = 295,
-     FSV_URAND = 296,
-     FSV_RAND48 = 297,
-     FST_INT = 298,
-     FST_BOOLEAN = 299,
-     FSE_FILE = 300,
-     FSE_PROC = 301,
-     FSE_THREAD = 302,
-     FSE_CLEAR = 303,
-     FSE_ALL = 304,
-     FSE_SNAP = 305,
-     FSE_DUMP = 306,
-     FSE_DIRECTORY = 307,
-     FSE_COMMAND = 308,
-     FSE_FILESET = 309,
-     FSE_POSSET = 310,
-     FSE_XMLDUMP = 311,
-     FSE_RAND = 312,
-     FSE_MODE = 313,
-     FSE_MULTI = 314,
-     FSE_MULTIDUMP = 315,
-     FSK_SEPLST = 316,
-     FSK_OPENLST = 317,
-     FSK_CLOSELST = 318,
-     FSK_ASSIGN = 319,
-     FSK_IN = 320,
-     FSK_QUOTE = 321,
-     FSK_DIRSEPLST = 322,
-     FSK_PLUS = 323,
-     FSK_MINUS = 324,
-     FSK_MULTIPLY = 325,
-     FSK_DIVIDE = 326,
-     FSA_SIZE = 327,
-     FSA_PREALLOC = 328,
-     FSA_PARALLOC = 329,
-     FSA_PATH = 330,
-     FSA_REUSE = 331,
-     FSA_PROCESS = 332,
-     FSA_MEMSIZE = 333,
-     FSA_RATE = 334,
-     FSA_CACHED = 335,
-     FSA_READONLY = 336,
-     FSA_TRUSTTREE = 337,
-     FSA_IOSIZE = 338,
-     FSA_FILE = 339,
-     FSA_POSSET = 340,
-     FSA_WSS = 341,
-     FSA_NAME = 342,
-     FSA_RANDOM = 343,
-     FSA_INSTANCES = 344,
-     FSA_DSYNC = 345,
-     FSA_TARGET = 346,
-     FSA_ITERS = 347,
-     FSA_NICE = 348,
-     FSA_VALUE = 349,
-     FSA_BLOCKING = 350,
-     FSA_HIGHWATER = 351,
-     FSA_DIRECTIO = 352,
-     FSA_DIRWIDTH = 353,
-     FSA_FD = 354,
-     FSA_SRCFD = 355,
-     FSA_ROTATEFD = 356,
-     FSA_NAMELENGTH = 357,
-     FSA_FILESIZE = 358,
-     FSA_ENTRIES = 359,
-     FSA_FILESIZEGAMMA = 360,
-     FSA_DIRDEPTHRV = 361,
-     FSA_DIRGAMMA = 362,
-     FSA_USEISM = 363,
-     FSA_TYPE = 364,
-     FSA_RANDTABLE = 365,
-     FSA_RANDSRC = 366,
-     FSA_RANDROUND = 367,
-     FSA_LEAFDIRS = 368,
-     FSA_INDEXED = 369,
-     FSA_FSTYPE = 370,
-     FSA_RANDSEED = 371,
-     FSA_RANDGAMMA = 372,
-     FSA_RANDMEAN = 373,
-     FSA_RANDMIN = 374,
-     FSA_RANDMAX = 375,
-     FSA_MASTER = 376,
-     FSA_CLIENT = 377,
-     FSS_TYPE = 378,
-     FSS_SEED = 379,
-     FSS_GAMMA = 380,
-     FSS_MEAN = 381,
-     FSS_MIN = 382,
-     FSS_SRC = 383,
-     FSS_ROUND = 384,
-     FSV_SET_LOCAL_VAR = 385,
-     FSA_LVAR_ASSIGN = 386,
-     FSA_ALLDONE = 387,
-     FSA_FIRSTDONE = 388,
-     FSA_TIMEOUT = 389,
-     FSC_OSPROF_ENABLE = 390,
-     FSC_OSPROF_DISABLE = 391,
-     FSA_NOREADAHEAD = 392,
-     FSA_IOPRIO = 393,
-     FSA_WRITEONLY = 394
+     FSV_URAND = 295,
+     FSV_RAND48 = 296,
+     FST_INT = 297,
+     FST_BOOLEAN = 298,
+     FSE_FILE = 299,
+     FSE_PROC = 300,
+     FSE_THREAD = 301,
+     FSE_CLEAR = 302,
+     FSE_ALL = 303,
+     FSE_SNAP = 304,
+     FSE_DUMP = 305,
+     FSE_DIRECTORY = 306,
+     FSE_COMMAND = 307,
+     FSE_FILESET = 308,
+     FSE_POSSET = 309,
+     FSE_XMLDUMP = 310,
+     FSE_RAND = 311,
+     FSE_MODE = 312,
+     FSE_MULTI = 313,
+     FSE_MULTIDUMP = 314,
+     FSK_SEPLST = 315,
+     FSK_OPENLST = 316,
+     FSK_CLOSELST = 317,
+     FSK_ASSIGN = 318,
+     FSK_IN = 319,
+     FSK_QUOTE = 320,
+     FSK_DIRSEPLST = 321,
+     FSK_PLUS = 322,
+     FSK_MINUS = 323,
+     FSK_MULTIPLY = 324,
+     FSK_DIVIDE = 325,
+     FSA_SIZE = 326,
+     FSA_PREALLOC = 327,
+     FSA_PARALLOC = 328,
+     FSA_PATH = 329,
+     FSA_REUSE = 330,
+     FSA_PROCESS = 331,
+     FSA_MEMSIZE = 332,
+     FSA_RATE = 333,
+     FSA_CACHED = 334,
+     FSA_READONLY = 335,
+     FSA_TRUSTTREE = 336,
+     FSA_IOSIZE = 337,
+     FSA_FILE = 338,
+     FSA_POSSET = 339,
+     FSA_WSS = 340,
+     FSA_NAME = 341,
+     FSA_RANDOM = 342,
+     FSA_INSTANCES = 343,
+     FSA_DSYNC = 344,
+     FSA_TARGET = 345,
+     FSA_ITERS = 346,
+     FSA_NICE = 347,
+     FSA_VALUE = 348,
+     FSA_BLOCKING = 349,
+     FSA_HIGHWATER = 350,
+     FSA_DIRECTIO = 351,
+     FSA_DIRWIDTH = 352,
+     FSA_FD = 353,
+     FSA_SRCFD = 354,
+     FSA_ROTATEFD = 355,
+     FSA_NAMELENGTH = 356,
+     FSA_FILESIZE = 357,
+     FSA_ENTRIES = 358,
+     FSA_FILESIZEGAMMA = 359,
+     FSA_DIRDEPTHRV = 360,
+     FSA_DIRGAMMA = 361,
+     FSA_USEISM = 362,
+     FSA_TYPE = 363,
+     FSA_RANDTABLE = 364,
+     FSA_RANDSRC = 365,
+     FSA_RANDROUND = 366,
+     FSA_LEAFDIRS = 367,
+     FSA_INDEXED = 368,
+     FSA_FSTYPE = 369,
+     FSA_RANDSEED = 370,
+     FSA_RANDGAMMA = 371,
+     FSA_RANDMEAN = 372,
+     FSA_RANDMIN = 373,
+     FSA_RANDMAX = 374,
+     FSA_MASTER = 375,
+     FSA_CLIENT = 376,
+     FSS_TYPE = 377,
+     FSS_SEED = 378,
+     FSS_GAMMA = 379,
+     FSS_MEAN = 380,
+     FSS_MIN = 381,
+     FSS_SRC = 382,
+     FSS_ROUND = 383,
+     FSV_SET_LOCAL_VAR = 384,
+     FSA_LVAR_ASSIGN = 385,
+     FSA_ALLDONE = 386,
+     FSA_FIRSTDONE = 387,
+     FSA_TIMEOUT = 388,
+     FSC_OSPROF_ENABLE = 389,
+     FSC_OSPROF_DISABLE = 390,
+     FSA_NOREADAHEAD = 391,
+     FSA_IOPRIO = 392,
+     FSA_WRITEONLY = 393
    };
 #endif
 /* Tokens.  */
@@ -397,106 +395,105 @@ static void parser_osprof_disable(cmd_t *cmd);
 #define FSV_WHITESTRING 292
 #define FSV_RANDUNI 293
 #define FSV_RANDTAB 294
-#define FSV_RANDVAR 295
-#define FSV_URAND 296
-#define FSV_RAND48 297
-#define FST_INT 298
-#define FST_BOOLEAN 299
-#define FSE_FILE 300
-#define FSE_PROC 301
-#define FSE_THREAD 302
-#define FSE_CLEAR 303
-#define FSE_ALL 304
-#define FSE_SNAP 305
-#define FSE_DUMP 306
-#define FSE_DIRECTORY 307
-#define FSE_COMMAND 308
-#define FSE_FILESET 309
-#define FSE_POSSET 310
-#define FSE_XMLDUMP 311
-#define FSE_RAND 312
-#define FSE_MODE 313
-#define FSE_MULTI 314
-#define FSE_MULTIDUMP 315
-#define FSK_SEPLST 316
-#define FSK_OPENLST 317
-#define FSK_CLOSELST 318
-#define FSK_ASSIGN 319
-#define FSK_IN 320
-#define FSK_QUOTE 321
-#define FSK_DIRSEPLST 322
-#define FSK_PLUS 323
-#define FSK_MINUS 324
-#define FSK_MULTIPLY 325
-#define FSK_DIVIDE 326
-#define FSA_SIZE 327
-#define FSA_PREALLOC 328
-#define FSA_PARALLOC 329
-#define FSA_PATH 330
-#define FSA_REUSE 331
-#define FSA_PROCESS 332
-#define FSA_MEMSIZE 333
-#define FSA_RATE 334
-#define FSA_CACHED 335
-#define FSA_READONLY 336
-#define FSA_TRUSTTREE 337
-#define FSA_IOSIZE 338
-#define FSA_FILE 339
-#define FSA_POSSET 340
-#define FSA_WSS 341
-#define FSA_NAME 342
-#define FSA_RANDOM 343
-#define FSA_INSTANCES 344
-#define FSA_DSYNC 345
-#define FSA_TARGET 346
-#define FSA_ITERS 347
-#define FSA_NICE 348
-#define FSA_VALUE 349
-#define FSA_BLOCKING 350
-#define FSA_HIGHWATER 351
-#define FSA_DIRECTIO 352
-#define FSA_DIRWIDTH 353
-#define FSA_FD 354
-#define FSA_SRCFD 355
-#define FSA_ROTATEFD 356
-#define FSA_NAMELENGTH 357
-#define FSA_FILESIZE 358
-#define FSA_ENTRIES 359
-#define FSA_FILESIZEGAMMA 360
-#define FSA_DIRDEPTHRV 361
-#define FSA_DIRGAMMA 362
-#define FSA_USEISM 363
-#define FSA_TYPE 364
-#define FSA_RANDTABLE 365
-#define FSA_RANDSRC 366
-#define FSA_RANDROUND 367
-#define FSA_LEAFDIRS 368
-#define FSA_INDEXED 369
-#define FSA_FSTYPE 370
-#define FSA_RANDSEED 371
-#define FSA_RANDGAMMA 372
-#define FSA_RANDMEAN 373
-#define FSA_RANDMIN 374
-#define FSA_RANDMAX 375
-#define FSA_MASTER 376
-#define FSA_CLIENT 377
-#define FSS_TYPE 378
-#define FSS_SEED 379
-#define FSS_GAMMA 380
-#define FSS_MEAN 381
-#define FSS_MIN 382
-#define FSS_SRC 383
-#define FSS_ROUND 384
-#define FSV_SET_LOCAL_VAR 385
-#define FSA_LVAR_ASSIGN 386
-#define FSA_ALLDONE 387
-#define FSA_FIRSTDONE 388
-#define FSA_TIMEOUT 389
-#define FSC_OSPROF_ENABLE 390
-#define FSC_OSPROF_DISABLE 391
-#define FSA_NOREADAHEAD 392
-#define FSA_IOPRIO 393
-#define FSA_WRITEONLY 394
+#define FSV_URAND 295
+#define FSV_RAND48 296
+#define FST_INT 297
+#define FST_BOOLEAN 298
+#define FSE_FILE 299
+#define FSE_PROC 300
+#define FSE_THREAD 301
+#define FSE_CLEAR 302
+#define FSE_ALL 303
+#define FSE_SNAP 304
+#define FSE_DUMP 305
+#define FSE_DIRECTORY 306
+#define FSE_COMMAND 307
+#define FSE_FILESET 308
+#define FSE_POSSET 309
+#define FSE_XMLDUMP 310
+#define FSE_RAND 311
+#define FSE_MODE 312
+#define FSE_MULTI 313
+#define FSE_MULTIDUMP 314
+#define FSK_SEPLST 315
+#define FSK_OPENLST 316
+#define FSK_CLOSELST 317
+#define FSK_ASSIGN 318
+#define FSK_IN 319
+#define FSK_QUOTE 320
+#define FSK_DIRSEPLST 321
+#define FSK_PLUS 322
+#define FSK_MINUS 323
+#define FSK_MULTIPLY 324
+#define FSK_DIVIDE 325
+#define FSA_SIZE 326
+#define FSA_PREALLOC 327
+#define FSA_PARALLOC 328
+#define FSA_PATH 329
+#define FSA_REUSE 330
+#define FSA_PROCESS 331
+#define FSA_MEMSIZE 332
+#define FSA_RATE 333
+#define FSA_CACHED 334
+#define FSA_READONLY 335
+#define FSA_TRUSTTREE 336
+#define FSA_IOSIZE 337
+#define FSA_FILE 338
+#define FSA_POSSET 339
+#define FSA_WSS 340
+#define FSA_NAME 341
+#define FSA_RANDOM 342
+#define FSA_INSTANCES 343
+#define FSA_DSYNC 344
+#define FSA_TARGET 345
+#define FSA_ITERS 346
+#define FSA_NICE 347
+#define FSA_VALUE 348
+#define FSA_BLOCKING 349
+#define FSA_HIGHWATER 350
+#define FSA_DIRECTIO 351
+#define FSA_DIRWIDTH 352
+#define FSA_FD 353
+#define FSA_SRCFD 354
+#define FSA_ROTATEFD 355
+#define FSA_NAMELENGTH 356
+#define FSA_FILESIZE 357
+#define FSA_ENTRIES 358
+#define FSA_FILESIZEGAMMA 359
+#define FSA_DIRDEPTHRV 360
+#define FSA_DIRGAMMA 361
+#define FSA_USEISM 362
+#define FSA_TYPE 363
+#define FSA_RANDTABLE 364
+#define FSA_RANDSRC 365
+#define FSA_RANDROUND 366
+#define FSA_LEAFDIRS 367
+#define FSA_INDEXED 368
+#define FSA_FSTYPE 369
+#define FSA_RANDSEED 370
+#define FSA_RANDGAMMA 371
+#define FSA_RANDMEAN 372
+#define FSA_RANDMIN 373
+#define FSA_RANDMAX 374
+#define FSA_MASTER 375
+#define FSA_CLIENT 376
+#define FSS_TYPE 377
+#define FSS_SEED 378
+#define FSS_GAMMA 379
+#define FSS_MEAN 380
+#define FSS_MIN 381
+#define FSS_SRC 382
+#define FSS_ROUND 383
+#define FSV_SET_LOCAL_VAR 384
+#define FSA_LVAR_ASSIGN 385
+#define FSA_ALLDONE 386
+#define FSA_FIRSTDONE 387
+#define FSA_TIMEOUT 388
+#define FSC_OSPROF_ENABLE 389
+#define FSC_OSPROF_DISABLE 390
+#define FSA_NOREADAHEAD 391
+#define FSA_IOPRIO 392
+#define FSA_WRITEONLY 393
 
 
 
@@ -506,7 +503,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 152 "parser_gram.y"
+#line 151 "parser_gram.y"
 
 	int64_t		 ival;
 	unsigned char	 bval;
@@ -521,7 +518,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 525 "parser_gram.c"
+#line 522 "parser_gram.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -533,7 +530,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 537 "parser_gram.c"
+#line 534 "parser_gram.c"
 
 #ifdef short
 # undef short
@@ -748,20 +745,20 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  2
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   405
+#define YYLAST   383
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  140
+#define YYNTOKENS  139
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  95
+#define YYNNTS  92
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  291
+#define YYNRULES  273
 /* YYNRULES -- Number of states.  */
-#define YYNSTATES  386
+#define YYNSTATES  359
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   394
+#define YYMAXUTOK   393
 
 #define YYTRANSLATE(YYX)						\
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -808,7 +805,7 @@ static const yytype_uint8 yytranslate[] =
      105,   106,   107,   108,   109,   110,   111,   112,   113,   114,
      115,   116,   117,   118,   119,   120,   121,   122,   123,   124,
      125,   126,   127,   128,   129,   130,   131,   132,   133,   134,
-     135,   136,   137,   138,   139
+     135,   136,   137,   138
 };
 
 #if YYDEBUG
@@ -822,150 +819,141 @@ static const yytype_uint16 yyprhs[] =
       61,    63,    65,    67,    69,    71,    73,    75,    77,    85,
       93,    95,    99,   103,   109,   111,   114,   117,   120,   122,
      124,   126,   129,   132,   135,   138,   140,   142,   144,   147,
-     150,   153,   156,   159,   162,   165,   168,   172,   175,   178,
-     182,   185,   188,   190,   193,   196,   199,   202,   205,   208,
-     210,   212,   214,   219,   224,   231,   236,   241,   246,   251,
-     255,   261,   267,   273,   276,   279,   283,   287,   291,   295,
-     299,   301,   303,   306,   312,   314,   317,   324,   327,   330,
-     333,   336,   339,   342,   346,   353,   356,   359,   362,   365,
-     368,   371,   374,   376,   379,   382,   384,   386,   389,   392,
-     396,   400,   402,   405,   408,   410,   412,   414,   416,   418,
-     420,   424,   426,   430,   434,   436,   440,   442,   444,   448,
-     456,   460,   462,   466,   470,   478,   480,   484,   486,   490,
-     494,   496,   498,   502,   506,   510,   512,   514,   518,   522,
-     524,   526,   530,   534,   538,   542,   544,   546,   548,   550,
-     552,   554,   556,   558,   560,   562,   564,   566,   568,   570,
-     572,   574,   576,   578,   580,   582,   584,   586,   588,   590,
-     592,   594,   596,   598,   600,   602,   604,   606,   608,   610,
-     612,   614,   616,   618,   620,   622,   624,   626,   628,   630,
-     632,   634,   636,   638,   640,   642,   644,   646,   648,   650,
-     652,   654,   656,   658,   660,   662,   664,   666,   668,   670,
-     672,   674,   676,   678,   680,   682,   684,   686,   688,   690,
-     692,   694,   696,   698,   700,   702,   704,   706,   708,   710,
-     712,   714,   716,   718,   720,   722,   724,   726,   728,   730,
-     732,   736,   740,   744,   748,   752,   758,   762,   766,   768,
-     770,   772,   774,   776,   778,   780,   782,   784,   786,   788,
-     790,   792
+     150,   153,   156,   159,   162,   165,   168,   171,   174,   177,
+     180,   182,   185,   188,   191,   194,   197,   200,   202,   204,
+     209,   214,   221,   226,   231,   236,   241,   245,   248,   251,
+     255,   259,   263,   267,   271,   273,   275,   278,   284,   286,
+     289,   296,   299,   302,   305,   308,   311,   314,   318,   325,
+     328,   331,   334,   337,   340,   343,   346,   348,   351,   354,
+     356,   358,   361,   364,   368,   372,   374,   377,   380,   382,
+     384,   386,   388,   390,   392,   396,   398,   402,   406,   408,
+     412,   414,   416,   420,   428,   432,   434,   438,   442,   450,
+     452,   456,   458,   462,   466,   468,   470,   474,   478,   482,
+     484,   486,   490,   494,   496,   498,   502,   506,   510,   514,
+     516,   518,   520,   522,   524,   526,   528,   530,   532,   534,
+     536,   538,   540,   542,   544,   546,   548,   550,   552,   554,
+     556,   558,   560,   562,   564,   566,   568,   570,   572,   574,
+     576,   578,   580,   582,   584,   586,   588,   590,   592,   594,
+     596,   598,   600,   602,   604,   606,   608,   610,   612,   614,
+     616,   618,   620,   622,   624,   626,   628,   630,   632,   634,
+     636,   638,   640,   642,   644,   646,   648,   650,   652,   654,
+     656,   658,   660,   662,   664,   666,   668,   670,   672,   674,
+     676,   678,   680,   684,   688,   692,   696,   700,   706,   710,
+     714,   716,   718,   720,   722,   724,   726,   728,   730,   732,
+     734,   736,   738,   740
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
 static const yytype_int16 yyrhs[] =
 {
-     141,     0,    -1,   141,   143,    -1,   141,     1,    -1,    -1,
-     143,    -1,   142,   143,    -1,   174,    -1,   175,    -1,   176,
-      -1,   177,    -1,   178,    -1,   164,    -1,   147,    -1,   179,
-      -1,   149,    -1,   153,    -1,   144,    -1,   161,    -1,   162,
-      -1,   185,    -1,   160,    -1,   163,    -1,   183,    -1,   184,
-      -1,   165,    -1,   180,    -1,   182,    -1,   181,    -1,   169,
-      -1,   148,    -1,   150,    -1,   151,    -1,   152,    -1,   154,
-      -1,   155,    -1,   170,    -1,    11,    -1,   144,    36,    65,
-     145,    62,   142,    63,    -1,   144,    36,    65,   146,    62,
-     142,    63,    -1,    33,    -1,   145,    61,    33,    -1,    66,
-      37,    66,    -1,   146,    61,    66,    37,    66,    -1,    17,
-      -1,   147,   201,    -1,    15,   159,    -1,    18,   159,    -1,
-      29,    -1,   135,    -1,   136,    -1,    26,   159,    -1,    30,
-      59,    -1,   154,   203,    -1,    31,   205,    -1,    36,    -1,
-      32,    -1,   156,    -1,   156,    32,    -1,   156,    36,    -1,
-     157,    32,    -1,   157,    36,    -1,    66,    36,    -1,    66,
-      37,    -1,   158,    37,    -1,   158,    36,    -1,   158,    40,
-     217,    -1,   159,    37,    -1,   159,    36,    -1,   159,    40,
-     217,    -1,   159,    66,    -1,   158,    66,    -1,     3,    -1,
-     160,    16,    -1,    24,   206,    -1,   161,   206,    -1,    25,
-     206,    -1,    14,   159,    -1,     7,    33,    -1,   166,    -1,
-     167,    -1,   168,    -1,    12,    36,    64,    33,    -1,    12,
-      36,    64,    35,    -1,    12,    36,    64,    66,    37,    66,
-      -1,    12,    36,    64,    32,    -1,    12,    58,     6,   134,
-      -1,    12,    58,     6,   132,    -1,    12,    58,     6,   133,
-      -1,    12,    58,    23,    -1,    12,    40,   123,    64,   219,
-      -1,    12,    40,   128,    64,   221,    -1,    12,    40,   218,
-      64,   232,    -1,    10,    50,    -1,    10,    48,    -1,    10,
-      52,   157,    -1,    10,    53,   159,    -1,    10,    51,   159,
-      -1,    10,    56,   159,    -1,    10,    60,   159,    -1,     6,
-      -1,   186,    -1,   171,   186,    -1,    47,   197,    62,   171,
-      63,    -1,   172,    -1,   173,   172,    -1,     4,    46,   197,
-      62,   173,    63,    -1,   174,   197,    -1,     4,    45,    -1,
-       4,    54,    -1,   175,   189,    -1,     4,    55,    -1,   176,
-     190,    -1,     4,    57,   193,    -1,     4,    16,   228,    62,
-     171,    63,    -1,   178,   228,    -1,     8,   187,    -1,    13,
-     187,    -1,    22,    33,    -1,    22,    36,    -1,     9,    33,
-      -1,     9,    36,    -1,     9,    -1,    20,    33,    -1,    20,
-      36,    -1,    20,    -1,    21,    -1,    21,    34,    -1,    21,
-      33,    -1,    21,    34,    33,    -1,    21,    33,    33,    -1,
-      27,    -1,    16,   188,    -1,   186,   199,    -1,    46,    -1,
-      47,    -1,    54,    -1,    45,    -1,    32,    -1,   192,    -1,
-     189,    61,   192,    -1,   191,    -1,   190,    61,   191,    -1,
-     208,    64,   233,    -1,   208,    -1,   207,    64,   233,    -1,
-     207,    -1,   194,    -1,   193,    61,   194,    -1,   193,    61,
-     110,    64,    62,   196,    63,    -1,   216,    64,   233,    -1,
-     216,    -1,   109,    64,   219,    -1,   111,    64,   221,    -1,
-      62,   234,    61,   234,    61,   234,    63,    -1,   195,    -1,
-     196,    61,   195,    -1,   198,    -1,   197,    61,   198,    -1,
-     209,    64,   232,    -1,   209,    -1,   200,    -1,   199,    61,
-     200,    -1,   199,    61,   230,    -1,   210,    64,   232,    -1,
-     210,    -1,   202,    -1,   201,    61,   202,    -1,   211,    64,
-     232,    -1,   211,    -1,   204,    -1,   203,    61,   204,    -1,
-     226,    64,   232,    -1,    94,    64,   232,    -1,   227,    64,
-      32,    -1,   213,    -1,   214,    -1,   215,    -1,   223,    -1,
-     212,    -1,   224,    -1,   225,    -1,    93,    -1,    87,    -1,
-      89,    -1,    72,    -1,    87,    -1,    75,    -1,    81,    -1,
-      82,    -1,    76,    -1,    73,    -1,    74,    -1,   139,    -1,
-      72,    -1,    87,    -1,    75,    -1,    98,    -1,   106,    -1,
-      73,    -1,    74,    -1,    76,    -1,    81,    -1,    82,    -1,
-     105,    -1,   107,    -1,    80,    -1,   104,    -1,   113,    -1,
-     139,    -1,    87,    -1,   109,    -1,   116,    -1,   104,    -1,
-     120,    -1,    87,    -1,   116,    -1,   117,    -1,   118,    -1,
-     119,    -1,   112,    -1,   123,    -1,   128,    -1,   124,    -1,
-     125,    -1,   126,    -1,   127,    -1,   129,    -1,   124,    -1,
-     125,    -1,   126,    -1,   127,    -1,   129,    -1,   220,    -1,
-      38,    -1,    39,    -1,   117,    -1,   222,    -1,    41,    -1,
-      42,    -1,    77,    -1,    87,    -1,    78,    -1,   108,    -1,
-      89,    -1,   138,    -1,    86,    -1,    84,    -1,    85,    -1,
-      87,    -1,    88,    -1,    99,    -1,   100,    -1,   101,    -1,
-      90,    -1,    97,    -1,   114,    -1,    91,    -1,    92,    -1,
-      94,    -1,    95,    -1,    96,    -1,    83,    -1,   137,    -1,
-      79,    -1,   121,    -1,   122,    -1,    75,    -1,   115,    -1,
-     229,    -1,   228,    61,   229,    -1,   228,    61,   230,    -1,
-     231,    64,   232,    -1,    36,    64,    35,    -1,    36,    64,
-      33,    -1,    36,    64,    66,    37,    66,    -1,    36,    64,
-      32,    -1,    36,    64,    36,    -1,    36,    -1,    87,    -1,
-      92,    -1,    32,    -1,    33,    -1,    35,    -1,    36,    -1,
-     157,    -1,    32,    -1,    33,    -1,    35,    -1,    36,    -1,
-      33,    -1,    36,    -1
+     140,     0,    -1,   140,   142,    -1,   140,     1,    -1,    -1,
+     142,    -1,   141,   142,    -1,   172,    -1,   173,    -1,   174,
+      -1,   175,    -1,   176,    -1,   163,    -1,   146,    -1,   177,
+      -1,   148,    -1,   152,    -1,   143,    -1,   160,    -1,   161,
+      -1,   183,    -1,   159,    -1,   162,    -1,   181,    -1,   182,
+      -1,   164,    -1,   178,    -1,   180,    -1,   179,    -1,   167,
+      -1,   147,    -1,   149,    -1,   150,    -1,   151,    -1,   153,
+      -1,   154,    -1,   168,    -1,    11,    -1,   143,    36,    64,
+     144,    61,   141,    62,    -1,   143,    36,    64,   145,    61,
+     141,    62,    -1,    33,    -1,   144,    60,    33,    -1,    65,
+      37,    65,    -1,   145,    60,    65,    37,    65,    -1,    17,
+      -1,   146,   199,    -1,    15,   158,    -1,    18,   158,    -1,
+      29,    -1,   134,    -1,   135,    -1,    26,   158,    -1,    30,
+      58,    -1,   153,   201,    -1,    31,   203,    -1,    36,    -1,
+      32,    -1,   155,    -1,   155,    32,    -1,   155,    36,    -1,
+     156,    32,    -1,   156,    36,    -1,    65,    36,    -1,    65,
+      37,    -1,   157,    37,    -1,   157,    36,    -1,   158,    37,
+      -1,   158,    36,    -1,   158,    65,    -1,   157,    65,    -1,
+       3,    -1,   159,    16,    -1,    24,   204,    -1,   160,   204,
+      -1,    25,   204,    -1,    14,   158,    -1,     7,    33,    -1,
+     165,    -1,   166,    -1,    12,    36,    63,    33,    -1,    12,
+      36,    63,    35,    -1,    12,    36,    63,    65,    37,    65,
+      -1,    12,    36,    63,    32,    -1,    12,    57,     6,   133,
+      -1,    12,    57,     6,   131,    -1,    12,    57,     6,   132,
+      -1,    12,    57,    23,    -1,    10,    49,    -1,    10,    47,
+      -1,    10,    51,   156,    -1,    10,    52,   158,    -1,    10,
+      50,   158,    -1,    10,    55,   158,    -1,    10,    59,   158,
+      -1,     6,    -1,   184,    -1,   169,   184,    -1,    46,   195,
+      61,   169,    62,    -1,   170,    -1,   171,   170,    -1,     4,
+      45,   195,    61,   171,    62,    -1,   172,   195,    -1,     4,
+      44,    -1,     4,    53,    -1,   173,   187,    -1,     4,    54,
+      -1,   174,   188,    -1,     4,    56,   191,    -1,     4,    16,
+     224,    61,   169,    62,    -1,   176,   224,    -1,     8,   185,
+      -1,    13,   185,    -1,    22,    33,    -1,    22,    36,    -1,
+       9,    33,    -1,     9,    36,    -1,     9,    -1,    20,    33,
+      -1,    20,    36,    -1,    20,    -1,    21,    -1,    21,    34,
+      -1,    21,    33,    -1,    21,    34,    33,    -1,    21,    33,
+      33,    -1,    27,    -1,    16,   186,    -1,   184,   197,    -1,
+      45,    -1,    46,    -1,    53,    -1,    44,    -1,    32,    -1,
+     190,    -1,   187,    60,   190,    -1,   189,    -1,   188,    60,
+     189,    -1,   206,    63,   229,    -1,   206,    -1,   205,    63,
+     229,    -1,   205,    -1,   192,    -1,   191,    60,   192,    -1,
+     191,    60,   109,    63,    61,   194,    62,    -1,   214,    63,
+     229,    -1,   214,    -1,   108,    63,   215,    -1,   110,    63,
+     217,    -1,    61,   230,    60,   230,    60,   230,    62,    -1,
+     193,    -1,   194,    60,   193,    -1,   196,    -1,   195,    60,
+     196,    -1,   207,    63,   228,    -1,   207,    -1,   198,    -1,
+     197,    60,   198,    -1,   197,    60,   226,    -1,   208,    63,
+     228,    -1,   208,    -1,   200,    -1,   199,    60,   200,    -1,
+     209,    63,   228,    -1,   209,    -1,   202,    -1,   201,    60,
+     202,    -1,   222,    63,   228,    -1,    93,    63,   228,    -1,
+     223,    63,    32,    -1,   211,    -1,   212,    -1,   213,    -1,
+     219,    -1,   210,    -1,   220,    -1,   221,    -1,    92,    -1,
+      86,    -1,    88,    -1,    71,    -1,    86,    -1,    74,    -1,
+      80,    -1,    81,    -1,    75,    -1,    72,    -1,    73,    -1,
+     138,    -1,    71,    -1,    86,    -1,    74,    -1,    97,    -1,
+     105,    -1,    72,    -1,    73,    -1,    75,    -1,    80,    -1,
+      81,    -1,   104,    -1,   106,    -1,    79,    -1,   103,    -1,
+     112,    -1,   138,    -1,    86,    -1,   108,    -1,   115,    -1,
+     103,    -1,   119,    -1,    86,    -1,   115,    -1,   116,    -1,
+     117,    -1,   118,    -1,   111,    -1,   216,    -1,    38,    -1,
+      39,    -1,   116,    -1,   218,    -1,    40,    -1,    41,    -1,
+      76,    -1,    86,    -1,    77,    -1,   107,    -1,    88,    -1,
+     137,    -1,    85,    -1,    83,    -1,    84,    -1,    86,    -1,
+      87,    -1,    98,    -1,    99,    -1,   100,    -1,    89,    -1,
+      96,    -1,   113,    -1,    90,    -1,    91,    -1,    93,    -1,
+      94,    -1,    95,    -1,    82,    -1,   136,    -1,    78,    -1,
+     120,    -1,   121,    -1,    74,    -1,   114,    -1,   225,    -1,
+     224,    60,   225,    -1,   224,    60,   226,    -1,   227,    63,
+     228,    -1,    36,    63,    35,    -1,    36,    63,    33,    -1,
+      36,    63,    65,    37,    65,    -1,    36,    63,    32,    -1,
+      36,    63,    36,    -1,    36,    -1,    86,    -1,    91,    -1,
+      32,    -1,    33,    -1,    35,    -1,    36,    -1,   156,    -1,
+      32,    -1,    33,    -1,    35,    -1,    36,    -1,    33,    -1,
+      36,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   247,   247,   254,   259,   261,   266,   285,   286,   287,
-     288,   289,   290,   291,   292,   293,   294,   295,   296,   297,
-     298,   299,   300,   301,   302,   303,   304,   305,   306,   307,
-     308,   309,   310,   311,   312,   313,   314,   316,   322,   345,
-     370,   377,   395,   402,   420,   426,   431,   440,   449,   456,
-     463,   470,   479,   486,   491,   524,   531,   539,   542,   560,
-     577,   595,   614,   621,   629,   647,   664,   682,   700,   717,
-     735,   738,   743,   749,   754,   762,   767,   776,   784,   794,
-     794,   794,   796,   807,   817,   826,   837,   847,   857,   867,
-     879,   890,   902,   914,   922,   929,   937,   945,   952,   959,
-     968,   975,   978,   996,  1008,  1011,  1029,  1038,  1043,  1048,
-    1054,  1059,  1064,  1069,  1077,  1085,  1090,  1109,  1128,  1135,
-    1143,  1150,  1157,  1165,  1172,  1179,  1187,  1195,  1204,  1213,
-    1221,  1230,  1237,  1243,  1248,  1249,  1250,  1251,  1257,  1260,
-    1264,  1278,  1282,  1296,  1301,  1308,  1313,  1321,  1325,  1338,
-    1357,  1362,  1368,  1373,  1379,  1389,  1393,  1408,  1412,  1426,
-    1431,  1439,  1443,  1456,  1470,  1475,  1483,  1487,  1501,  1506,
-    1514,  1518,  1532,  1538,  1544,  1558,  1559,  1561,  1563,  1564,
-    1566,  1568,  1571,  1572,  1573,  1576,  1577,  1578,  1579,  1580,
-    1581,  1582,  1583,  1584,  1587,  1588,  1589,  1590,  1591,  1592,
-    1593,  1594,  1595,  1596,  1597,  1598,  1599,  1600,  1601,  1602,
-    1605,  1606,  1607,  1608,  1609,  1612,  1613,  1614,  1615,  1616,
-    1617,  1620,  1621,  1622,  1623,  1624,  1625,  1626,  1629,  1630,
-    1631,  1632,  1633,  1635,  1643,  1644,  1645,  1647,  1655,  1656,
-    1659,  1660,  1661,  1662,  1663,  1664,  1667,  1668,  1669,  1670,
-    1671,  1672,  1673,  1674,  1675,  1676,  1677,  1678,  1679,  1680,
-    1681,  1682,  1683,  1684,  1687,  1690,  1691,  1694,  1695,  1697,
-    1701,  1714,  1728,  1734,  1739,  1744,  1749,  1754,  1759,  1767,
-    1768,  1770,  1775,  1779,  1783,  1789,  1793,  1797,  1801,  1805,
-    1811,  1814
+       0,   245,   245,   252,   257,   259,   264,   283,   284,   285,
+     286,   287,   288,   289,   290,   291,   292,   293,   294,   295,
+     296,   297,   298,   299,   300,   301,   302,   303,   304,   305,
+     306,   307,   308,   309,   310,   311,   312,   314,   320,   343,
+     368,   375,   393,   400,   418,   424,   429,   438,   447,   454,
+     461,   468,   477,   484,   489,   522,   529,   537,   540,   558,
+     575,   593,   612,   619,   627,   645,   662,   680,   697,   700,
+     705,   711,   716,   724,   729,   738,   746,   756,   756,   758,
+     769,   779,   788,   799,   809,   819,   829,   841,   849,   856,
+     864,   872,   879,   886,   895,   902,   905,   923,   935,   938,
+     956,   965,   970,   975,   981,   986,   991,   996,  1004,  1012,
+    1017,  1036,  1055,  1062,  1070,  1077,  1084,  1092,  1099,  1106,
+    1114,  1122,  1131,  1140,  1148,  1157,  1164,  1170,  1175,  1176,
+    1177,  1178,  1184,  1187,  1191,  1205,  1209,  1223,  1228,  1235,
+    1240,  1248,  1252,  1265,  1284,  1289,  1295,  1300,  1306,  1316,
+    1320,  1335,  1339,  1353,  1358,  1366,  1370,  1383,  1397,  1402,
+    1410,  1414,  1428,  1433,  1441,  1445,  1459,  1465,  1471,  1485,
+    1486,  1488,  1490,  1491,  1493,  1495,  1498,  1499,  1500,  1503,
+    1504,  1505,  1506,  1507,  1508,  1509,  1510,  1511,  1514,  1515,
+    1516,  1517,  1518,  1519,  1520,  1521,  1522,  1523,  1524,  1525,
+    1526,  1527,  1528,  1529,  1532,  1533,  1534,  1535,  1536,  1539,
+    1540,  1541,  1542,  1543,  1544,  1562,  1570,  1571,  1572,  1574,
+    1582,  1583,  1586,  1587,  1588,  1589,  1590,  1591,  1594,  1595,
+    1596,  1597,  1598,  1599,  1600,  1601,  1602,  1603,  1604,  1605,
+    1606,  1607,  1608,  1609,  1610,  1611,  1614,  1617,  1618,  1621,
+    1622,  1624,  1628,  1641,  1655,  1661,  1666,  1671,  1676,  1681,
+    1686,  1694,  1695,  1697,  1702,  1706,  1710,  1716,  1720,  1724,
+    1728,  1732,  1738,  1741
 };
 #endif
 
@@ -982,11 +970,11 @@ static const char *const yytname[] =
   "FSC_FSFLUSH", "FSC_USAGE", "FSC_HELP", "FSC_VARS", "FSC_VERSION",
   "FSC_ENABLE", "FSC_DOMULTISYNC", "FSV_STRING", "FSV_VAL_INT",
   "FSV_VAL_NEGINT", "FSV_VAL_BOOLEAN", "FSV_VARIABLE", "FSV_WHITESTRING",
-  "FSV_RANDUNI", "FSV_RANDTAB", "FSV_RANDVAR", "FSV_URAND", "FSV_RAND48",
-  "FST_INT", "FST_BOOLEAN", "FSE_FILE", "FSE_PROC", "FSE_THREAD",
-  "FSE_CLEAR", "FSE_ALL", "FSE_SNAP", "FSE_DUMP", "FSE_DIRECTORY",
-  "FSE_COMMAND", "FSE_FILESET", "FSE_POSSET", "FSE_XMLDUMP", "FSE_RAND",
-  "FSE_MODE", "FSE_MULTI", "FSE_MULTIDUMP", "FSK_SEPLST", "FSK_OPENLST",
+  "FSV_RANDUNI", "FSV_RANDTAB", "FSV_URAND", "FSV_RAND48", "FST_INT",
+  "FST_BOOLEAN", "FSE_FILE", "FSE_PROC", "FSE_THREAD", "FSE_CLEAR",
+  "FSE_ALL", "FSE_SNAP", "FSE_DUMP", "FSE_DIRECTORY", "FSE_COMMAND",
+  "FSE_FILESET", "FSE_POSSET", "FSE_XMLDUMP", "FSE_RAND", "FSE_MODE",
+  "FSE_MULTI", "FSE_MULTIDUMP", "FSK_SEPLST", "FSK_OPENLST",
   "FSK_CLOSELST", "FSK_ASSIGN", "FSK_IN", "FSK_QUOTE", "FSK_DIRSEPLST",
   "FSK_PLUS", "FSK_MINUS", "FSK_MULTIPLY", "FSK_DIVIDE", "FSA_SIZE",
   "FSA_PREALLOC", "FSA_PARALLOC", "FSA_PATH", "FSA_REUSE", "FSA_PROCESS",
@@ -1011,24 +999,23 @@ static const char *const yytname[] =
   "var_string_list", "whitevar_string", "whitevar_string_list",
   "list_command", "fscheck_command", "fsflush_command", "log_command",
   "debug_command", "set_command", "set_variable", "set_mode",
-  "set_randvar", "stats_command", "quit_command", "flowop_list", "thread",
-  "thread_list", "proc_define_command", "files_define_command",
-  "posset_define_command", "randvar_define_command", "fo_define_command",
-  "create_command", "shutdown_command", "warmup_command", "sleep_command",
-  "run_command", "psrun_command", "help_command", "flowop_command",
-  "entity", "name", "files_attr_ops", "posset_attr_ops", "posset_attr_op",
-  "files_attr_op", "randvar_attr_ops", "randvar_attr_op", "probtabentry",
+  "stats_command", "quit_command", "flowop_list", "thread", "thread_list",
+  "proc_define_command", "files_define_command", "posset_define_command",
+  "randvar_define_command", "fo_define_command", "create_command",
+  "shutdown_command", "warmup_command", "sleep_command", "run_command",
+  "psrun_command", "help_command", "flowop_command", "entity", "name",
+  "files_attr_ops", "posset_attr_ops", "posset_attr_op", "files_attr_op",
+  "randvar_attr_ops", "randvar_attr_op", "probtabentry",
   "probtabentry_list", "pt_attr_ops", "pt_attr_op", "fo_attr_ops",
   "fo_attr_op", "ev_attr_ops", "ev_attr_op", "enable_multi_ops",
   "enable_multi_op", "multisync_op", "fscheck_attr_op", "files_attr_name",
   "posset_attr_name", "pt_attr_name", "fo_attr_name", "ev_attr_name",
   "attrs_define_proc", "attrs_define_file", "attrs_define_fileset",
-  "attrs_define_posset", "randvar_attr_name", "randvar_attr_tsp",
-  "randvar_attr_param", "randvar_attr_typop", "randtype_name",
-  "randvar_attr_srcop", "randsrc_name", "attrs_define_thread",
-  "attrs_flowop", "attrs_eventgen", "em_attr_name", "fscheck_attr_name",
-  "comp_attr_ops", "comp_attr_op", "comp_lvar_def", "attrs_define_comp",
-  "attr_value", "attr_list_value", "var_int_val", 0
+  "attrs_define_posset", "randvar_attr_name", "randvar_attr_typop",
+  "randtype_name", "randvar_attr_srcop", "randsrc_name",
+  "attrs_define_thread", "attrs_flowop", "attrs_eventgen", "em_attr_name",
+  "fscheck_attr_name", "comp_attr_ops", "comp_attr_op", "comp_lvar_def",
+  "attrs_define_comp", "attr_value", "attr_list_value", "var_int_val", 0
 };
 #endif
 
@@ -1050,43 +1037,41 @@ static const yytype_uint16 yytoknum[] =
      355,   356,   357,   358,   359,   360,   361,   362,   363,   364,
      365,   366,   367,   368,   369,   370,   371,   372,   373,   374,
      375,   376,   377,   378,   379,   380,   381,   382,   383,   384,
-     385,   386,   387,   388,   389,   390,   391,   392,   393,   394
+     385,   386,   387,   388,   389,   390,   391,   392,   393
 };
 # endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,   140,   141,   141,   141,   142,   142,   143,   143,   143,
-     143,   143,   143,   143,   143,   143,   143,   143,   143,   143,
-     143,   143,   143,   143,   143,   143,   143,   143,   143,   143,
-     143,   143,   143,   143,   143,   143,   143,   144,   144,   144,
-     145,   145,   146,   146,   147,   147,   148,   149,   150,   151,
-     152,   153,   154,   154,   155,   156,   156,   157,   157,   157,
-     157,   157,   158,   158,   159,   159,   159,   159,   159,   159,
-     159,   159,   160,   160,   161,   161,   162,   163,   164,   165,
-     165,   165,   166,   166,   166,   166,   167,   167,   167,   167,
-     168,   168,   168,   169,   169,   169,   169,   169,   169,   169,
-     170,   171,   171,   172,   173,   173,   174,   174,   175,   175,
-     175,   176,   176,   177,   178,   178,   179,   180,   181,   181,
-     182,   182,   182,   183,   183,   183,   184,   184,   184,   184,
-     184,   185,   186,   186,   187,   187,   187,   187,   188,   189,
-     189,   190,   190,   191,   191,   192,   192,   193,   193,   193,
-     194,   194,   194,   194,   195,   196,   196,   197,   197,   198,
-     198,   199,   199,   199,   200,   200,   201,   201,   202,   202,
-     203,   203,   204,   205,   206,   207,   207,   208,   209,   209,
-     210,   211,   212,   212,   212,   213,   213,   213,   213,   213,
-     213,   213,   213,   213,   214,   214,   214,   214,   214,   214,
-     214,   214,   214,   214,   214,   214,   214,   214,   214,   214,
-     215,   215,   215,   215,   215,   216,   216,   216,   216,   216,
-     216,   217,   217,   217,   217,   217,   217,   217,   218,   218,
-     218,   218,   218,   219,   220,   220,   220,   221,   222,   222,
-     223,   223,   223,   223,   223,   223,   224,   224,   224,   224,
-     224,   224,   224,   224,   224,   224,   224,   224,   224,   224,
-     224,   224,   224,   224,   225,   226,   226,   227,   227,   228,
-     228,   228,   229,   230,   230,   230,   230,   230,   230,   231,
-     231,   232,   232,   232,   232,   233,   233,   233,   233,   233,
-     234,   234
+       0,   139,   140,   140,   140,   141,   141,   142,   142,   142,
+     142,   142,   142,   142,   142,   142,   142,   142,   142,   142,
+     142,   142,   142,   142,   142,   142,   142,   142,   142,   142,
+     142,   142,   142,   142,   142,   142,   142,   143,   143,   143,
+     144,   144,   145,   145,   146,   146,   147,   148,   149,   150,
+     151,   152,   153,   153,   154,   155,   155,   156,   156,   156,
+     156,   156,   157,   157,   158,   158,   158,   158,   158,   158,
+     159,   159,   160,   160,   161,   162,   163,   164,   164,   165,
+     165,   165,   165,   166,   166,   166,   166,   167,   167,   167,
+     167,   167,   167,   167,   168,   169,   169,   170,   171,   171,
+     172,   172,   173,   173,   173,   174,   174,   175,   176,   176,
+     177,   178,   179,   179,   180,   180,   180,   181,   181,   181,
+     182,   182,   182,   182,   182,   183,   184,   184,   185,   185,
+     185,   185,   186,   187,   187,   188,   188,   189,   189,   190,
+     190,   191,   191,   191,   192,   192,   192,   192,   193,   194,
+     194,   195,   195,   196,   196,   197,   197,   197,   198,   198,
+     199,   199,   200,   200,   201,   201,   202,   203,   204,   205,
+     205,   206,   207,   207,   208,   209,   210,   210,   210,   211,
+     211,   211,   211,   211,   211,   211,   211,   211,   212,   212,
+     212,   212,   212,   212,   212,   212,   212,   212,   212,   212,
+     212,   212,   212,   212,   213,   213,   213,   213,   213,   214,
+     214,   214,   214,   214,   214,   215,   216,   216,   216,   217,
+     218,   218,   219,   219,   219,   219,   219,   219,   220,   220,
+     220,   220,   220,   220,   220,   220,   220,   220,   220,   220,
+     220,   220,   220,   220,   220,   220,   221,   222,   222,   223,
+     223,   224,   224,   224,   225,   226,   226,   226,   226,   226,
+     226,   227,   227,   228,   228,   228,   228,   229,   229,   229,
+     229,   229,   230,   230
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
@@ -1098,18 +1083,17 @@ static const yytype_uint8 yyr2[] =
        1,     1,     1,     1,     1,     1,     1,     1,     7,     7,
        1,     3,     3,     5,     1,     2,     2,     2,     1,     1,
        1,     2,     2,     2,     2,     1,     1,     1,     2,     2,
-       2,     2,     2,     2,     2,     2,     3,     2,     2,     3,
-       2,     2,     1,     2,     2,     2,     2,     2,     2,     1,
-       1,     1,     4,     4,     6,     4,     4,     4,     4,     3,
-       5,     5,     5,     2,     2,     3,     3,     3,     3,     3,
-       1,     1,     2,     5,     1,     2,     6,     2,     2,     2,
-       2,     2,     2,     3,     6,     2,     2,     2,     2,     2,
-       2,     2,     1,     2,     2,     1,     1,     2,     2,     3,
-       3,     1,     2,     2,     1,     1,     1,     1,     1,     1,
-       3,     1,     3,     3,     1,     3,     1,     1,     3,     7,
-       3,     1,     3,     3,     7,     1,     3,     1,     3,     3,
-       1,     1,     3,     3,     3,     1,     1,     3,     3,     1,
-       1,     3,     3,     3,     3,     1,     1,     1,     1,     1,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       1,     2,     2,     2,     2,     2,     2,     1,     1,     4,
+       4,     6,     4,     4,     4,     4,     3,     2,     2,     3,
+       3,     3,     3,     3,     1,     1,     2,     5,     1,     2,
+       6,     2,     2,     2,     2,     2,     2,     3,     6,     2,
+       2,     2,     2,     2,     2,     2,     1,     2,     2,     1,
+       1,     2,     2,     3,     3,     1,     2,     2,     1,     1,
+       1,     1,     1,     1,     3,     1,     3,     3,     1,     3,
+       1,     1,     3,     7,     3,     1,     3,     3,     7,     1,
+       3,     1,     3,     3,     1,     1,     3,     3,     3,     1,
+       1,     3,     3,     1,     1,     3,     3,     3,     3,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
@@ -1118,10 +1102,9 @@ static const yytype_uint8 yyr2[] =
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     3,     3,     3,     3,     3,     5,     3,     3,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       3,     3,     3,     3,     3,     5,     3,     3,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1
+       1,     1,     1,     1
 };
 
 /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
@@ -1129,121 +1112,115 @@ static const yytype_uint8 yyr2[] =
    means the default is an error.  */
 static const yytype_uint16 yydefact[] =
 {
-       4,     0,     1,     3,    72,     0,   100,     0,     0,   122,
-       0,    37,     0,     0,     0,     0,    44,     0,   125,   126,
-       0,     0,     0,     0,   131,    48,     0,     0,    49,    50,
+       4,     0,     1,     3,    70,     0,    94,     0,     0,   116,
+       0,    37,     0,     0,     0,     0,    44,     0,   119,   120,
+       0,     0,     0,     0,   125,    48,     0,     0,    49,    50,
        2,    17,    13,    30,    15,    31,    32,    33,    16,    34,
-      35,    21,    18,    19,    22,    12,    25,    79,    80,    81,
-      29,    36,     7,     8,     9,    10,    11,    14,    26,    28,
-      27,    23,    24,    20,     0,   108,     0,   109,   111,     0,
-      78,   137,   134,   135,   136,   116,   120,   121,    94,    93,
-       0,     0,     0,     0,     0,     0,     0,     0,   117,     0,
-       0,    77,    46,    47,   123,   124,   128,   127,   118,   119,
-     267,   268,    74,     0,    76,    51,    52,     0,    54,     0,
-     264,    45,   166,   169,   181,   265,   266,    53,   170,     0,
-      73,    75,   240,   242,   183,   184,   182,   243,   245,   107,
-     157,   160,   179,   178,   185,   191,   192,   187,   190,   206,
-     188,   189,   186,   197,   207,   204,   198,   205,   208,   193,
-     110,   139,   146,   175,   176,   210,   213,   211,   212,   214,
-     112,   141,   144,   177,   279,   280,   115,   269,     0,     0,
-       0,   215,     0,     0,   220,   216,   217,   218,   219,   113,
-     147,   151,    97,    56,    55,    57,    95,    96,    98,    99,
-       0,     0,   228,   229,   230,   231,     0,   232,     0,     0,
-      89,    62,    63,    65,    64,     0,    71,    68,    67,     0,
-      70,   130,   129,     0,     0,     0,     0,     0,     0,     0,
+      35,    21,    18,    19,    22,    12,    25,    77,    78,    29,
+      36,     7,     8,     9,    10,    11,    14,    26,    28,    27,
+      23,    24,    20,     0,   102,     0,   103,   105,     0,    76,
+     131,   128,   129,   130,   110,   114,   115,    88,    87,     0,
+       0,     0,     0,     0,     0,     0,   111,     0,     0,    75,
+      46,    47,   117,   118,   122,   121,   112,   113,   249,   250,
+      72,     0,    74,    51,    52,     0,    54,     0,   246,    45,
+     160,   163,   175,   247,   248,    53,   164,     0,    71,    73,
+     222,   224,   177,   178,   176,   225,   227,   101,   151,   154,
+     173,   172,   179,   185,   186,   181,   184,   200,   182,   183,
+     180,   191,   201,   198,   192,   199,   202,   187,   104,   133,
+     140,   169,   170,   204,   207,   205,   206,   208,   106,   135,
+     138,   171,   261,   262,   109,   251,     0,     0,     0,   209,
+       0,     0,   214,   210,   211,   212,   213,   107,   141,   145,
+      91,    56,    55,    57,    89,    90,    92,    93,     0,     0,
+      86,    62,    63,    65,    64,    69,    67,    66,    68,   124,
+     123,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,    58,    59,    60,    61,    85,    82,
-      83,     0,     0,     0,     0,    87,    88,    86,   221,   223,
-     224,   225,   226,   222,   227,    66,    69,   174,   281,   282,
-     283,   284,   173,    40,     0,     0,     0,   167,   168,   171,
-     172,   158,   159,   140,    56,   287,   288,    55,   285,   145,
-     142,   143,   278,   270,   271,   272,     0,     0,   101,     0,
-     104,     0,   234,   235,   236,   152,   233,   238,   239,   153,
-     237,     0,   148,   150,     0,    90,    91,    92,     0,     0,
-       0,     0,     0,     0,   138,   132,   114,   102,   262,   247,
-     248,   246,   249,   250,   254,   257,   258,   259,   260,   261,
-     255,   251,   252,   253,   256,   263,   133,   161,   165,   180,
-       0,   106,   105,     0,    84,    42,    41,     0,     5,     0,
-       0,   276,   274,   273,   277,     0,     0,     0,     0,     0,
-      38,     6,     0,    39,     0,   162,   163,   164,     0,     0,
-     155,     0,    43,   275,   103,   290,   291,     0,     0,   149,
-       0,   156,     0,     0,     0,   154
+       0,     0,    58,    59,    60,    61,    82,    79,    80,     0,
+      84,    85,    83,   168,   263,   264,   265,   266,   167,    40,
+       0,     0,     0,   161,   162,   165,   166,   152,   153,   134,
+      56,   269,   270,    55,   267,   139,   136,   137,   260,   252,
+     253,   254,     0,     0,    95,     0,    98,     0,   216,   217,
+     218,   146,   215,   220,   221,   147,   219,     0,   142,   144,
+       0,     0,     0,     0,     0,     0,     0,   132,   126,   108,
+      96,   244,   229,   230,   228,   231,   232,   236,   239,   240,
+     241,   242,   243,   237,   233,   234,   235,   238,   245,   127,
+     155,   159,   174,     0,   100,    99,     0,    81,    42,    41,
+       0,     5,     0,     0,   258,   256,   255,   259,     0,     0,
+       0,     0,     0,    38,     6,     0,    39,     0,   156,   157,
+     158,     0,     0,   149,     0,    43,   257,    97,   272,   273,
+       0,     0,   143,     0,   150,     0,     0,     0,   148
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int16 yydefgoto[] =
 {
-      -1,     1,   347,   348,    31,   265,   266,    32,    33,    34,
-      35,    36,    37,    38,    39,    40,   185,   278,    90,    91,
+      -1,     1,   320,   321,    31,   241,   242,    32,    33,    34,
+      35,    36,    37,    38,    39,    40,   183,   254,    88,    89,
       41,    42,    43,    44,    45,    46,    47,    48,    49,    50,
-      51,   287,   290,   291,    52,    53,    54,    55,    56,    57,
-      58,    59,    60,    61,    62,    63,   288,    75,   315,   150,
-     160,   161,   151,   179,   180,   370,   371,   129,   130,   336,
-     337,   111,   112,   117,   118,   108,   102,   152,   162,   131,
-     338,   113,   132,   153,   154,   163,   181,   255,   198,   295,
-     296,   299,   300,   133,   339,   114,   119,   103,   166,   167,
-     284,   168,   262,   279,   377
+     263,   266,   267,    51,    52,    53,    54,    55,    56,    57,
+      58,    59,    60,    61,    62,   264,    74,   288,   148,   158,
+     159,   149,   177,   178,   343,   344,   127,   128,   309,   310,
+     109,   110,   115,   116,   106,   100,   150,   160,   129,   311,
+     111,   130,   151,   152,   161,   179,   271,   272,   275,   276,
+     131,   312,   112,   117,   101,   164,   165,   260,   166,   238,
+     255,   350
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -285
+#define YYPACT_NINF -246
 static const yytype_int16 yypact[] =
 {
-    -285,    10,  -285,  -285,  -285,   190,  -285,   -26,   118,    80,
-     268,  -285,   108,   118,   -40,   -40,  -285,   -40,   117,   262,
-     238,   -60,   -60,   -40,  -285,  -285,    66,   -61,  -285,  -285,
-    -285,    22,    56,  -285,  -285,  -285,  -285,  -285,  -285,   181,
-    -285,   140,   -60,  -285,  -285,  -285,  -285,  -285,  -285,  -285,
-    -285,  -285,    62,   136,   169,  -285,   -25,  -285,  -285,  -285,
-    -285,  -285,  -285,  -285,   -25,  -285,    62,  -285,  -285,   196,
-    -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,
-     -40,   137,   -40,   -40,   -40,    98,   206,   148,  -285,   273,
-     165,   240,   240,   240,  -285,  -285,   135,   163,  -285,  -285,
-    -285,  -285,  -285,   184,  -285,   240,  -285,   201,  -285,   149,
-    -285,   166,  -285,   208,  -285,  -285,  -285,   185,  -285,   222,
-    -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,   199,
-    -285,   224,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,
-    -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,
-     209,  -285,   226,  -285,  -285,  -285,  -285,  -285,  -285,  -285,
-     236,  -285,   247,  -285,  -285,  -285,   256,  -285,   263,   282,
-     286,  -285,   281,   294,  -285,  -285,  -285,  -285,  -285,   298,
-    -285,   296,   240,  -285,  -285,   150,   183,   240,   240,   240,
-     125,   297,  -285,  -285,  -285,  -285,   299,  -285,   300,   105,
-    -285,  -285,  -285,  -285,  -285,   213,  -285,  -285,  -285,   213,
-    -285,  -285,  -285,   330,   193,   -28,    56,   193,   181,   193,
-      62,   193,   136,   290,   169,   290,    60,   193,   349,   319,
-     -30,   309,   182,   290,  -285,  -285,  -285,  -285,  -285,  -285,
-    -285,   331,   -30,   309,   193,  -285,  -285,  -285,  -285,  -285,
-    -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,
-    -285,  -285,  -285,  -285,   332,   291,   293,  -285,  -285,  -285,
-    -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,   183,  -285,
-    -285,  -285,   303,  -285,  -285,  -285,   338,    28,   167,    62,
-    -285,    96,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,
-    -285,   307,  -285,  -285,   306,  -285,  -285,  -285,   308,   340,
-      97,   310,    97,   101,  -285,  -285,  -285,   167,  -285,  -285,
-    -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,
-    -285,  -285,  -285,  -285,  -285,  -285,   314,  -285,   313,  -285,
-     295,  -285,  -285,   316,  -285,  -285,  -285,    39,  -285,   342,
-      68,  -285,  -285,  -285,  -285,   343,    93,   193,   349,   320,
-    -285,  -285,   315,  -285,   317,  -285,  -285,  -285,    57,   246,
-    -285,   159,  -285,  -285,  -285,  -285,  -285,   323,   320,  -285,
-     246,  -285,   324,   246,   325,  -285
+    -246,     2,  -246,  -246,  -246,   192,  -246,     3,   169,   188,
+     232,  -246,   103,   169,   -15,   -15,  -246,   -15,   194,   137,
+     207,   -67,   -67,   -15,  -246,  -246,     7,   -14,  -246,  -246,
+    -246,    52,    53,  -246,  -246,  -246,  -246,  -246,  -246,    85,
+    -246,    76,   -67,  -246,  -246,  -246,  -246,  -246,  -246,  -246,
+    -246,   112,   106,   161,  -246,   116,  -246,  -246,  -246,  -246,
+    -246,  -246,  -246,   116,  -246,   112,  -246,  -246,   213,  -246,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,   -15,
+     -11,   -15,   -15,   -15,   154,   111,  -246,   147,    90,   160,
+     160,   160,  -246,  -246,   193,   199,  -246,  -246,  -246,  -246,
+    -246,   197,  -246,   160,  -246,   225,  -246,   228,  -246,   234,
+    -246,   243,  -246,  -246,  -246,   258,  -246,   257,  -246,  -246,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,   267,  -246,   269,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,   273,  -246,
+     271,  -246,  -246,  -246,  -246,  -246,  -246,  -246,   275,  -246,
+     274,  -246,  -246,  -246,   276,  -246,   277,   240,   250,  -246,
+     278,   279,  -246,  -246,  -246,  -246,  -246,   283,  -246,   281,
+     160,  -246,  -246,   132,   184,   160,   160,   160,   158,   119,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,
+    -246,   306,   206,    77,    53,   206,    85,   206,   112,   206,
+     106,   242,   161,   242,   -32,   206,   323,   299,    56,   272,
+     187,   242,  -246,  -246,  -246,  -246,  -246,  -246,  -246,   309,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,
+     310,   254,   256,  -246,  -246,  -246,  -246,  -246,  -246,  -246,
+    -246,  -246,  -246,  -246,   184,  -246,  -246,  -246,   285,  -246,
+    -246,  -246,   317,    14,   172,   112,  -246,    89,  -246,  -246,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,   287,  -246,  -246,
+     286,   288,   319,    94,   289,    94,   108,  -246,  -246,  -246,
+     172,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,   295,
+    -246,   293,  -246,   265,  -246,  -246,   296,  -246,  -246,  -246,
+      31,  -246,   321,    60,  -246,  -246,  -246,  -246,   322,    63,
+     206,   323,   300,  -246,  -246,   297,  -246,   298,  -246,  -246,
+    -246,    67,   253,  -246,   247,  -246,  -246,  -246,  -246,  -246,
+     304,   300,  -246,   253,  -246,   305,   253,   307,  -246
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -285,  -285,    74,    -1,  -285,  -285,  -285,  -285,  -285,  -285,
-    -285,  -285,  -285,  -285,  -285,  -285,  -285,   311,  -285,   115,
-    -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,  -285,
-    -285,    29,    99,  -285,  -285,  -285,  -285,  -285,  -285,  -285,
-    -285,  -285,  -285,  -285,  -285,  -285,  -284,   376,  -285,  -285,
-    -285,   170,   171,  -285,   164,    13,  -285,   -65,   175,  -285,
-      41,  -285,   186,  -285,   180,  -285,   119,  -285,  -285,  -285,
-    -285,  -285,  -285,  -285,  -285,  -285,  -285,   191,  -285,   157,
-    -285,   158,  -285,  -285,  -285,  -285,  -285,  -285,   339,   178,
-      49,  -285,  -215,   -12,   -96
+    -246,  -246,    75,    -1,  -246,  -246,  -246,  -246,  -246,  -246,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,   290,  -246,   152,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,
+      35,   100,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,
+    -246,  -246,  -246,  -246,  -246,  -245,   355,  -246,  -246,  -246,
+     159,   162,  -246,   153,    23,  -246,   -64,   167,  -246,    47,
+    -246,   173,  -246,   174,  -246,    91,  -246,  -246,  -246,  -246,
+    -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,  -246,
+    -246,  -246,  -246,  -246,  -246,   315,   165,    54,  -246,   -77,
+     -39,   -63
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -1253,137 +1230,130 @@ static const yytype_int16 yypgoto[] =
 #define YYTABLE_NINF -1
 static const yytype_uint16 yytable[] =
 {
-      30,   170,   268,   317,   270,   263,   272,    70,   292,   293,
-       2,     3,   285,     4,     5,   100,     6,     7,     8,     9,
-      10,    11,    12,    13,    14,    15,    89,    16,    17,   307,
-      18,    19,    20,   107,    21,    22,    23,    24,   264,    25,
-      26,    27,     4,     5,   286,     6,     7,     8,     9,    10,
-      11,    12,    13,    14,    15,   101,    16,    17,   109,    18,
-      19,    20,   164,    21,    22,    23,    24,   165,    25,    26,
-      27,     4,     5,   286,     6,     7,     8,     9,    10,    11,
-      12,    13,    14,    15,   317,    16,    17,   294,    18,    19,
-      20,   316,    21,    22,    23,    24,   282,    25,    26,    27,
-       4,     5,   360,     6,     7,     8,     9,    10,    11,    12,
-      13,    14,    15,    76,    16,    17,    77,    18,    19,    20,
-     374,    21,    22,    23,    24,   106,    25,    26,    27,   282,
-      92,   363,    93,   351,   352,   110,   353,   354,   105,   122,
-     123,   104,   367,   289,    85,    28,    29,   164,    86,   124,
-      94,   125,   165,    95,   199,   126,   120,   238,   239,   341,
-     240,   121,   190,    71,    72,    73,    87,   355,   211,   183,
-     127,   200,    74,   184,    28,    29,   318,   319,   320,   321,
-     322,   323,   234,   324,   325,   326,   235,   327,   328,   329,
-     330,   241,   331,   332,   333,   182,   212,   187,   188,   189,
-     128,   203,   204,    28,    29,   205,    64,   334,   134,   135,
-     136,   137,   138,   281,   215,   236,   139,   140,   141,   237,
-     378,   303,   379,   142,   340,   258,   259,   216,   260,   261,
-     335,   206,    28,    29,   143,    65,    66,   245,   246,   247,
-     144,   145,   146,   147,    67,    68,   218,    69,   213,   148,
-     318,   319,   320,   321,   322,   323,   155,   324,   325,   326,
-     220,   327,   328,   329,   330,   214,   331,   332,   333,   171,
-     222,    98,   217,   156,    99,   149,   207,   208,   157,   375,
-     209,   334,   376,   171,   382,   158,   219,   384,   221,   159,
-     223,   172,   301,   173,   174,    96,    97,   224,   175,   176,
-     177,   178,   115,   116,   335,   172,   210,   173,   174,   201,
-     202,   225,   175,   176,   177,   178,    78,   226,    79,    80,
-      81,    82,   274,   275,    83,   276,   277,   227,    84,   191,
-     192,   193,   194,   195,   196,   197,   248,   249,   250,   251,
-     252,   253,   254,   226,   228,   230,   361,   220,   229,   361,
-     297,   298,   309,   310,   311,   312,   220,   358,   231,   232,
-     233,   242,   257,   243,   244,   286,   289,   313,   304,   308,
-     314,   343,   344,   346,   345,   356,   349,   357,   359,   362,
-     364,   372,   369,   373,   380,   383,   350,   368,   385,    88,
-     342,   381,   186,   273,   280,   271,   302,   365,   269,   305,
-     256,   306,   267,   169,   283,   366
+      30,   168,     2,     3,   258,     4,     5,    98,     6,     7,
+       8,     9,    10,    11,    12,    13,    14,    15,   290,    16,
+      17,   181,    18,    19,    20,   182,    21,    22,    23,    24,
+     262,    25,    26,    27,     4,     5,    69,     6,     7,     8,
+       9,    10,    11,    12,    13,    14,    15,    99,    16,    17,
+      87,    18,    19,    20,   162,    21,    22,    23,    24,   163,
+      25,    26,    27,     4,     5,   104,     6,     7,     8,     9,
+      10,    11,    12,    13,    14,    15,   289,    16,    17,   105,
+      18,    19,    20,   262,    21,    22,    23,    24,   107,    25,
+      26,    27,   118,   333,   268,   269,   290,     4,     5,   258,
+       6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
+     239,    16,    17,   102,    18,    19,    20,   189,    21,    22,
+      23,    24,   336,    25,    26,    27,   193,   194,   244,   347,
+     246,   108,   248,   119,   190,   265,    28,    29,   261,    84,
+     324,   325,   240,   326,   327,   291,   292,   293,   294,   295,
+     296,   314,   297,   298,   299,   195,   300,   301,   302,   303,
+      85,   304,   305,   306,   222,    28,    29,    90,   223,    91,
+      94,    95,   270,   328,   257,   103,   307,   132,   133,   134,
+     135,   136,   279,   191,   192,   137,   138,   139,   120,   121,
+     226,   227,   140,   228,    28,    29,   196,   197,   122,   308,
+     123,   313,   162,   141,   124,   113,   114,   163,    63,   142,
+     143,   144,   145,    70,    71,    72,   224,   188,   146,   125,
+     225,    75,    73,   229,    76,   198,   199,    92,    28,    29,
+      93,   180,   200,   185,   186,   187,    64,    65,   234,   235,
+      96,   236,   237,    97,   147,    66,    67,   153,    68,   126,
+     230,   231,   232,   340,   291,   292,   293,   294,   295,   296,
+     201,   297,   298,   299,   154,   300,   301,   302,   303,   155,
+     304,   305,   306,   169,   250,   251,   156,   252,   253,    77,
+     157,    78,    79,    80,    81,   307,   348,    82,   202,   349,
+     355,    83,   203,   357,   204,   170,   277,   171,   172,   169,
+     214,   216,   173,   174,   175,   176,   205,   351,   308,   352,
+     208,   217,   273,   274,   282,   283,   284,   285,   206,   334,
+     207,   170,   334,   171,   172,   208,   331,   208,   173,   174,
+     175,   176,   209,   210,   211,   212,   214,   213,   233,   262,
+     215,   218,   219,   220,   221,   265,   280,   281,   286,   287,
+     316,   317,   319,   318,   322,   329,   330,   332,   335,   337,
+     323,   342,   345,   346,   353,   356,   341,   315,    86,   358,
+     184,   256,   249,   278,   354,   247,   338,   243,   167,   259,
+     245,     0,     0,   339
 };
 
-static const yytype_uint16 yycheck[] =
+static const yytype_int16 yycheck[] =
 {
-       1,    66,   217,   287,   219,    33,   221,    33,    38,    39,
-       0,     1,   227,     3,     4,    75,     6,     7,     8,     9,
-      10,    11,    12,    13,    14,    15,    66,    17,    18,   244,
-      20,    21,    22,    94,    24,    25,    26,    27,    66,    29,
-      30,    31,     3,     4,    16,     6,     7,     8,     9,    10,
-      11,    12,    13,    14,    15,   115,    17,    18,    36,    20,
-      21,    22,    87,    24,    25,    26,    27,    92,    29,    30,
-      31,     3,     4,    16,     6,     7,     8,     9,    10,    11,
-      12,    13,    14,    15,   368,    17,    18,   117,    20,    21,
-      22,    63,    24,    25,    26,    27,    36,    29,    30,    31,
-       3,     4,    63,     6,     7,     8,     9,    10,    11,    12,
-      13,    14,    15,    33,    17,    18,    36,    20,    21,    22,
-      63,    24,    25,    26,    27,    59,    29,    30,    31,    36,
-      15,    63,    17,    32,    33,    79,    35,    36,    23,    77,
-      78,    22,   357,    47,    36,   135,   136,    87,    40,    87,
-      33,    89,    92,    36,     6,    93,    16,    32,    33,    63,
-      35,    42,    64,    45,    46,    47,    58,    66,    33,    32,
-     108,    23,    54,    36,   135,   136,    83,    84,    85,    86,
-      87,    88,    32,    90,    91,    92,    36,    94,    95,    96,
-      97,    66,    99,   100,   101,    80,    33,    82,    83,    84,
-     138,    36,    37,   135,   136,    40,    16,   114,    72,    73,
-      74,    75,    76,   225,    65,    32,    80,    81,    82,    36,
-      61,   233,    63,    87,   289,    32,    33,    61,    35,    36,
-     137,    66,   135,   136,    98,    45,    46,   132,   133,   134,
-     104,   105,   106,   107,    54,    55,    61,    57,    64,   113,
-      83,    84,    85,    86,    87,    88,    87,    90,    91,    92,
-      61,    94,    95,    96,    97,    64,    99,   100,   101,    87,
-      61,    33,    64,   104,    36,   139,    36,    37,   109,    33,
-      40,   114,    36,    87,   380,   116,    64,   383,    64,   120,
-      64,   109,   110,   111,   112,    33,    34,    61,   116,   117,
-     118,   119,   121,   122,   137,   109,    66,   111,   112,    36,
-      37,    64,   116,   117,   118,   119,    48,    61,    50,    51,
-      52,    53,    32,    33,    56,    35,    36,    64,    60,   123,
-     124,   125,   126,   127,   128,   129,   123,   124,   125,   126,
-     127,   128,   129,    61,    62,    64,   347,    61,    62,   350,
-      41,    42,    61,    62,    61,    62,    61,    62,    64,    61,
-      64,    64,    32,    64,    64,    16,    47,    64,    37,    37,
-      32,    64,    66,    33,    66,    61,    66,    64,    62,    37,
-      37,    66,    62,    66,    61,    61,   312,   358,    63,    13,
-     291,   378,    81,   222,   224,   220,   232,   356,   218,   242,
-     209,   243,   216,    64,   226,   356
+       1,    65,     0,     1,    36,     3,     4,    74,     6,     7,
+       8,     9,    10,    11,    12,    13,    14,    15,   263,    17,
+      18,    32,    20,    21,    22,    36,    24,    25,    26,    27,
+      16,    29,    30,    31,     3,     4,    33,     6,     7,     8,
+       9,    10,    11,    12,    13,    14,    15,   114,    17,    18,
+      65,    20,    21,    22,    86,    24,    25,    26,    27,    91,
+      29,    30,    31,     3,     4,    58,     6,     7,     8,     9,
+      10,    11,    12,    13,    14,    15,    62,    17,    18,    93,
+      20,    21,    22,    16,    24,    25,    26,    27,    36,    29,
+      30,    31,    16,    62,    38,    39,   341,     3,     4,    36,
+       6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
+      33,    17,    18,    22,    20,    21,    22,     6,    24,    25,
+      26,    27,    62,    29,    30,    31,    36,    37,   205,    62,
+     207,    78,   209,    42,    23,    46,   134,   135,   215,    36,
+      32,    33,    65,    35,    36,    82,    83,    84,    85,    86,
+      87,    62,    89,    90,    91,    65,    93,    94,    95,    96,
+      57,    98,    99,   100,    32,   134,   135,    15,    36,    17,
+      33,    34,   116,    65,   213,    23,   113,    71,    72,    73,
+      74,    75,   221,    36,    37,    79,    80,    81,    76,    77,
+      32,    33,    86,    35,   134,   135,    36,    37,    86,   136,
+      88,   265,    86,    97,    92,   120,   121,    91,    16,   103,
+     104,   105,   106,    44,    45,    46,    32,    63,   112,   107,
+      36,    33,    53,    65,    36,    65,    33,    33,   134,   135,
+      36,    79,    33,    81,    82,    83,    44,    45,    32,    33,
+      33,    35,    36,    36,   138,    53,    54,    86,    56,   137,
+     131,   132,   133,   330,    82,    83,    84,    85,    86,    87,
+      63,    89,    90,    91,   103,    93,    94,    95,    96,   108,
+      98,    99,   100,    86,    32,    33,   115,    35,    36,    47,
+     119,    49,    50,    51,    52,   113,    33,    55,    63,    36,
+     353,    59,    64,   356,    60,   108,   109,   110,   111,    86,
+      60,    61,   115,   116,   117,   118,    63,    60,   136,    62,
+      60,    61,    40,    41,    60,    61,    60,    61,    60,   320,
+      63,   108,   323,   110,   111,    60,    61,    60,   115,   116,
+     117,   118,    63,    60,    63,    60,    60,    63,    32,    16,
+      63,    63,    63,    60,    63,    46,    37,    37,    63,    32,
+      63,    65,    33,    65,    65,    60,    63,    61,    37,    37,
+     285,    61,    65,    65,    60,    60,   331,   267,    13,    62,
+      80,   212,   210,   220,   351,   208,   329,   204,    63,   214,
+     206,    -1,    -1,   329
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
    symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,   141,     0,     1,     3,     4,     6,     7,     8,     9,
+       0,   140,     0,     1,     3,     4,     6,     7,     8,     9,
       10,    11,    12,    13,    14,    15,    17,    18,    20,    21,
-      22,    24,    25,    26,    27,    29,    30,    31,   135,   136,
-     143,   144,   147,   148,   149,   150,   151,   152,   153,   154,
-     155,   160,   161,   162,   163,   164,   165,   166,   167,   168,
-     169,   170,   174,   175,   176,   177,   178,   179,   180,   181,
-     182,   183,   184,   185,    16,    45,    46,    54,    55,    57,
-      33,    45,    46,    47,    54,   187,    33,    36,    48,    50,
-      51,    52,    53,    56,    60,    36,    40,    58,   187,    66,
-     158,   159,   159,   159,    33,    36,    33,    34,    33,    36,
-      75,   115,   206,   227,   206,   159,    59,    94,   205,    36,
-      79,   201,   202,   211,   225,   121,   122,   203,   204,   226,
-      16,   206,    77,    78,    87,    89,    93,   108,   138,   197,
-     198,   209,   212,   223,    72,    73,    74,    75,    76,    80,
-      81,    82,    87,    98,   104,   105,   106,   107,   113,   139,
-     189,   192,   207,   213,   214,    87,   104,   109,   116,   120,
-     190,   191,   208,   215,    87,    92,   228,   229,   231,   228,
-     197,    87,   109,   111,   112,   116,   117,   118,   119,   193,
-     194,   216,   159,    32,    36,   156,   157,   159,   159,   159,
-      64,   123,   124,   125,   126,   127,   128,   129,   218,     6,
-      23,    36,    37,    36,    37,    40,    66,    36,    37,    40,
-      66,    33,    33,    64,    64,    65,    61,    64,    61,    64,
-      61,    64,    61,    64,    61,    64,    61,    64,    62,    62,
-      64,    64,    61,    64,    32,    36,    32,    36,    32,    33,
-      35,    66,    64,    64,    64,   132,   133,   134,   123,   124,
-     125,   126,   127,   128,   129,   217,   217,    32,    32,    33,
-      35,    36,   232,    33,    66,   145,   146,   202,   232,   204,
-     232,   198,   232,   192,    32,    33,    35,    36,   157,   233,
-     191,   233,    36,   229,   230,   232,    16,   171,   186,    47,
-     172,   173,    38,    39,   117,   219,   220,    41,    42,   221,
-     222,   110,   194,   233,    37,   219,   221,   232,    37,    61,
-      62,    61,    62,    64,    32,   188,    63,   186,    83,    84,
-      85,    86,    87,    88,    90,    91,    92,    94,    95,    96,
-      97,    99,   100,   101,   114,   137,   199,   200,   210,   224,
-     197,    63,   172,    64,    66,    66,    33,   142,   143,    66,
-     142,    32,    33,    35,    36,    66,    61,    64,    62,    62,
-      63,   143,    37,    63,    37,   200,   230,   232,   171,    62,
-     195,   196,    66,    66,    63,    33,    36,   234,    61,    63,
-      61,   195,   234,    61,   234,    63
+      22,    24,    25,    26,    27,    29,    30,    31,   134,   135,
+     142,   143,   146,   147,   148,   149,   150,   151,   152,   153,
+     154,   159,   160,   161,   162,   163,   164,   165,   166,   167,
+     168,   172,   173,   174,   175,   176,   177,   178,   179,   180,
+     181,   182,   183,    16,    44,    45,    53,    54,    56,    33,
+      44,    45,    46,    53,   185,    33,    36,    47,    49,    50,
+      51,    52,    55,    59,    36,    57,   185,    65,   157,   158,
+     158,   158,    33,    36,    33,    34,    33,    36,    74,   114,
+     204,   223,   204,   158,    58,    93,   203,    36,    78,   199,
+     200,   209,   221,   120,   121,   201,   202,   222,    16,   204,
+      76,    77,    86,    88,    92,   107,   137,   195,   196,   207,
+     210,   219,    71,    72,    73,    74,    75,    79,    80,    81,
+      86,    97,   103,   104,   105,   106,   112,   138,   187,   190,
+     205,   211,   212,    86,   103,   108,   115,   119,   188,   189,
+     206,   213,    86,    91,   224,   225,   227,   224,   195,    86,
+     108,   110,   111,   115,   116,   117,   118,   191,   192,   214,
+     158,    32,    36,   155,   156,   158,   158,   158,    63,     6,
+      23,    36,    37,    36,    37,    65,    36,    37,    65,    33,
+      33,    63,    63,    64,    60,    63,    60,    63,    60,    63,
+      60,    63,    60,    63,    60,    63,    61,    61,    63,    63,
+      60,    63,    32,    36,    32,    36,    32,    33,    35,    65,
+     131,   132,   133,    32,    32,    33,    35,    36,   228,    33,
+      65,   144,   145,   200,   228,   202,   228,   196,   228,   190,
+      32,    33,    35,    36,   156,   229,   189,   229,    36,   225,
+     226,   228,    16,   169,   184,    46,   170,   171,    38,    39,
+     116,   215,   216,    40,    41,   217,   218,   109,   192,   229,
+      37,    37,    60,    61,    60,    61,    63,    32,   186,    62,
+     184,    82,    83,    84,    85,    86,    87,    89,    90,    91,
+      93,    94,    95,    96,    98,    99,   100,   113,   136,   197,
+     198,   208,   220,   195,    62,   170,    63,    65,    65,    33,
+     141,   142,    65,   141,    32,    33,    35,    36,    65,    60,
+      63,    61,    61,    62,   142,    37,    62,    37,   198,   226,
+     228,   169,    61,   193,   194,    65,    65,    62,    33,    36,
+     230,    60,    62,    60,   193,   230,    60,   230,    62
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -2197,7 +2167,7 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 248 "parser_gram.y"
+#line 246 "parser_gram.y"
     {
 	if ((yyvsp[(2) - (2)].cmd)->cmd)
 		(yyvsp[(2) - (2)].cmd)->cmd((yyvsp[(2) - (2)].cmd));
@@ -2209,7 +2179,7 @@ yyreduce:
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 255 "parser_gram.y"
+#line 253 "parser_gram.y"
     {
 	if (dofile == DOFILE_TRUE)
 		YYABORT;
@@ -2219,7 +2189,7 @@ yyreduce:
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 262 "parser_gram.y"
+#line 260 "parser_gram.y"
     {
 	filebench_log(LOG_DEBUG_IMPL, "inner_command %zx", (yyvsp[(1) - (1)].cmd));
 	(yyval.cmd) = (yyvsp[(1) - (1)].cmd);
@@ -2229,7 +2199,7 @@ yyreduce:
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 267 "parser_gram.y"
+#line 265 "parser_gram.y"
     {
 	cmd_t *list = NULL;
 	cmd_t *list_end = NULL;
@@ -2251,7 +2221,7 @@ yyreduce:
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 317 "parser_gram.y"
+#line 315 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2262,7 +2232,7 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 323 "parser_gram.y"
+#line 321 "parser_gram.y"
     {
 	cmd_t *inner_cmd;
 	list_t *list;
@@ -2291,7 +2261,7 @@ yyreduce:
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 346 "parser_gram.y"
+#line 344 "parser_gram.y"
     {
 	cmd_t *inner_cmd;
 	list_t *list;
@@ -2320,7 +2290,7 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 371 "parser_gram.y"
+#line 369 "parser_gram.y"
     {
 	if (((yyval.list) = alloc_list()) == NULL)
 		YYERROR;
@@ -2332,7 +2302,7 @@ yyreduce:
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 378 "parser_gram.y"
+#line 376 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2354,7 +2324,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 396 "parser_gram.y"
+#line 394 "parser_gram.y"
     {
 	if (((yyval.list) = alloc_list()) == NULL)
 		YYERROR;
@@ -2366,7 +2336,7 @@ yyreduce:
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 403 "parser_gram.y"
+#line 401 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2388,7 +2358,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 421 "parser_gram.y"
+#line 419 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2399,7 +2369,7 @@ yyreduce:
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 427 "parser_gram.y"
+#line 425 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
@@ -2408,7 +2378,7 @@ yyreduce:
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 432 "parser_gram.y"
+#line 430 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2421,7 +2391,7 @@ yyreduce:
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 441 "parser_gram.y"
+#line 439 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2434,7 +2404,7 @@ yyreduce:
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 450 "parser_gram.y"
+#line 448 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2445,7 +2415,7 @@ yyreduce:
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 457 "parser_gram.y"
+#line 455 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2456,7 +2426,7 @@ yyreduce:
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 464 "parser_gram.y"
+#line 462 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2467,7 +2437,7 @@ yyreduce:
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 471 "parser_gram.y"
+#line 469 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2480,7 +2450,7 @@ yyreduce:
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 480 "parser_gram.y"
+#line 478 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2492,7 +2462,7 @@ yyreduce:
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 487 "parser_gram.y"
+#line 485 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
@@ -2501,7 +2471,7 @@ yyreduce:
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 492 "parser_gram.y"
+#line 490 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2514,7 +2484,7 @@ yyreduce:
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 525 "parser_gram.y"
+#line 523 "parser_gram.y"
     {
 	if (((yyval.list) = alloc_list()) == NULL)
 			YYERROR;
@@ -2526,7 +2496,7 @@ yyreduce:
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 532 "parser_gram.y"
+#line 530 "parser_gram.y"
     {
 	if (((yyval.list) = alloc_list()) == NULL)
 			YYERROR;
@@ -2538,7 +2508,7 @@ yyreduce:
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 540 "parser_gram.y"
+#line 538 "parser_gram.y"
     {
 	(yyval.list) = (yyvsp[(1) - (1)].list);
 }
@@ -2547,7 +2517,7 @@ yyreduce:
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 543 "parser_gram.y"
+#line 541 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2571,7 +2541,7 @@ yyreduce:
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 561 "parser_gram.y"
+#line 559 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2594,7 +2564,7 @@ yyreduce:
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 578 "parser_gram.y"
+#line 576 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2618,7 +2588,7 @@ yyreduce:
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 596 "parser_gram.y"
+#line 594 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2641,7 +2611,7 @@ yyreduce:
   case 62:
 
 /* Line 1455 of yacc.c  */
-#line 615 "parser_gram.y"
+#line 613 "parser_gram.y"
     {
 	if (((yyval.list) = alloc_list()) == NULL)
 			YYERROR;
@@ -2653,7 +2623,7 @@ yyreduce:
   case 63:
 
 /* Line 1455 of yacc.c  */
-#line 622 "parser_gram.y"
+#line 620 "parser_gram.y"
     {
 	if (((yyval.list) = alloc_list()) == NULL)
 			YYERROR;
@@ -2665,7 +2635,7 @@ yyreduce:
   case 64:
 
 /* Line 1455 of yacc.c  */
-#line 630 "parser_gram.y"
+#line 628 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2689,7 +2659,7 @@ yyreduce:
   case 65:
 
 /* Line 1455 of yacc.c  */
-#line 648 "parser_gram.y"
+#line 646 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2712,31 +2682,7 @@ yyreduce:
   case 66:
 
 /* Line 1455 of yacc.c  */
-#line 665 "parser_gram.y"
-    {
-	list_t *list = NULL;
-	list_t *list_end = NULL;
-
-	/* Add variable */
-	if (((yyval.list) = alloc_list()) == NULL)
-		YYERROR;
-
-	(yyval.list)->list_string = avd_str_alloc((yyvsp[(2) - (3)].sval));
-	(yyval.list)->list_integer = avd_int_alloc((yyvsp[(3) - (3)].ival));
-
-	/* Find end of list */
-	for (list = (yyvsp[(1) - (3)].list); list != NULL;
-	    list = list->list_next)
-		list_end = list;
-	list_end->list_next = (yyval.list);
-	(yyval.list) = (yyvsp[(1) - (3)].list);
-}
-    break;
-
-  case 67:
-
-/* Line 1455 of yacc.c  */
-#line 683 "parser_gram.y"
+#line 663 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2757,10 +2703,10 @@ yyreduce:
 }
     break;
 
-  case 68:
+  case 67:
 
 /* Line 1455 of yacc.c  */
-#line 701 "parser_gram.y"
+#line 681 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2780,52 +2726,28 @@ yyreduce:
 }
     break;
 
+  case 68:
+
+/* Line 1455 of yacc.c  */
+#line 698 "parser_gram.y"
+    {
+	(yyval.list) = (yyvsp[(1) - (2)].list);
+}
+    break;
+
   case 69:
 
 /* Line 1455 of yacc.c  */
-#line 718 "parser_gram.y"
+#line 701 "parser_gram.y"
     {
-	list_t *list = NULL;
-	list_t *list_end = NULL;
-
-	/* Add variable */
-	if (((yyval.list) = alloc_list()) == NULL)
-		YYERROR;
-
-	(yyval.list)->list_string = avd_str_alloc((yyvsp[(2) - (3)].sval));
-	(yyval.list)->list_integer = avd_int_alloc((yyvsp[(3) - (3)].ival));
-
-	/* Find end of list */
-	for (list = (yyvsp[(1) - (3)].list); list != NULL;
-	    list = list->list_next)
-		list_end = list;
-	list_end->list_next = (yyval.list);
-	(yyval.list) = (yyvsp[(1) - (3)].list);
+	(yyval.list) = (yyvsp[(1) - (2)].list);
 }
     break;
 
   case 70:
 
 /* Line 1455 of yacc.c  */
-#line 736 "parser_gram.y"
-    {
-	(yyval.list) = (yyvsp[(1) - (2)].list);
-}
-    break;
-
-  case 71:
-
-/* Line 1455 of yacc.c  */
-#line 739 "parser_gram.y"
-    {
-	(yyval.list) = (yyvsp[(1) - (2)].list);
-}
-    break;
-
-  case 72:
-
-/* Line 1455 of yacc.c  */
-#line 744 "parser_gram.y"
+#line 706 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2833,19 +2755,19 @@ yyreduce:
 }
     break;
 
-  case 73:
+  case 71:
 
 /* Line 1455 of yacc.c  */
-#line 750 "parser_gram.y"
+#line 712 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd = &parser_flowop_list;
 }
     break;
 
-  case 74:
+  case 72:
 
 /* Line 1455 of yacc.c  */
-#line 755 "parser_gram.y"
+#line 717 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2855,19 +2777,19 @@ yyreduce:
 }
     break;
 
-  case 75:
+  case 73:
 
 /* Line 1455 of yacc.c  */
-#line 763 "parser_gram.y"
+#line 725 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list->attr_next = (yyvsp[(2) - (2)].attr);
 }
     break;
 
-  case 76:
+  case 74:
 
 /* Line 1455 of yacc.c  */
-#line 768 "parser_gram.y"
+#line 730 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2877,10 +2799,10 @@ yyreduce:
 }
     break;
 
-  case 77:
+  case 75:
 
 /* Line 1455 of yacc.c  */
-#line 777 "parser_gram.y"
+#line 739 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2889,10 +2811,10 @@ yyreduce:
 }
     break;
 
-  case 78:
+  case 76:
 
 /* Line 1455 of yacc.c  */
-#line 785 "parser_gram.y"
+#line 747 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2903,10 +2825,10 @@ yyreduce:
 }
     break;
 
-  case 82:
+  case 79:
 
 /* Line 1455 of yacc.c  */
-#line 797 "parser_gram.y"
+#line 759 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2918,10 +2840,10 @@ yyreduce:
 }
     break;
 
-  case 83:
+  case 80:
 
 /* Line 1455 of yacc.c  */
-#line 808 "parser_gram.y"
+#line 770 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2933,10 +2855,10 @@ yyreduce:
 }
     break;
 
-  case 84:
+  case 81:
 
 /* Line 1455 of yacc.c  */
-#line 818 "parser_gram.y"
+#line 780 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2947,10 +2869,10 @@ yyreduce:
 }
     break;
 
-  case 85:
+  case 82:
 
 /* Line 1455 of yacc.c  */
-#line 827 "parser_gram.y"
+#line 789 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2962,10 +2884,10 @@ yyreduce:
 }
     break;
 
-  case 86:
+  case 83:
 
 /* Line 1455 of yacc.c  */
-#line 838 "parser_gram.y"
+#line 800 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2977,10 +2899,10 @@ yyreduce:
 }
     break;
 
-  case 87:
+  case 84:
 
 /* Line 1455 of yacc.c  */
-#line 848 "parser_gram.y"
+#line 810 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2992,10 +2914,10 @@ yyreduce:
 }
     break;
 
-  case 88:
+  case 85:
 
 /* Line 1455 of yacc.c  */
-#line 858 "parser_gram.y"
+#line 820 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -3007,10 +2929,10 @@ yyreduce:
 }
     break;
 
-  case 89:
+  case 86:
 
 /* Line 1455 of yacc.c  */
-#line 868 "parser_gram.y"
+#line 830 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -3023,59 +2945,10 @@ yyreduce:
 }
     break;
 
-  case 90:
+  case 87:
 
 /* Line 1455 of yacc.c  */
-#line 880 "parser_gram.y"
-    {
-	(yyval.cmd) = alloc_cmd();
-	if (!(yyval.cmd))
-		YYERROR;
-
-	(yyval.cmd)->cmd = &parser_randvar_set;
-	(yyval.cmd)->cmd_tgt1 = (yyvsp[(2) - (5)].sval);
-	(yyval.cmd)->cmd_qty = FSS_TYPE;
-	(yyval.cmd)->cmd_attr_list = (yyvsp[(5) - (5)].attr);
-}
-    break;
-
-  case 91:
-
-/* Line 1455 of yacc.c  */
-#line 891 "parser_gram.y"
-    {
-	(yyval.cmd) = alloc_cmd();
-	if (!(yyval.cmd))
-		YYERROR;
-
-	(yyval.cmd)->cmd = &parser_randvar_set;
-	(yyval.cmd)->cmd_tgt1 = (yyvsp[(2) - (5)].sval);
-	(yyval.cmd)->cmd_qty = FSS_SRC;
-	(yyval.cmd)->cmd_attr_list = (yyvsp[(5) - (5)].attr);
-
-}
-    break;
-
-  case 92:
-
-/* Line 1455 of yacc.c  */
-#line 903 "parser_gram.y"
-    {
-	(yyval.cmd) = alloc_cmd();
-	if (!(yyval.cmd))
-		YYERROR;
-
-	(yyval.cmd)->cmd = &parser_randvar_set;
-	(yyval.cmd)->cmd_tgt1 = (yyvsp[(2) - (5)].sval);
-	(yyval.cmd)->cmd_qty = (yyvsp[(3) - (5)].ival);
-	(yyval.cmd)->cmd_attr_list = (yyvsp[(5) - (5)].attr);
-}
-    break;
-
-  case 93:
-
-/* Line 1455 of yacc.c  */
-#line 915 "parser_gram.y"
+#line 842 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3085,10 +2958,10 @@ yyreduce:
 }
     break;
 
-  case 94:
+  case 88:
 
 /* Line 1455 of yacc.c  */
-#line 923 "parser_gram.y"
+#line 850 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3097,10 +2970,10 @@ yyreduce:
 }
     break;
 
-  case 95:
+  case 89:
 
 /* Line 1455 of yacc.c  */
-#line 930 "parser_gram.y"
+#line 857 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3110,10 +2983,10 @@ yyreduce:
 }
     break;
 
-  case 96:
+  case 90:
 
 /* Line 1455 of yacc.c  */
-#line 938 "parser_gram.y"
+#line 865 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3124,10 +2997,10 @@ yyreduce:
 }
     break;
 
-  case 97:
+  case 91:
 
 /* Line 1455 of yacc.c  */
-#line 946 "parser_gram.y"
+#line 873 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3137,10 +3010,10 @@ yyreduce:
 }
     break;
 
-  case 98:
+  case 92:
 
 /* Line 1455 of yacc.c  */
-#line 953 "parser_gram.y"
+#line 880 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3150,10 +3023,10 @@ yyreduce:
 }
     break;
 
-  case 99:
+  case 93:
 
 /* Line 1455 of yacc.c  */
-#line 960 "parser_gram.y"
+#line 887 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3163,10 +3036,10 @@ yyreduce:
 }
     break;
 
-  case 100:
+  case 94:
 
 /* Line 1455 of yacc.c  */
-#line 969 "parser_gram.y"
+#line 896 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3174,19 +3047,19 @@ yyreduce:
 }
     break;
 
-  case 101:
+  case 95:
 
 /* Line 1455 of yacc.c  */
-#line 976 "parser_gram.y"
+#line 903 "parser_gram.y"
     {
 	(yyval.cmd) = (yyvsp[(1) - (1)].cmd);
 }
     break;
 
-  case 102:
+  case 96:
 
 /* Line 1455 of yacc.c  */
-#line 979 "parser_gram.y"
+#line 906 "parser_gram.y"
     {
 	cmd_t *list = NULL;
 	cmd_t *list_end = NULL;
@@ -3205,10 +3078,10 @@ yyreduce:
 }
     break;
 
-  case 103:
+  case 97:
 
 /* Line 1455 of yacc.c  */
-#line 997 "parser_gram.y"
+#line 924 "parser_gram.y"
     {
 	/*
 	 * Allocate a cmd node per thread, with a
@@ -3221,19 +3094,19 @@ yyreduce:
 }
     break;
 
-  case 104:
+  case 98:
 
 /* Line 1455 of yacc.c  */
-#line 1009 "parser_gram.y"
+#line 936 "parser_gram.y"
     {
 	(yyval.cmd) = (yyvsp[(1) - (1)].cmd);
 }
     break;
 
-  case 105:
+  case 99:
 
 /* Line 1455 of yacc.c  */
-#line 1012 "parser_gram.y"
+#line 939 "parser_gram.y"
     {
 	cmd_t *list = NULL;
 	cmd_t *list_end = NULL;
@@ -3252,10 +3125,10 @@ yyreduce:
 }
     break;
 
-  case 106:
+  case 100:
 
 /* Line 1455 of yacc.c  */
-#line 1030 "parser_gram.y"
+#line 957 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3266,19 +3139,19 @@ yyreduce:
 }
     break;
 
-  case 107:
+  case 101:
 
 /* Line 1455 of yacc.c  */
-#line 1039 "parser_gram.y"
+#line 966 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
     break;
 
-  case 108:
+  case 102:
 
 /* Line 1455 of yacc.c  */
-#line 1044 "parser_gram.y"
+#line 971 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3286,10 +3159,10 @@ yyreduce:
 }
     break;
 
-  case 109:
+  case 103:
 
 /* Line 1455 of yacc.c  */
-#line 1049 "parser_gram.y"
+#line 976 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3297,19 +3170,19 @@ yyreduce:
 }
     break;
 
-  case 110:
+  case 104:
 
 /* Line 1455 of yacc.c  */
-#line 1055 "parser_gram.y"
+#line 982 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
     break;
 
-  case 111:
+  case 105:
 
 /* Line 1455 of yacc.c  */
-#line 1060 "parser_gram.y"
+#line 987 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3317,19 +3190,19 @@ yyreduce:
 }
     break;
 
-  case 112:
+  case 106:
 
 /* Line 1455 of yacc.c  */
-#line 1065 "parser_gram.y"
+#line 992 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
     break;
 
-  case 113:
+  case 107:
 
 /* Line 1455 of yacc.c  */
-#line 1070 "parser_gram.y"
+#line 997 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3338,10 +3211,10 @@ yyreduce:
 }
     break;
 
-  case 114:
+  case 108:
 
 /* Line 1455 of yacc.c  */
-#line 1078 "parser_gram.y"
+#line 1005 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3351,19 +3224,19 @@ yyreduce:
 }
     break;
 
-  case 115:
+  case 109:
 
 /* Line 1455 of yacc.c  */
-#line 1086 "parser_gram.y"
+#line 1013 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
     break;
 
-  case 116:
+  case 110:
 
 /* Line 1455 of yacc.c  */
-#line 1091 "parser_gram.y"
+#line 1018 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3383,10 +3256,10 @@ yyreduce:
 }
     break;
 
-  case 117:
+  case 111:
 
 /* Line 1455 of yacc.c  */
-#line 1110 "parser_gram.y"
+#line 1037 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3406,10 +3279,10 @@ yyreduce:
 }
     break;
 
-  case 118:
+  case 112:
 
 /* Line 1455 of yacc.c  */
-#line 1129 "parser_gram.y"
+#line 1056 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3418,10 +3291,10 @@ yyreduce:
 }
     break;
 
-  case 119:
+  case 113:
 
 /* Line 1455 of yacc.c  */
-#line 1136 "parser_gram.y"
+#line 1063 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3430,10 +3303,10 @@ yyreduce:
 }
     break;
 
-  case 120:
+  case 114:
 
 /* Line 1455 of yacc.c  */
-#line 1144 "parser_gram.y"
+#line 1071 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3442,10 +3315,10 @@ yyreduce:
 }
     break;
 
-  case 121:
+  case 115:
 
 /* Line 1455 of yacc.c  */
-#line 1151 "parser_gram.y"
+#line 1078 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3454,10 +3327,10 @@ yyreduce:
 }
     break;
 
-  case 122:
+  case 116:
 
 /* Line 1455 of yacc.c  */
-#line 1158 "parser_gram.y"
+#line 1085 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3466,10 +3339,10 @@ yyreduce:
 }
     break;
 
-  case 123:
+  case 117:
 
 /* Line 1455 of yacc.c  */
-#line 1166 "parser_gram.y"
+#line 1093 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3478,10 +3351,10 @@ yyreduce:
 }
     break;
 
-  case 124:
+  case 118:
 
 /* Line 1455 of yacc.c  */
-#line 1173 "parser_gram.y"
+#line 1100 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3490,10 +3363,10 @@ yyreduce:
 }
     break;
 
-  case 125:
+  case 119:
 
 /* Line 1455 of yacc.c  */
-#line 1180 "parser_gram.y"
+#line 1107 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3502,10 +3375,10 @@ yyreduce:
 }
     break;
 
-  case 126:
+  case 120:
 
 /* Line 1455 of yacc.c  */
-#line 1188 "parser_gram.y"
+#line 1115 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3515,10 +3388,10 @@ yyreduce:
 }
     break;
 
-  case 127:
+  case 121:
 
 /* Line 1455 of yacc.c  */
-#line 1196 "parser_gram.y"
+#line 1123 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3529,10 +3402,10 @@ yyreduce:
 }
     break;
 
-  case 128:
+  case 122:
 
 /* Line 1455 of yacc.c  */
-#line 1205 "parser_gram.y"
+#line 1132 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3543,10 +3416,10 @@ yyreduce:
 }
     break;
 
-  case 129:
+  case 123:
 
 /* Line 1455 of yacc.c  */
-#line 1214 "parser_gram.y"
+#line 1141 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3556,10 +3429,10 @@ yyreduce:
 }
     break;
 
-  case 130:
+  case 124:
 
 /* Line 1455 of yacc.c  */
-#line 1222 "parser_gram.y"
+#line 1149 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3569,10 +3442,10 @@ yyreduce:
 }
     break;
 
-  case 131:
+  case 125:
 
 /* Line 1455 of yacc.c  */
-#line 1231 "parser_gram.y"
+#line 1158 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3580,10 +3453,10 @@ yyreduce:
 }
     break;
 
-  case 132:
+  case 126:
 
 /* Line 1455 of yacc.c  */
-#line 1238 "parser_gram.y"
+#line 1165 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3591,56 +3464,56 @@ yyreduce:
 }
     break;
 
+  case 127:
+
+/* Line 1455 of yacc.c  */
+#line 1171 "parser_gram.y"
+    {
+	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
+}
+    break;
+
+  case 128:
+
+/* Line 1455 of yacc.c  */
+#line 1175 "parser_gram.y"
+    {(yyval.ival) = FSE_PROC;}
+    break;
+
+  case 129:
+
+/* Line 1455 of yacc.c  */
+#line 1176 "parser_gram.y"
+    {(yyval.ival) = FSE_THREAD;}
+    break;
+
+  case 130:
+
+/* Line 1455 of yacc.c  */
+#line 1177 "parser_gram.y"
+    {(yyval.ival) = FSE_FILESET;}
+    break;
+
+  case 131:
+
+/* Line 1455 of yacc.c  */
+#line 1178 "parser_gram.y"
+    {(yyval.ival) = FSE_FILE;}
+    break;
+
   case 133:
 
 /* Line 1455 of yacc.c  */
-#line 1244 "parser_gram.y"
+#line 1188 "parser_gram.y"
     {
-	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
+	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
     break;
 
   case 134:
 
 /* Line 1455 of yacc.c  */
-#line 1248 "parser_gram.y"
-    {(yyval.ival) = FSE_PROC;}
-    break;
-
-  case 135:
-
-/* Line 1455 of yacc.c  */
-#line 1249 "parser_gram.y"
-    {(yyval.ival) = FSE_THREAD;}
-    break;
-
-  case 136:
-
-/* Line 1455 of yacc.c  */
-#line 1250 "parser_gram.y"
-    {(yyval.ival) = FSE_FILESET;}
-    break;
-
-  case 137:
-
-/* Line 1455 of yacc.c  */
-#line 1251 "parser_gram.y"
-    {(yyval.ival) = FSE_FILE;}
-    break;
-
-  case 139:
-
-/* Line 1455 of yacc.c  */
-#line 1261 "parser_gram.y"
-    {
-	(yyval.attr) = (yyvsp[(1) - (1)].attr);
-}
-    break;
-
-  case 140:
-
-/* Line 1455 of yacc.c  */
-#line 1265 "parser_gram.y"
+#line 1192 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3655,10 +3528,79 @@ yyreduce:
 }
     break;
 
+  case 135:
+
+/* Line 1455 of yacc.c  */
+#line 1206 "parser_gram.y"
+    {
+	(yyval.attr) = (yyvsp[(1) - (1)].attr);
+}
+    break;
+
+  case 136:
+
+/* Line 1455 of yacc.c  */
+#line 1210 "parser_gram.y"
+    {
+	attr_t *attr = NULL;
+	attr_t *list_end = NULL;
+
+	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
+	    attr = attr->attr_next)
+		list_end = attr; /* Find end of list */
+
+	list_end->attr_next = (yyvsp[(3) - (3)].attr);
+
+	(yyval.attr) = (yyvsp[(1) - (3)].attr);
+}
+    break;
+
+  case 137:
+
+/* Line 1455 of yacc.c  */
+#line 1224 "parser_gram.y"
+    {
+	(yyval.attr) = (yyvsp[(3) - (3)].attr);
+	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
+}
+    break;
+
+  case 138:
+
+/* Line 1455 of yacc.c  */
+#line 1229 "parser_gram.y"
+    {
+	if (((yyval.attr) = alloc_attr()) == NULL)
+		YYERROR;
+	(yyval.attr)->attr_name = (yyvsp[(1) - (1)].ival);
+}
+    break;
+
+  case 139:
+
+/* Line 1455 of yacc.c  */
+#line 1236 "parser_gram.y"
+    {
+	(yyval.attr) = (yyvsp[(3) - (3)].attr);
+	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
+}
+    break;
+
+  case 140:
+
+/* Line 1455 of yacc.c  */
+#line 1241 "parser_gram.y"
+    {
+	if (((yyval.attr) = alloc_attr()) == NULL)
+		YYERROR;
+	(yyval.attr)->attr_name = (yyvsp[(1) - (1)].ival);
+}
+    break;
+
   case 141:
 
 /* Line 1455 of yacc.c  */
-#line 1279 "parser_gram.y"
+#line 1249 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
@@ -3667,7 +3609,7 @@ yyreduce:
   case 142:
 
 /* Line 1455 of yacc.c  */
-#line 1283 "parser_gram.y"
+#line 1253 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3685,76 +3627,7 @@ yyreduce:
   case 143:
 
 /* Line 1455 of yacc.c  */
-#line 1297 "parser_gram.y"
-    {
-	(yyval.attr) = (yyvsp[(3) - (3)].attr);
-	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
-}
-    break;
-
-  case 144:
-
-/* Line 1455 of yacc.c  */
-#line 1302 "parser_gram.y"
-    {
-	if (((yyval.attr) = alloc_attr()) == NULL)
-		YYERROR;
-	(yyval.attr)->attr_name = (yyvsp[(1) - (1)].ival);
-}
-    break;
-
-  case 145:
-
-/* Line 1455 of yacc.c  */
-#line 1309 "parser_gram.y"
-    {
-	(yyval.attr) = (yyvsp[(3) - (3)].attr);
-	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
-}
-    break;
-
-  case 146:
-
-/* Line 1455 of yacc.c  */
-#line 1314 "parser_gram.y"
-    {
-	if (((yyval.attr) = alloc_attr()) == NULL)
-		YYERROR;
-	(yyval.attr)->attr_name = (yyvsp[(1) - (1)].ival);
-}
-    break;
-
-  case 147:
-
-/* Line 1455 of yacc.c  */
-#line 1322 "parser_gram.y"
-    {
-	(yyval.attr) = (yyvsp[(1) - (1)].attr);
-}
-    break;
-
-  case 148:
-
-/* Line 1455 of yacc.c  */
-#line 1326 "parser_gram.y"
-    {
-	attr_t *attr = NULL;
-	attr_t *list_end = NULL;
-
-	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
-	    attr = attr->attr_next)
-		list_end = attr; /* Find end of list */
-
-	list_end->attr_next = (yyvsp[(3) - (3)].attr);
-
-	(yyval.attr) = (yyvsp[(1) - (3)].attr);
-}
-    break;
-
-  case 149:
-
-/* Line 1455 of yacc.c  */
-#line 1339 "parser_gram.y"
+#line 1266 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3774,20 +3647,20 @@ yyreduce:
 }
     break;
 
-  case 150:
+  case 144:
 
 /* Line 1455 of yacc.c  */
-#line 1358 "parser_gram.y"
+#line 1285 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
 }
     break;
 
-  case 151:
+  case 145:
 
 /* Line 1455 of yacc.c  */
-#line 1363 "parser_gram.y"
+#line 1290 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -3795,30 +3668,30 @@ yyreduce:
 }
     break;
 
-  case 152:
+  case 146:
 
 /* Line 1455 of yacc.c  */
-#line 1369 "parser_gram.y"
+#line 1296 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = FSA_TYPE;
 }
     break;
 
-  case 153:
+  case 147:
 
 /* Line 1455 of yacc.c  */
-#line 1374 "parser_gram.y"
+#line 1301 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = FSA_RANDSRC;
 }
     break;
 
-  case 154:
+  case 148:
 
 /* Line 1455 of yacc.c  */
-#line 1380 "parser_gram.y"
+#line 1307 "parser_gram.y"
     {
 	if (((yyval.rndtb) = alloc_probtabent()) == NULL)
 		YYERROR;
@@ -3828,19 +3701,19 @@ yyreduce:
 }
     break;
 
-  case 155:
+  case 149:
 
 /* Line 1455 of yacc.c  */
-#line 1390 "parser_gram.y"
+#line 1317 "parser_gram.y"
     {
 	(yyval.rndtb) = (yyvsp[(1) - (1)].rndtb);
 }
     break;
 
-  case 156:
+  case 150:
 
 /* Line 1455 of yacc.c  */
-#line 1394 "parser_gram.y"
+#line 1321 "parser_gram.y"
     {
 	probtabent_t *pte = NULL;
 	probtabent_t *ptelist_end = NULL;
@@ -3855,219 +3728,219 @@ yyreduce:
 }
     break;
 
+  case 151:
+
+/* Line 1455 of yacc.c  */
+#line 1336 "parser_gram.y"
+    {
+	(yyval.attr) = (yyvsp[(1) - (1)].attr);
+}
+    break;
+
+  case 152:
+
+/* Line 1455 of yacc.c  */
+#line 1340 "parser_gram.y"
+    {
+	attr_t *attr = NULL;
+	attr_t *list_end = NULL;
+
+	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
+	    attr = attr->attr_next)
+		list_end = attr; /* Find end of list */
+
+	list_end->attr_next = (yyvsp[(3) - (3)].attr);
+
+	(yyval.attr) = (yyvsp[(1) - (3)].attr);
+}
+    break;
+
+  case 153:
+
+/* Line 1455 of yacc.c  */
+#line 1354 "parser_gram.y"
+    {
+	(yyval.attr) = (yyvsp[(3) - (3)].attr);
+	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
+}
+    break;
+
+  case 154:
+
+/* Line 1455 of yacc.c  */
+#line 1359 "parser_gram.y"
+    {
+	if (((yyval.attr) = alloc_attr()) == NULL)
+		YYERROR;
+	(yyval.attr)->attr_name = (yyvsp[(1) - (1)].ival);
+}
+    break;
+
+  case 155:
+
+/* Line 1455 of yacc.c  */
+#line 1367 "parser_gram.y"
+    {
+	(yyval.attr) = (yyvsp[(1) - (1)].attr);
+}
+    break;
+
+  case 156:
+
+/* Line 1455 of yacc.c  */
+#line 1371 "parser_gram.y"
+    {
+	attr_t *attr = NULL;
+	attr_t *list_end = NULL;
+
+	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
+	    attr = attr->attr_next)
+		list_end = attr; /* Find end of list */
+
+	list_end->attr_next = (yyvsp[(3) - (3)].attr);
+
+	(yyval.attr) = (yyvsp[(1) - (3)].attr);
+}
+    break;
+
   case 157:
 
 /* Line 1455 of yacc.c  */
-#line 1409 "parser_gram.y"
+#line 1384 "parser_gram.y"
     {
-	(yyval.attr) = (yyvsp[(1) - (1)].attr);
+	attr_t *attr = NULL;
+	attr_t *list_end = NULL;
+
+	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
+	    attr = attr->attr_next)
+		list_end = attr; /* Find end of list */
+
+	list_end->attr_next = (yyvsp[(3) - (3)].attr);
+
+	(yyval.attr) = (yyvsp[(1) - (3)].attr);
 }
     break;
 
   case 158:
 
 /* Line 1455 of yacc.c  */
-#line 1413 "parser_gram.y"
+#line 1398 "parser_gram.y"
     {
-	attr_t *attr = NULL;
-	attr_t *list_end = NULL;
-
-	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
-	    attr = attr->attr_next)
-		list_end = attr; /* Find end of list */
-
-	list_end->attr_next = (yyvsp[(3) - (3)].attr);
-
-	(yyval.attr) = (yyvsp[(1) - (3)].attr);
+	(yyval.attr) = (yyvsp[(3) - (3)].attr);
+	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
 }
     break;
 
   case 159:
 
 /* Line 1455 of yacc.c  */
-#line 1427 "parser_gram.y"
+#line 1403 "parser_gram.y"
     {
-	(yyval.attr) = (yyvsp[(3) - (3)].attr);
-	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
+	if (((yyval.attr) = alloc_attr()) == NULL)
+		YYERROR;
+	(yyval.attr)->attr_name = (yyvsp[(1) - (1)].ival);
 }
     break;
 
   case 160:
 
 /* Line 1455 of yacc.c  */
-#line 1432 "parser_gram.y"
+#line 1411 "parser_gram.y"
     {
-	if (((yyval.attr) = alloc_attr()) == NULL)
-		YYERROR;
-	(yyval.attr)->attr_name = (yyvsp[(1) - (1)].ival);
+	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
     break;
 
   case 161:
 
 /* Line 1455 of yacc.c  */
-#line 1440 "parser_gram.y"
+#line 1415 "parser_gram.y"
     {
-	(yyval.attr) = (yyvsp[(1) - (1)].attr);
+	attr_t *attr = NULL;
+	attr_t *list_end = NULL;
+
+	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
+	    attr = attr->attr_next)
+		list_end = attr; /* Find end of list */
+
+	list_end->attr_next = (yyvsp[(3) - (3)].attr);
+
+	(yyval.attr) = (yyvsp[(1) - (3)].attr);
 }
     break;
 
   case 162:
 
 /* Line 1455 of yacc.c  */
-#line 1444 "parser_gram.y"
+#line 1429 "parser_gram.y"
     {
-	attr_t *attr = NULL;
-	attr_t *list_end = NULL;
-
-	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
-	    attr = attr->attr_next)
-		list_end = attr; /* Find end of list */
-
-	list_end->attr_next = (yyvsp[(3) - (3)].attr);
-
-	(yyval.attr) = (yyvsp[(1) - (3)].attr);
+	(yyval.attr) = (yyvsp[(3) - (3)].attr);
+	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
 }
     break;
 
   case 163:
 
 /* Line 1455 of yacc.c  */
-#line 1457 "parser_gram.y"
+#line 1434 "parser_gram.y"
     {
-	attr_t *attr = NULL;
-	attr_t *list_end = NULL;
-
-	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
-	    attr = attr->attr_next)
-		list_end = attr; /* Find end of list */
-
-	list_end->attr_next = (yyvsp[(3) - (3)].attr);
-
-	(yyval.attr) = (yyvsp[(1) - (3)].attr);
+	if (((yyval.attr) = alloc_attr()) == NULL)
+		YYERROR;
+	(yyval.attr)->attr_name = (yyvsp[(1) - (1)].ival);
 }
     break;
 
   case 164:
 
 /* Line 1455 of yacc.c  */
-#line 1471 "parser_gram.y"
+#line 1442 "parser_gram.y"
     {
-	(yyval.attr) = (yyvsp[(3) - (3)].attr);
-	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
+	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
     break;
 
   case 165:
 
 /* Line 1455 of yacc.c  */
-#line 1476 "parser_gram.y"
+#line 1446 "parser_gram.y"
     {
-	if (((yyval.attr) = alloc_attr()) == NULL)
-		YYERROR;
-	(yyval.attr)->attr_name = (yyvsp[(1) - (1)].ival);
+	attr_t *attr = NULL;
+	attr_t *list_end = NULL;
+
+	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
+	    attr = attr->attr_next)
+		list_end = attr; /* Find end of list */
+
+	list_end->attr_next = (yyvsp[(3) - (3)].attr);
+
+	(yyval.attr) = (yyvsp[(1) - (3)].attr);
 }
     break;
 
   case 166:
 
 /* Line 1455 of yacc.c  */
-#line 1484 "parser_gram.y"
+#line 1460 "parser_gram.y"
     {
-	(yyval.attr) = (yyvsp[(1) - (1)].attr);
+	(yyval.attr) = (yyvsp[(3) - (3)].attr);
+	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
 }
     break;
 
   case 167:
 
 /* Line 1455 of yacc.c  */
-#line 1488 "parser_gram.y"
-    {
-	attr_t *attr = NULL;
-	attr_t *list_end = NULL;
-
-	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
-	    attr = attr->attr_next)
-		list_end = attr; /* Find end of list */
-
-	list_end->attr_next = (yyvsp[(3) - (3)].attr);
-
-	(yyval.attr) = (yyvsp[(1) - (3)].attr);
-}
-    break;
-
-  case 168:
-
-/* Line 1455 of yacc.c  */
-#line 1502 "parser_gram.y"
-    {
-	(yyval.attr) = (yyvsp[(3) - (3)].attr);
-	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
-}
-    break;
-
-  case 169:
-
-/* Line 1455 of yacc.c  */
-#line 1507 "parser_gram.y"
-    {
-	if (((yyval.attr) = alloc_attr()) == NULL)
-		YYERROR;
-	(yyval.attr)->attr_name = (yyvsp[(1) - (1)].ival);
-}
-    break;
-
-  case 170:
-
-/* Line 1455 of yacc.c  */
-#line 1515 "parser_gram.y"
-    {
-	(yyval.attr) = (yyvsp[(1) - (1)].attr);
-}
-    break;
-
-  case 171:
-
-/* Line 1455 of yacc.c  */
-#line 1519 "parser_gram.y"
-    {
-	attr_t *attr = NULL;
-	attr_t *list_end = NULL;
-
-	for (attr = (yyvsp[(1) - (3)].attr); attr != NULL;
-	    attr = attr->attr_next)
-		list_end = attr; /* Find end of list */
-
-	list_end->attr_next = (yyvsp[(3) - (3)].attr);
-
-	(yyval.attr) = (yyvsp[(1) - (3)].attr);
-}
-    break;
-
-  case 172:
-
-/* Line 1455 of yacc.c  */
-#line 1533 "parser_gram.y"
-    {
-	(yyval.attr) = (yyvsp[(3) - (3)].attr);
-	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
-}
-    break;
-
-  case 173:
-
-/* Line 1455 of yacc.c  */
-#line 1539 "parser_gram.y"
+#line 1466 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = FSA_VALUE;
 }
     break;
 
-  case 174:
+  case 168:
 
 /* Line 1455 of yacc.c  */
-#line 1545 "parser_gram.y"
+#line 1472 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4076,636 +3949,552 @@ yyreduce:
 }
     break;
 
+  case 176:
+
+/* Line 1455 of yacc.c  */
+#line 1498 "parser_gram.y"
+    { (yyval.ival) = FSA_NICE;}
+    break;
+
+  case 177:
+
+/* Line 1455 of yacc.c  */
+#line 1499 "parser_gram.y"
+    { (yyval.ival) = FSA_NAME;}
+    break;
+
+  case 178:
+
+/* Line 1455 of yacc.c  */
+#line 1500 "parser_gram.y"
+    { (yyval.ival) = FSA_INSTANCES;}
+    break;
+
+  case 179:
+
+/* Line 1455 of yacc.c  */
+#line 1503 "parser_gram.y"
+    { (yyval.ival) = FSA_SIZE;}
+    break;
+
+  case 180:
+
+/* Line 1455 of yacc.c  */
+#line 1504 "parser_gram.y"
+    { (yyval.ival) = FSA_NAME;}
+    break;
+
+  case 181:
+
+/* Line 1455 of yacc.c  */
+#line 1505 "parser_gram.y"
+    { (yyval.ival) = FSA_PATH;}
+    break;
+
   case 182:
 
 /* Line 1455 of yacc.c  */
-#line 1571 "parser_gram.y"
-    { (yyval.ival) = FSA_NICE;}
+#line 1506 "parser_gram.y"
+    { (yyval.ival) = FSA_READONLY;}
     break;
 
   case 183:
 
 /* Line 1455 of yacc.c  */
-#line 1572 "parser_gram.y"
-    { (yyval.ival) = FSA_NAME;}
+#line 1507 "parser_gram.y"
+    { (yyval.ival) = FSA_TRUSTTREE;}
     break;
 
   case 184:
 
 /* Line 1455 of yacc.c  */
-#line 1573 "parser_gram.y"
-    { (yyval.ival) = FSA_INSTANCES;}
+#line 1508 "parser_gram.y"
+    { (yyval.ival) = FSA_REUSE;}
     break;
 
   case 185:
 
 /* Line 1455 of yacc.c  */
-#line 1576 "parser_gram.y"
-    { (yyval.ival) = FSA_SIZE;}
+#line 1509 "parser_gram.y"
+    { (yyval.ival) = FSA_PREALLOC;}
     break;
 
   case 186:
 
 /* Line 1455 of yacc.c  */
-#line 1577 "parser_gram.y"
-    { (yyval.ival) = FSA_NAME;}
+#line 1510 "parser_gram.y"
+    { (yyval.ival) = FSA_PARALLOC;}
     break;
 
   case 187:
 
 /* Line 1455 of yacc.c  */
-#line 1578 "parser_gram.y"
-    { (yyval.ival) = FSA_PATH;}
+#line 1511 "parser_gram.y"
+    { (yyval.ival) = FSA_WRITEONLY;}
     break;
 
   case 188:
 
 /* Line 1455 of yacc.c  */
-#line 1579 "parser_gram.y"
-    { (yyval.ival) = FSA_READONLY;}
+#line 1514 "parser_gram.y"
+    { (yyval.ival) = FSA_SIZE;}
     break;
 
   case 189:
 
 /* Line 1455 of yacc.c  */
-#line 1580 "parser_gram.y"
-    { (yyval.ival) = FSA_TRUSTTREE;}
+#line 1515 "parser_gram.y"
+    { (yyval.ival) = FSA_NAME;}
     break;
 
   case 190:
 
 /* Line 1455 of yacc.c  */
-#line 1581 "parser_gram.y"
-    { (yyval.ival) = FSA_REUSE;}
+#line 1516 "parser_gram.y"
+    { (yyval.ival) = FSA_PATH;}
     break;
 
   case 191:
 
 /* Line 1455 of yacc.c  */
-#line 1582 "parser_gram.y"
-    { (yyval.ival) = FSA_PREALLOC;}
+#line 1517 "parser_gram.y"
+    { (yyval.ival) = FSA_DIRWIDTH;}
     break;
 
   case 192:
 
 /* Line 1455 of yacc.c  */
-#line 1583 "parser_gram.y"
-    { (yyval.ival) = FSA_PARALLOC;}
+#line 1518 "parser_gram.y"
+    { (yyval.ival) = FSA_DIRDEPTHRV;}
     break;
 
   case 193:
 
 /* Line 1455 of yacc.c  */
-#line 1584 "parser_gram.y"
-    { (yyval.ival) = FSA_WRITEONLY;}
+#line 1519 "parser_gram.y"
+    { (yyval.ival) = FSA_PREALLOC;}
     break;
 
   case 194:
 
 /* Line 1455 of yacc.c  */
-#line 1587 "parser_gram.y"
-    { (yyval.ival) = FSA_SIZE;}
+#line 1520 "parser_gram.y"
+    { (yyval.ival) = FSA_PARALLOC;}
     break;
 
   case 195:
 
 /* Line 1455 of yacc.c  */
-#line 1588 "parser_gram.y"
-    { (yyval.ival) = FSA_NAME;}
+#line 1521 "parser_gram.y"
+    { (yyval.ival) = FSA_REUSE;}
     break;
 
   case 196:
 
 /* Line 1455 of yacc.c  */
-#line 1589 "parser_gram.y"
-    { (yyval.ival) = FSA_PATH;}
+#line 1522 "parser_gram.y"
+    { (yyval.ival) = FSA_READONLY;}
     break;
 
   case 197:
 
 /* Line 1455 of yacc.c  */
-#line 1590 "parser_gram.y"
-    { (yyval.ival) = FSA_DIRWIDTH;}
+#line 1523 "parser_gram.y"
+    { (yyval.ival) = FSA_TRUSTTREE;}
     break;
 
   case 198:
 
 /* Line 1455 of yacc.c  */
-#line 1591 "parser_gram.y"
-    { (yyval.ival) = FSA_DIRDEPTHRV;}
+#line 1524 "parser_gram.y"
+    { (yyval.ival) = FSA_FILESIZEGAMMA;}
     break;
 
   case 199:
 
 /* Line 1455 of yacc.c  */
-#line 1592 "parser_gram.y"
-    { (yyval.ival) = FSA_PREALLOC;}
+#line 1525 "parser_gram.y"
+    { (yyval.ival) = FSA_DIRGAMMA;}
     break;
 
   case 200:
 
 /* Line 1455 of yacc.c  */
-#line 1593 "parser_gram.y"
-    { (yyval.ival) = FSA_PARALLOC;}
+#line 1526 "parser_gram.y"
+    { (yyval.ival) = FSA_CACHED;}
     break;
 
   case 201:
 
 /* Line 1455 of yacc.c  */
-#line 1594 "parser_gram.y"
-    { (yyval.ival) = FSA_REUSE;}
+#line 1527 "parser_gram.y"
+    { (yyval.ival) = FSA_ENTRIES;}
     break;
 
   case 202:
 
 /* Line 1455 of yacc.c  */
-#line 1595 "parser_gram.y"
-    { (yyval.ival) = FSA_READONLY;}
+#line 1528 "parser_gram.y"
+    { (yyval.ival) = FSA_LEAFDIRS;}
     break;
 
   case 203:
 
 /* Line 1455 of yacc.c  */
-#line 1596 "parser_gram.y"
-    { (yyval.ival) = FSA_TRUSTTREE;}
+#line 1529 "parser_gram.y"
+    { (yyval.ival) = FSA_WRITEONLY;}
     break;
 
   case 204:
 
 /* Line 1455 of yacc.c  */
-#line 1597 "parser_gram.y"
-    { (yyval.ival) = FSA_FILESIZEGAMMA;}
+#line 1532 "parser_gram.y"
+    { (yyval.ival) = FSA_NAME;}
     break;
 
   case 205:
 
 /* Line 1455 of yacc.c  */
-#line 1598 "parser_gram.y"
-    { (yyval.ival) = FSA_DIRGAMMA;}
+#line 1533 "parser_gram.y"
+    { (yyval.ival) = FSA_TYPE;}
     break;
 
   case 206:
 
 /* Line 1455 of yacc.c  */
-#line 1599 "parser_gram.y"
-    { (yyval.ival) = FSA_CACHED;}
+#line 1534 "parser_gram.y"
+    { (yyval.ival) = FSA_RANDSEED;}
     break;
 
   case 207:
 
 /* Line 1455 of yacc.c  */
-#line 1600 "parser_gram.y"
+#line 1535 "parser_gram.y"
     { (yyval.ival) = FSA_ENTRIES;}
     break;
 
   case 208:
 
 /* Line 1455 of yacc.c  */
-#line 1601 "parser_gram.y"
-    { (yyval.ival) = FSA_LEAFDIRS;}
+#line 1536 "parser_gram.y"
+    { (yyval.ival) = FSA_RANDMAX;}
     break;
 
   case 209:
 
 /* Line 1455 of yacc.c  */
-#line 1602 "parser_gram.y"
-    { (yyval.ival) = FSA_WRITEONLY;}
+#line 1539 "parser_gram.y"
+    { (yyval.ival) = FSA_NAME;}
     break;
 
   case 210:
 
 /* Line 1455 of yacc.c  */
-#line 1605 "parser_gram.y"
-    { (yyval.ival) = FSA_NAME;}
+#line 1540 "parser_gram.y"
+    { (yyval.ival) = FSA_RANDSEED;}
     break;
 
   case 211:
 
 /* Line 1455 of yacc.c  */
-#line 1606 "parser_gram.y"
-    { (yyval.ival) = FSA_TYPE;}
+#line 1541 "parser_gram.y"
+    { (yyval.ival) = FSA_RANDGAMMA;}
     break;
 
   case 212:
 
 /* Line 1455 of yacc.c  */
-#line 1607 "parser_gram.y"
-    { (yyval.ival) = FSA_RANDSEED;}
+#line 1542 "parser_gram.y"
+    { (yyval.ival) = FSA_RANDMEAN;}
     break;
 
   case 213:
 
 /* Line 1455 of yacc.c  */
-#line 1608 "parser_gram.y"
-    { (yyval.ival) = FSA_ENTRIES;}
+#line 1543 "parser_gram.y"
+    { (yyval.ival) = FSA_RANDMIN;}
     break;
 
   case 214:
 
 /* Line 1455 of yacc.c  */
-#line 1609 "parser_gram.y"
-    { (yyval.ival) = FSA_RANDMAX;}
+#line 1544 "parser_gram.y"
+    { (yyval.ival) = FSA_RANDROUND;}
     break;
 
   case 215:
 
 /* Line 1455 of yacc.c  */
-#line 1612 "parser_gram.y"
-    { (yyval.ival) = FSA_NAME;}
+#line 1563 "parser_gram.y"
+    {
+	if (((yyval.attr) = alloc_attr()) == NULL)
+		YYERROR;
+	(yyval.attr)->attr_avd = avd_int_alloc((yyvsp[(1) - (1)].ival));
+}
     break;
 
   case 216:
 
 /* Line 1455 of yacc.c  */
-#line 1613 "parser_gram.y"
-    { (yyval.ival) = FSA_RANDSEED;}
+#line 1570 "parser_gram.y"
+    { (yyval.ival) = FSV_RANDUNI;}
     break;
 
   case 217:
 
 /* Line 1455 of yacc.c  */
-#line 1614 "parser_gram.y"
-    { (yyval.ival) = FSA_RANDGAMMA;}
+#line 1571 "parser_gram.y"
+    { (yyval.ival) = FSV_RANDTAB;}
     break;
 
   case 218:
 
 /* Line 1455 of yacc.c  */
-#line 1615 "parser_gram.y"
-    { (yyval.ival) = FSA_RANDMEAN;}
+#line 1572 "parser_gram.y"
+    { (yyval.ival) = FSA_RANDGAMMA;}
     break;
 
   case 219:
 
 /* Line 1455 of yacc.c  */
-#line 1616 "parser_gram.y"
-    { (yyval.ival) = FSA_RANDMIN;}
+#line 1575 "parser_gram.y"
+    {
+	if (((yyval.attr) = alloc_attr()) == NULL)
+		YYERROR;
+	(yyval.attr)->attr_avd = avd_int_alloc((yyvsp[(1) - (1)].ival));
+}
     break;
 
   case 220:
 
 /* Line 1455 of yacc.c  */
-#line 1617 "parser_gram.y"
-    { (yyval.ival) = FSA_RANDROUND;}
+#line 1582 "parser_gram.y"
+    { (yyval.ival) = FSV_URAND;}
     break;
 
   case 221:
 
 /* Line 1455 of yacc.c  */
-#line 1620 "parser_gram.y"
-    { (yyval.ival) = FSS_TYPE;}
+#line 1583 "parser_gram.y"
+    { (yyval.ival) = FSV_RAND48;}
     break;
 
   case 222:
 
 /* Line 1455 of yacc.c  */
-#line 1621 "parser_gram.y"
-    { (yyval.ival) = FSS_SRC;}
+#line 1586 "parser_gram.y"
+    { (yyval.ival) = FSA_PROCESS;}
     break;
 
   case 223:
 
 /* Line 1455 of yacc.c  */
-#line 1622 "parser_gram.y"
-    { (yyval.ival) = FSS_SEED;}
+#line 1587 "parser_gram.y"
+    { (yyval.ival) = FSA_NAME;}
     break;
 
   case 224:
 
 /* Line 1455 of yacc.c  */
-#line 1623 "parser_gram.y"
-    { (yyval.ival) = FSS_GAMMA;}
+#line 1588 "parser_gram.y"
+    { (yyval.ival) = FSA_MEMSIZE;}
     break;
 
   case 225:
 
 /* Line 1455 of yacc.c  */
-#line 1624 "parser_gram.y"
-    { (yyval.ival) = FSS_MEAN;}
+#line 1589 "parser_gram.y"
+    { (yyval.ival) = FSA_USEISM;}
     break;
 
   case 226:
 
 /* Line 1455 of yacc.c  */
-#line 1625 "parser_gram.y"
-    { (yyval.ival) = FSS_MIN;}
+#line 1590 "parser_gram.y"
+    { (yyval.ival) = FSA_INSTANCES;}
     break;
 
   case 227:
 
 /* Line 1455 of yacc.c  */
-#line 1626 "parser_gram.y"
-    { (yyval.ival) = FSS_ROUND;}
+#line 1591 "parser_gram.y"
+    { (yyval.ival) = FSA_IOPRIO;}
     break;
 
   case 228:
 
 /* Line 1455 of yacc.c  */
-#line 1629 "parser_gram.y"
-    { (yyval.ival) = FSS_SEED;}
+#line 1594 "parser_gram.y"
+    { (yyval.ival) = FSA_WSS;}
     break;
 
   case 229:
 
 /* Line 1455 of yacc.c  */
-#line 1630 "parser_gram.y"
-    { (yyval.ival) = FSS_GAMMA;}
+#line 1595 "parser_gram.y"
+    { (yyval.ival) = FSA_FILE;}
     break;
 
   case 230:
 
 /* Line 1455 of yacc.c  */
-#line 1631 "parser_gram.y"
-    { (yyval.ival) = FSS_MEAN;}
+#line 1596 "parser_gram.y"
+    { (yyval.ival) = FSA_POSSET;}
     break;
 
   case 231:
 
 /* Line 1455 of yacc.c  */
-#line 1632 "parser_gram.y"
-    { (yyval.ival) = FSS_MIN;}
+#line 1597 "parser_gram.y"
+    { (yyval.ival) = FSA_NAME;}
     break;
 
   case 232:
 
 /* Line 1455 of yacc.c  */
-#line 1633 "parser_gram.y"
-    { (yyval.ival) = FSS_ROUND;}
+#line 1598 "parser_gram.y"
+    { (yyval.ival) = FSA_RANDOM;}
     break;
 
   case 233:
 
 /* Line 1455 of yacc.c  */
-#line 1636 "parser_gram.y"
-    {
-	if (((yyval.attr) = alloc_attr()) == NULL)
-		YYERROR;
-	(yyval.attr)->attr_avd = avd_int_alloc((yyvsp[(1) - (1)].ival));
-}
+#line 1599 "parser_gram.y"
+    { (yyval.ival) = FSA_FD;}
     break;
 
   case 234:
 
 /* Line 1455 of yacc.c  */
-#line 1643 "parser_gram.y"
-    { (yyval.ival) = FSV_RANDUNI;}
+#line 1600 "parser_gram.y"
+    { (yyval.ival) = FSA_SRCFD;}
     break;
 
   case 235:
 
 /* Line 1455 of yacc.c  */
-#line 1644 "parser_gram.y"
-    { (yyval.ival) = FSV_RANDTAB;}
+#line 1601 "parser_gram.y"
+    { (yyval.ival) = FSA_ROTATEFD;}
     break;
 
   case 236:
 
 /* Line 1455 of yacc.c  */
-#line 1645 "parser_gram.y"
-    { (yyval.ival) = FSA_RANDGAMMA;}
+#line 1602 "parser_gram.y"
+    { (yyval.ival) = FSA_DSYNC;}
     break;
 
   case 237:
 
 /* Line 1455 of yacc.c  */
-#line 1648 "parser_gram.y"
-    {
-	if (((yyval.attr) = alloc_attr()) == NULL)
-		YYERROR;
-	(yyval.attr)->attr_avd = avd_int_alloc((yyvsp[(1) - (1)].ival));
-}
+#line 1603 "parser_gram.y"
+    { (yyval.ival) = FSA_DIRECTIO;}
     break;
 
   case 238:
 
 /* Line 1455 of yacc.c  */
-#line 1655 "parser_gram.y"
-    { (yyval.ival) = FSV_URAND;}
+#line 1604 "parser_gram.y"
+    { (yyval.ival) = FSA_INDEXED;}
     break;
 
   case 239:
 
 /* Line 1455 of yacc.c  */
-#line 1656 "parser_gram.y"
-    { (yyval.ival) = FSV_RAND48;}
+#line 1605 "parser_gram.y"
+    { (yyval.ival) = FSA_TARGET;}
     break;
 
   case 240:
 
 /* Line 1455 of yacc.c  */
-#line 1659 "parser_gram.y"
-    { (yyval.ival) = FSA_PROCESS;}
+#line 1606 "parser_gram.y"
+    { (yyval.ival) = FSA_ITERS;}
     break;
 
   case 241:
 
 /* Line 1455 of yacc.c  */
-#line 1660 "parser_gram.y"
-    { (yyval.ival) = FSA_NAME;}
+#line 1607 "parser_gram.y"
+    { (yyval.ival) = FSA_VALUE;}
     break;
 
   case 242:
 
 /* Line 1455 of yacc.c  */
-#line 1661 "parser_gram.y"
-    { (yyval.ival) = FSA_MEMSIZE;}
+#line 1608 "parser_gram.y"
+    { (yyval.ival) = FSA_BLOCKING;}
     break;
 
   case 243:
 
 /* Line 1455 of yacc.c  */
-#line 1662 "parser_gram.y"
-    { (yyval.ival) = FSA_USEISM;}
+#line 1609 "parser_gram.y"
+    { (yyval.ival) = FSA_HIGHWATER;}
     break;
 
   case 244:
 
 /* Line 1455 of yacc.c  */
-#line 1663 "parser_gram.y"
-    { (yyval.ival) = FSA_INSTANCES;}
+#line 1610 "parser_gram.y"
+    { (yyval.ival) = FSA_IOSIZE;}
     break;
 
   case 245:
 
 /* Line 1455 of yacc.c  */
-#line 1664 "parser_gram.y"
-    { (yyval.ival) = FSA_IOPRIO;}
+#line 1611 "parser_gram.y"
+    { (yyval.ival) = FSA_NOREADAHEAD;}
     break;
 
   case 246:
 
 /* Line 1455 of yacc.c  */
-#line 1667 "parser_gram.y"
-    { (yyval.ival) = FSA_WSS;}
+#line 1614 "parser_gram.y"
+    { (yyval.ival) = FSA_RATE;}
     break;
 
   case 247:
 
 /* Line 1455 of yacc.c  */
-#line 1668 "parser_gram.y"
-    { (yyval.ival) = FSA_FILE;}
+#line 1617 "parser_gram.y"
+    { (yyval.ival) = FSA_MASTER;}
     break;
 
   case 248:
 
 /* Line 1455 of yacc.c  */
-#line 1669 "parser_gram.y"
-    { (yyval.ival) = FSA_POSSET;}
+#line 1618 "parser_gram.y"
+    { (yyval.ival) = FSA_CLIENT;}
     break;
 
   case 249:
 
 /* Line 1455 of yacc.c  */
-#line 1670 "parser_gram.y"
-    { (yyval.ival) = FSA_NAME;}
+#line 1621 "parser_gram.y"
+    { (yyval.ival) = FSA_PATH;}
     break;
 
   case 250:
 
 /* Line 1455 of yacc.c  */
-#line 1671 "parser_gram.y"
-    { (yyval.ival) = FSA_RANDOM;}
+#line 1622 "parser_gram.y"
+    { (yyval.ival) = FSA_FSTYPE;}
     break;
 
   case 251:
 
 /* Line 1455 of yacc.c  */
-#line 1672 "parser_gram.y"
-    { (yyval.ival) = FSA_FD;}
-    break;
-
-  case 252:
-
-/* Line 1455 of yacc.c  */
-#line 1673 "parser_gram.y"
-    { (yyval.ival) = FSA_SRCFD;}
-    break;
-
-  case 253:
-
-/* Line 1455 of yacc.c  */
-#line 1674 "parser_gram.y"
-    { (yyval.ival) = FSA_ROTATEFD;}
-    break;
-
-  case 254:
-
-/* Line 1455 of yacc.c  */
-#line 1675 "parser_gram.y"
-    { (yyval.ival) = FSA_DSYNC;}
-    break;
-
-  case 255:
-
-/* Line 1455 of yacc.c  */
-#line 1676 "parser_gram.y"
-    { (yyval.ival) = FSA_DIRECTIO;}
-    break;
-
-  case 256:
-
-/* Line 1455 of yacc.c  */
-#line 1677 "parser_gram.y"
-    { (yyval.ival) = FSA_INDEXED;}
-    break;
-
-  case 257:
-
-/* Line 1455 of yacc.c  */
-#line 1678 "parser_gram.y"
-    { (yyval.ival) = FSA_TARGET;}
-    break;
-
-  case 258:
-
-/* Line 1455 of yacc.c  */
-#line 1679 "parser_gram.y"
-    { (yyval.ival) = FSA_ITERS;}
-    break;
-
-  case 259:
-
-/* Line 1455 of yacc.c  */
-#line 1680 "parser_gram.y"
-    { (yyval.ival) = FSA_VALUE;}
-    break;
-
-  case 260:
-
-/* Line 1455 of yacc.c  */
-#line 1681 "parser_gram.y"
-    { (yyval.ival) = FSA_BLOCKING;}
-    break;
-
-  case 261:
-
-/* Line 1455 of yacc.c  */
-#line 1682 "parser_gram.y"
-    { (yyval.ival) = FSA_HIGHWATER;}
-    break;
-
-  case 262:
-
-/* Line 1455 of yacc.c  */
-#line 1683 "parser_gram.y"
-    { (yyval.ival) = FSA_IOSIZE;}
-    break;
-
-  case 263:
-
-/* Line 1455 of yacc.c  */
-#line 1684 "parser_gram.y"
-    { (yyval.ival) = FSA_NOREADAHEAD;}
-    break;
-
-  case 264:
-
-/* Line 1455 of yacc.c  */
-#line 1687 "parser_gram.y"
-    { (yyval.ival) = FSA_RATE;}
-    break;
-
-  case 265:
-
-/* Line 1455 of yacc.c  */
-#line 1690 "parser_gram.y"
-    { (yyval.ival) = FSA_MASTER;}
-    break;
-
-  case 266:
-
-/* Line 1455 of yacc.c  */
-#line 1691 "parser_gram.y"
-    { (yyval.ival) = FSA_CLIENT;}
-    break;
-
-  case 267:
-
-/* Line 1455 of yacc.c  */
-#line 1694 "parser_gram.y"
-    { (yyval.ival) = FSA_PATH;}
-    break;
-
-  case 268:
-
-/* Line 1455 of yacc.c  */
-#line 1695 "parser_gram.y"
-    { (yyval.ival) = FSA_FSTYPE;}
-    break;
-
-  case 269:
-
-/* Line 1455 of yacc.c  */
-#line 1698 "parser_gram.y"
+#line 1625 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
     break;
 
-  case 270:
+  case 252:
 
 /* Line 1455 of yacc.c  */
-#line 1702 "parser_gram.y"
+#line 1629 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -4720,10 +4509,10 @@ yyreduce:
 }
     break;
 
-  case 271:
+  case 253:
 
 /* Line 1455 of yacc.c  */
-#line 1715 "parser_gram.y"
+#line 1642 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -4738,94 +4527,94 @@ yyreduce:
 }
     break;
 
-  case 272:
+  case 254:
 
 /* Line 1455 of yacc.c  */
-#line 1729 "parser_gram.y"
+#line 1656 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
 }
     break;
 
-  case 273:
+  case 255:
 
 /* Line 1455 of yacc.c  */
-#line 1735 "parser_gram.y"
+#line 1662 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_assign_boolean((yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].bval)))) == NULL)
 		YYERROR;
 }
     break;
 
-  case 274:
+  case 256:
 
 /* Line 1455 of yacc.c  */
-#line 1740 "parser_gram.y"
+#line 1667 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_assign_integer((yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].ival)))) == NULL)
 		YYERROR;
 }
     break;
 
-  case 275:
+  case 257:
 
 /* Line 1455 of yacc.c  */
-#line 1745 "parser_gram.y"
+#line 1672 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_assign_string((yyvsp[(1) - (5)].sval), (yyvsp[(4) - (5)].sval)))) == NULL)
 		YYERROR;
 }
     break;
 
-  case 276:
+  case 258:
 
 /* Line 1455 of yacc.c  */
-#line 1750 "parser_gram.y"
+#line 1677 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_assign_string((yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)))) == NULL)
 		YYERROR;
 }
     break;
 
-  case 277:
+  case 259:
 
 /* Line 1455 of yacc.c  */
-#line 1755 "parser_gram.y"
+#line 1682 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_assign_var((yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)))) == NULL)
 		YYERROR;
 }
     break;
 
-  case 278:
+  case 260:
 
 /* Line 1455 of yacc.c  */
-#line 1760 "parser_gram.y"
+#line 1687 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_alloc_local((yyvsp[(1) - (1)].sval)))) == NULL)
 		YYERROR;
 }
     break;
 
-  case 279:
+  case 261:
 
 /* Line 1455 of yacc.c  */
-#line 1767 "parser_gram.y"
+#line 1694 "parser_gram.y"
     { (yyval.ival) = FSA_NAME;}
     break;
 
-  case 280:
+  case 262:
 
 /* Line 1455 of yacc.c  */
-#line 1768 "parser_gram.y"
+#line 1695 "parser_gram.y"
     { (yyval.ival) = FSA_ITERS;}
     break;
 
-  case 281:
+  case 263:
 
 /* Line 1455 of yacc.c  */
-#line 1771 "parser_gram.y"
+#line 1698 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4833,10 +4622,10 @@ yyreduce:
 }
     break;
 
-  case 282:
+  case 264:
 
 /* Line 1455 of yacc.c  */
-#line 1775 "parser_gram.y"
+#line 1702 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4844,10 +4633,10 @@ yyreduce:
 }
     break;
 
-  case 283:
+  case 265:
 
 /* Line 1455 of yacc.c  */
-#line 1779 "parser_gram.y"
+#line 1706 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4855,10 +4644,10 @@ yyreduce:
 }
     break;
 
-  case 284:
+  case 266:
 
 /* Line 1455 of yacc.c  */
-#line 1783 "parser_gram.y"
+#line 1710 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4866,10 +4655,10 @@ yyreduce:
 }
     break;
 
-  case 285:
+  case 267:
 
 /* Line 1455 of yacc.c  */
-#line 1789 "parser_gram.y"
+#line 1716 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4877,10 +4666,10 @@ yyreduce:
 }
     break;
 
-  case 286:
+  case 268:
 
 /* Line 1455 of yacc.c  */
-#line 1793 "parser_gram.y"
+#line 1720 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4888,10 +4677,10 @@ yyreduce:
 }
     break;
 
-  case 287:
+  case 269:
 
 /* Line 1455 of yacc.c  */
-#line 1797 "parser_gram.y"
+#line 1724 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4899,10 +4688,10 @@ yyreduce:
 }
     break;
 
-  case 288:
+  case 270:
 
 /* Line 1455 of yacc.c  */
-#line 1801 "parser_gram.y"
+#line 1728 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4910,10 +4699,10 @@ yyreduce:
 }
     break;
 
-  case 289:
+  case 271:
 
 /* Line 1455 of yacc.c  */
-#line 1805 "parser_gram.y"
+#line 1732 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4921,19 +4710,19 @@ yyreduce:
 }
     break;
 
-  case 290:
+  case 272:
 
 /* Line 1455 of yacc.c  */
-#line 1812 "parser_gram.y"
+#line 1739 "parser_gram.y"
     {
 	(yyval.avd) = avd_int_alloc((yyvsp[(1) - (1)].ival));
 }
     break;
 
-  case 291:
+  case 273:
 
 /* Line 1455 of yacc.c  */
-#line 1815 "parser_gram.y"
+#line 1742 "parser_gram.y"
     {
 	(yyval.avd) = var_ref_attr((yyvsp[(1) - (1)].sval));
 }
@@ -4942,7 +4731,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 4946 "parser_gram.c"
+#line 4735 "parser_gram.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -5154,7 +4943,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 1819 "parser_gram.y"
+#line 1746 "parser_gram.y"
 
 
 /*
@@ -7729,90 +7518,6 @@ parser_randvar_define(cmd_t *cmd)
 
 randdist_init:
 	randdist_init(rndp);
-}
-
-/*
- * Set a specified random distribution parameter in a random variable.
- */
-static void
-parser_randvar_set(cmd_t *cmd)
-{
-	var_t		*randvar;
-	randdist_t	*rndp;
-	avd_t	value;
-
-	if ((randvar = var_find_randvar(cmd->cmd_tgt1)) == NULL) {
-		filebench_log(LOG_ERROR,
-		    "set randvar: failed",
-		    cmd->cmd_tgt1);
-		return;
-	}
-
-	rndp = randvar->var_val.randptr;
-	value = cmd->cmd_attr_list->attr_avd;
-
-	switch (cmd->cmd_qty) {
-	case FSS_TYPE:
-		{
-			int disttype = (int)avd_get_int(value);
-
-			rndp->rnd_type &= (~RAND_TYPE_MASK);
-
-			switch (disttype) {
-			case FSV_RANDUNI:
-				rndp->rnd_type |= RAND_TYPE_UNIFORM;
-				break;
-			case FSA_RANDGAMMA:
-				rndp->rnd_type |= RAND_TYPE_GAMMA;
-				break;
-			case FSV_RANDTAB:
-				rndp->rnd_type |= RAND_TYPE_TABLE;
-				break;
-			}
-			break;
-		}
-
-	case FSS_SRC:
-		{
-			int randsrc = (int)avd_get_int(value);
-
-			rndp->rnd_type &=
-			    (~(RAND_SRC_URANDOM | RAND_SRC_GENERATOR));
-
-			switch (randsrc) {
-			case FSV_URAND:
-				rndp->rnd_type |= RAND_SRC_URANDOM;
-				break;
-			case FSV_RAND48:
-				rndp->rnd_type |= RAND_SRC_GENERATOR;
-				break;
-			}
-			break;
-		}
-
-	case FSS_SEED:
-		rndp->rnd_seed = value;
-		break;
-
-	case FSS_GAMMA:
-		rndp->rnd_gamma = value;
-		break;
-
-	case FSS_MEAN:
-		rndp->rnd_mean = value;
-		break;
-
-	case FSS_MIN:
-		rndp->rnd_min = value;
-		break;
-
-	case FSS_ROUND:
-		rndp->rnd_round = value;
-		break;
-
-	default:
-		filebench_log(LOG_ERROR, "setrandvar: undefined attribute");
-	}
 }
 
 /*
