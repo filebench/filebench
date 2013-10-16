@@ -72,7 +72,6 @@ static GetLine *gl;
 char *execname;
 
 static int dofile = DOFILE_FALSE;
-static FILE *parentscript;
 
 static char *fbbasepath = FILEBENCHDIR;
 static char cwd[MAXPATHLEN];
@@ -135,8 +134,6 @@ static void parser_statsdump(cmd_t *cmd);
 static void parser_statsxmldump(cmd_t *cmd);
 static void parser_statsmultidump(cmd_t *cmd);
 static void parser_usage(cmd_t *cmd);
-static void parser_vars(cmd_t *cmd);
-static void parser_printvars(cmd_t *cmd);
 static void parser_system(cmd_t *cmd);
 static void parser_statssnap(cmd_t *cmd);
 static void parser_directory(cmd_t *cmd);
@@ -221,13 +218,13 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <ival> entity
 %type <val>  value
 
-%type <cmd> command inner_commands load_command run_command list_command psrun_command
+%type <cmd> command inner_commands run_command list_command psrun_command
 %type <cmd> proc_define_command files_define_command posset_define_command randvar_define_command
 %type <cmd> fo_define_command debug_command create_command
 %type <cmd> sleep_command stats_command set_command shutdown_command
 %type <cmd> foreach_command log_command system_command flowop_command
 %type <cmd> eventgen_command quit_command flowop_list thread_list
-%type <cmd> thread echo_command usage_command help_command vars_command
+%type <cmd> thread echo_command usage_command help_command
 %type <cmd> version_command enable_command multisync_command
 %type <cmd> warmup_command fscheck_command fsflush_command
 %type <cmd> set_integer_command set_other_command
@@ -302,13 +299,11 @@ command:
 | create_command
 | echo_command
 | usage_command
-| vars_command
 | foreach_command
 | fscheck_command
 | fsflush_command
 | help_command
 | list_command
-| load_command
 | log_command
 | run_command
 | psrun_command
@@ -486,14 +481,6 @@ usage_command: FSC_USAGE whitevar_string_list
 
 	$$->cmd_param_list = $2;
 	$$->cmd = parser_usage;
-};
-
-vars_command: FSC_VARS
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-
-	$$->cmd = parser_printvars;
 };
 
 enable_command: FSC_ENABLE FSE_MULTI
@@ -821,9 +808,6 @@ set_integer_command: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_INT
 		YYERROR;
 	$$->cmd_tgt1 = $2;
 	$$->cmd_qty = $4;
-	if (parentscript) {
-		parser_vars($$);
-	}
 	$$->cmd = parser_set_integer;
 }| FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VARIABLE
 {
@@ -832,9 +816,6 @@ set_integer_command: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_INT
 	var_assign_var($2, $4);
 	$$->cmd_tgt1 = $2;
 	$$->cmd_tgt2 = $4;
-	if (parentscript) {
-		parser_vars($$);
-	}
 	$$->cmd = parser_set_var;
 }
 | set_integer_command binary_op FSV_VAL_INT
@@ -877,10 +858,6 @@ set_other_command: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
 	var_assign_boolean($2, $4);
-	if (parentscript) {
-		$$->cmd_tgt1 = $2;
-		parser_vars($$);
-	}
 	$$->cmd = NULL;
 }
 | FSC_SET FSV_VARIABLE FSK_ASSIGN FSK_QUOTE FSV_WHITESTRING FSK_QUOTE
@@ -888,20 +865,12 @@ set_other_command: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
 	var_assign_string($2, $5);
-	if (parentscript) {
-		$$->cmd_tgt1 = $2;
-		parser_vars($$);
-	}
 	$$->cmd = NULL;
 }| FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_STRING
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
 	var_assign_string($2, $4);
-	if (parentscript) {
-		$$->cmd_tgt1 = $2;
-		parser_vars($$);
-	}
 	$$->cmd = NULL;
 } | FSC_SET FSE_MODE FSC_QUIT FSA_TIMEOUT
 {
@@ -1290,34 +1259,6 @@ flowop_command: FSC_FLOWOP name
 {
 	$1->cmd_attr_list = $2;
 };
-
-load_command: FSC_LOAD FSV_STRING
-{
-	FILE *newfile;
-	char loadfile[128];
-
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-
-	(void) strcpy(loadfile, $2);
-	(void) strcat(loadfile, ".f");
-
-	if ((newfile = fopen(loadfile, "r")) == NULL) {
-		(void) strcpy(loadfile, fbbasepath);
-		(void) strcat(loadfile, "/workloads/");
-		(void) strcat(loadfile, $2);
-		(void) strcat(loadfile, ".f");
-		if ((newfile = fopen(loadfile, "r")) == NULL) {
-			filebench_log(LOG_ERROR, "Cannot open %s", loadfile);
-			YYERROR;
-		}
-	}
-
-	parentscript = yyin;
-	yyin = newfile;
-	yy_switchfileparent(yyin);
-};
-
 
 entity: FSE_PROC {$$ = FSE_PROC;}
 | FSE_THREAD {$$ = FSE_THREAD;}
@@ -3673,27 +3614,6 @@ parser_help(cmd_t *cmd)
 	}
 }
 
-char *varstr = NULL;
-
-/*
- * Prints the string of all var definitions, if there is one.
- */
-static void
-parser_printvars(cmd_t *cmd)
-{
-	char *str, *c;
-
-	if (varstr) {
-		str = strdup(varstr);
-		for (c = str; *c != '\0'; c++) {
-			if ((char)*c == '$')
-				*c = ' ';
-		}
-		filebench_log(LOG_INFO, "%s", str);
-		free(str);
-	}
-}
-
 /*
  * Establishes multi-client synchronization socket with synch server.
  */
@@ -3738,39 +3658,6 @@ parser_domultisync(cmd_t *cmd)
 		value = 1;
 
 	mc_sync_synchronize((int)value);
-}
-
-/*
- * Used by the SET command to add a var and default value string to the
- * varstr string. It allocates a new, larger varstr string, copies the
- * old contents of varstr into it, then adds the new var string on the end.
- */
-static void
-parser_vars(cmd_t *cmd)
-{
-	char *string = cmd->cmd_tgt1;
-	char *newvars;
-
-	if (string == NULL)
-		return;
-
-	if (dofile == DOFILE_TRUE)
-		return;
-
-	if (varstr == NULL) {
-		newvars = malloc(strlen(string) + 2);
-		*newvars = 0;
-	} else {
-		newvars = malloc(strlen(varstr) + strlen(string) + 2);
-		(void) strcpy(newvars, varstr);
-	}
-	(void) strcat(newvars, string);
-	(void) strcat(newvars, " ");
-
-	if (varstr)
-		free(varstr);
-
-	varstr = newvars;
 }
 
 /*
@@ -5012,16 +4899,4 @@ alloc_list()
 
 	(void) memset(list, 0, sizeof (list_t));
 	return (list);
-}
-
-int
-yywrap()
-{
-	if (parentscript) {
-		yyin = parentscript;
-		yy_switchfilescript(yyin);
-		parentscript = NULL;
-		return (0);
-	} else
-		return (1);
 }

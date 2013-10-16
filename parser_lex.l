@@ -27,6 +27,7 @@
  */
 
 %option nounput
+%option noyywrap
 
 %{
 
@@ -77,7 +78,6 @@ fscheck		        { return FSC_FSCHECK; }
 fsflush		        { return FSC_FSFLUSH; }
 help		        { return FSC_HELP; }
 list		        { return FSC_LIST; }
-load                    { return FSC_LOAD; }
 log		        { return FSC_LOG; }
 nousestats		{ return FSC_NOUSESTATS; }
 run                     { return FSC_RUN; }
@@ -88,7 +88,6 @@ sleep                   { return FSC_SLEEP; }
 stats                   { return FSC_STATS; }
 system                  { return FSC_SYSTEM; }
 usage                   { return FSC_USAGE; }
-vars                    { return FSC_VARS; }
 version                 { return FSC_VERSION; }
 enable_osprof		{ return FSC_OSPROF_ENABLE; }
 disable_osprof		{ return FSC_OSPROF_DISABLE; }
