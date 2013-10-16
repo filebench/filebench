@@ -253,7 +253,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 
 commands: commands command
 {
-	if ($2->cmd != NULL)
+	if ($2->cmd)
 		$2->cmd($2);
 
 	free($2);
@@ -804,14 +804,16 @@ set_command:
 
 set_integer_command: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_INT
 {
-	if (($$ = alloc_cmd()) == NULL)
+	$$ = alloc_cmd();
+	if (!$$)
 		YYERROR;
 	$$->cmd_tgt1 = $2;
 	$$->cmd_qty = $4;
 	$$->cmd = parser_set_integer;
 }| FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VARIABLE
 {
-	if (($$ = alloc_cmd()) == NULL)
+	$$ = alloc_cmd();
+	if (!$$)
 		YYERROR;
 	var_assign_var($2, $4);
 	$$->cmd_tgt1 = $2;
@@ -4613,14 +4615,15 @@ alloc_cmd(void)
 {
 	cmd_t *cmd;
 
-	if ((cmd = malloc(sizeof (cmd_t))) == NULL) {
+	cmd = malloc(sizeof(*cmd));
+	if (!cmd) {
 		filebench_log(LOG_ERROR, "Alloc cmd failed");
-		return (NULL);
+		return NULL;
 	}
 
-	(void) memset(cmd, 0, sizeof (cmd_t));
+	memset(cmd, 0, sizeof (cmd_t));
 
-	return (cmd);
+	return cmd;
 }
 
 /*
@@ -4632,11 +4635,12 @@ alloc_attr(void)
 {
 	attr_t *attr;
 
-	if ((attr = malloc(sizeof (attr_t))) == NULL) {
+	attr = malloc(sizeof(*attr));
+	if (!attr)
 		return (NULL);
-	}
 
-	(void) memset(attr, 0, sizeof (attr_t));
+	(void) memset(attr, 0, sizeof(*attr));
+
 	return (attr);
 }
 
