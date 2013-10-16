@@ -18,6 +18,7 @@
  *
  * CDDL HEADER END
  */
+
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
@@ -29,11 +30,11 @@
 #include "filebench.h"
 
 /*
- * derived from  Solaris' sys/avl.h and sys/avl_impl.h
+ * Derived from Solaris' sys/avl.h and sys/avl_impl.h files.
  */
 
 /*
- * generic AVL tree implementation for Filebench use
+ * Generic AVL tree implementation for Filebench use.
  *
  * The interfaces provide an efficient way of implementing an ordered set of
  * data structures.
@@ -63,8 +64,8 @@
  * 	pointer to less than child
  * 	pointer to greater than child
  * 	a pointer to the parent of this node
- *	an indication  [0/1]  of which child I am of my parent
- * 	a "balance" (-1, 0, +1)  indicating which child tree is taller
+ *	which child [left(0) or right(1)] this node is for its parent
+ * 	a "balance" (-1, 0, +1) indicating which child tree is taller
  *
  * Since they only need 3 bits, the last two fields are packed into the
  * bottom bits of the parent pointer on 64 bit machines to save on space.
@@ -88,7 +89,7 @@ struct avl_node {
 #define	AVL_XBALANCE(n)		((n)->avl_balance)
 #define	AVL_SETBALANCE(n, b)	((n)->avl_balance = (short)(b))
 
-#else
+#else /* !defined(_LP64) && !(__WORDSIZE == 64) */
 
 /*
  * for 64 bit machines, avl_pcb contains parent pointer, balance and child_index
@@ -131,9 +132,7 @@ struct avl_node {
 #define	AVL_SETBALANCE(n, b)						\
 	((n)->avl_pcb = (uintptr_t)((((n)->avl_pcb & ~3) | ((b) + 1))))
 
-#endif
-
-
+#endif /* !defined(_LP64) && !(__WORDSIZE == 64) */
 
 /*
  * switch between a node and data pointer for a given tree
@@ -141,7 +140,6 @@ struct avl_node {
  */
 #define	AVL_NODE2DATA(n, o)	((void *)((uintptr_t)(n) - (o)))
 #define	AVL_DATA2NODE(d, o)	((struct avl_node *)((uintptr_t)(d) + (o)))
-
 
 
 /*

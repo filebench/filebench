@@ -18,6 +18,7 @@
  *
  * CDDL HEADER END
  */
+
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
@@ -25,8 +26,8 @@
 
 
 /*
- * AVL - generic AVL tree implementation for Filebench use.
- * -Adapted from the avl.c open source code used in the Solaris Kernel-
+ * Generic AVL tree implementation for Filebench use.
+ * Adapted from the avl.c open source code used in the Solaris kernel.
  *
  * A complete description of AVL trees can be found in many CS textbooks.
  *
