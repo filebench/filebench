@@ -39,7 +39,7 @@
 #include "eventgen.h"
 #include "fb_random.h"
 
-static var_t *var_find_dynamic(char *name);
+static var_t *var_find_special(char *name);
 
 /*
  * The filebench variables system has attribute value descriptors (avd_t) where
@@ -367,8 +367,8 @@ var_alloc_cmn(char *name, int var_type)
 		var_listp = &filebench_shm->shm_var_list;
 		break;
 
-	case VAR_TYPE_DYNAMIC:
-		var_listp = &filebench_shm->shm_var_dyn_list;
+	case VAR_TYPE_SPECIAL:
+		var_listp = &filebench_shm->shm_var_special_list;
 		break;
 
 	case VAR_TYPE_LOCAL:
@@ -400,9 +400,9 @@ var_alloc(char *name)
 }
 
 static var_t *
-var_alloc_dynamic(char *name)
+var_alloc_special(char *name)
 {
-	return var_alloc_cmn(name, VAR_TYPE_DYNAMIC);
+	return var_alloc_cmn(name, VAR_TYPE_SPECIAL);
 }
 
 /*
@@ -602,7 +602,7 @@ var_ref_attr(char *name)
 
 	var = var_find(name);
 	if (!var)
-		var = var_find_dynamic(name);
+		var = var_find_special(name);
 
 	if (!var)
 		var = var_alloc(name);
@@ -665,7 +665,7 @@ var_to_string(char *name)
 
 	var = var_find(name);
 	if (!var)
-		var = var_find_dynamic(name);
+		var = var_find_special(name);
 
 	if (!var)
 		return NULL;
@@ -1001,13 +1001,13 @@ var_find_environment(var_t *var)
 }
 
 static var_t *
-var_find_dynamic(char *name)
+var_find_special(char *name)
 {
 	var_t *var = NULL;
-	var_t *v = filebench_shm->shm_var_dyn_list;
+	var_t *v = filebench_shm->shm_var_special_list;
 	var_t *rtn;
 
-	for (v = filebench_shm->shm_var_dyn_list; v; v = v->var_next) {
+	for (v = filebench_shm->shm_var_special_list; v; v = v->var_next) {
 		if (!strcmp(v->var_name, name)) {
 			var = v;
 			break;
@@ -1015,7 +1015,7 @@ var_find_dynamic(char *name)
 	}
 
 	if (!var)
-		var = var_alloc_dynamic(name);
+		var = var_alloc_special(name);
 
 	/* Internal system control variable */
 	if (*name == '{') {

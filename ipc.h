@@ -80,7 +80,7 @@
 /* 16 flowops per threadflow seems reasonable */
 #define	FILEBENCH_NFLOWOPS 		(16 * 1024)
 /* variables are not the only one that are specified
-   explicitly in the .f file. Some internal/dynamic
+   explicitly in the .f file. Some special 
    variables are used within FB itself. So, let's
    put this value to some save large value */
 #define	FILEBENCH_NVARIABLES		(1024)
@@ -143,7 +143,7 @@ typedef struct filebench_shm {
 	 */
 
 	var_t		*shm_var_list;	   /* normal variables */
-	var_t		*shm_var_dyn_list; /* special system variables */
+	var_t		*shm_var_special_list; /* special system variables */
 	var_t		*shm_var_loc_list; /* variables local to comp flowops */
 	randdist_t	*shm_rand_list;	   /* random variables */
 

@@ -90,7 +90,7 @@ typedef struct var {
 
 /* basic var types */
 #define	VAR_TYPE_GLOBAL		0x0000	/* global variable */
-#define	VAR_TYPE_DYNAMIC	0x1000	/* dynamic variable */
+#define	VAR_TYPE_SPECIAL	0x1000	/* special variable */
 #define	VAR_TYPE_RANDOM		0x2000	/* random variable */
 #define	VAR_TYPE_LOCAL		0x3000	/* local variable */
 #define	VAR_TYPE_MASK		0xf000
