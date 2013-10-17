@@ -40,10 +40,6 @@
 #include "fb_random.h"
 
 static var_t *var_find_dynamic(char *name);
-static boolean_t var_get_bool(var_t *var);
-static uint64_t var_get_int(var_t *var);
-static double var_get_dbl(var_t *var);
-static char* var_get_str(var_t *var);
 
 /*
  * The filebench variables system has attribute value descriptors (avd_t) where
@@ -96,31 +92,10 @@ avd_get_type_string(avd_t avd)
 		return "double float value";
 	case AVD_VARVAL_DBL:
 		return "points to double float in var_t";
-	case AVD_IND_VAR:
-		return "points to a var_t";
-	case AVD_IND_RANDVAR:
+	case AVD_RANDVAR:
 		return "points to var_t's random distribution object";
 	default:
 		return "illegal avd type";
-	}
-}
-
-static char *
-var_get_type_string(var_t *v)
-{
-	switch (v->var_type & VAR_TYPE_SET_MASK) {
-	case VAR_TYPE_BOOL_SET:
-		return "boolean";
-	case VAR_TYPE_INT_SET:
-		return "integer";
-	case VAR_TYPE_STR_SET:
-		return "string";
-	case VAR_TYPE_DBL_SET:
-		return "double float";
-	case VAR_TYPE_RAND_SET:
-		return "random";
-	default:
-		return "empty";
 	}
 }
 
@@ -141,10 +116,7 @@ avd_get_int(avd_t avd)
 			return *(avd->avd_val.intptr);
 		return 0;
 
-	case AVD_IND_VAR:
-		return var_get_int(avd->avd_val.varptr);
-
-	case AVD_IND_RANDVAR:
+	case AVD_RANDVAR:
 		rndp = avd->avd_val.randptr;
 		if (rndp)
 			return (uint64_t)rndp->rnd_get(rndp);
@@ -183,10 +155,7 @@ avd_get_dbl(avd_t avd)
 			return *(avd->avd_val.dblptr);
 		return 0.0;
 
-	case AVD_IND_VAR:
-		return var_get_dbl(avd->avd_val.varptr);
-
-	case AVD_IND_RANDVAR:
+	case AVD_RANDVAR:
 		rndp = avd->avd_val.randptr;
 		if (rndp)
 			return rndp->rnd_get(rndp);
@@ -225,9 +194,6 @@ avd_get_bool(avd_t avd)
 			return TRUE;
 		return FALSE;
 
-	case AVD_IND_VAR:
-		return var_get_bool(avd->avd_val.varptr);
-
 	default:
 		filebench_log(LOG_ERROR,
 			"Attempt to get boolean from %s avd",
@@ -250,9 +216,6 @@ avd_get_str(avd_t avd)
 		if (avd->avd_val.strptr)
 			return *avd->avd_val.strptr;
 		return NULL;
-
-	case AVD_IND_VAR:
-		return var_get_str(avd->avd_val.varptr);
 
 	default:
 		filebench_log(LOG_ERROR,
@@ -362,16 +325,8 @@ avd_alloc_var_ptr(var_t *var)
 		break;
 
 	case VAR_TYPE_RAND_SET:
-		avd->avd_type = AVD_IND_RANDVAR;
+		avd->avd_type = AVD_RANDVAR;
 		avd->avd_val.randptr = var->var_val.randptr;
-		break;
-
-	case VAR_TYPE_INDVAR_SET:
-		avd->avd_type = AVD_IND_VAR;
-		if ((var->var_type & VAR_INDVAR_MASK) == VAR_IND_ASSIGN)
-			avd->avd_val.varptr = var->var_varptr1;
-		else
-			avd->avd_val.varptr = var;
 		break;
 
 	default:
@@ -488,22 +443,6 @@ var_find_list_only(char *name, var_t *var_list)
 	}
 
 	return NULL;
-}
-
-/*
- * Searches for var_t with name "name" in the supplied list.
- * If not found there, checks the local and global lists.
- */
-static var_t *
-var_find_list(char *name, var_t *var_list)
-{
-	var_t *var;
-
-	var = var_find_list_only(name, var_list);
-	if (var)
-		return var;
-
-	return var_find(name);
 }
 
 /*
@@ -683,7 +622,6 @@ var_ref_attr(char *name)
 static char *
 __var_to_string(var_t *var)
 {
-	var_t *ivp;
 	char tmp[128];
 
 	if ((var->var_type & VAR_TYPE_MASK) == VAR_TYPE_RANDOM) {
@@ -715,12 +653,6 @@ __var_to_string(var_t *var)
 		return fb_stralloc(tmp);
 	}
 
-	if (VAR_HAS_INDVAR(var)) {
-		ivp = var->var_varptr1;
-		if (ivp)
-			return __var_to_string(ivp);
-	}
-
 	return fb_stralloc("No default");
 }
 
@@ -739,93 +671,6 @@ var_to_string(char *name)
 		return NULL;
 
 	return __var_to_string(var);
-}
-
-static boolean_t
-var_get_bool(var_t *var)
-{
-	if (!var)
-		return 0;
-
-	if (VAR_HAS_BOOLEAN(var))
-		return var->var_val.boolean;
-
-	if (VAR_HAS_INTEGER(var)) {
-		if (var->var_val.integer)
-			return TRUE;
-		return FALSE;
-	}
-
-	filebench_log(LOG_ERROR,
-		"Attempt to get boolean from %s var $%s",
-		var_get_type_string(var), var->var_name);
-	return FALSE;
-}
-
-static uint64_t
-var_get_int(var_t *var)
-{
-	randdist_t *rndp;
-
-	if (!var)
-		return 0;
-
-	if (VAR_HAS_INTEGER(var))
-		return var->var_val.integer;
-
-	if (VAR_HAS_RANDDIST(var)) {
-		rndp = var->var_val.randptr;
-		if (rndp)
-			return (uint64_t)rndp->rnd_get(rndp);
-		return 0;
-	}
-
-	filebench_log(LOG_ERROR,
-		"Attempt to get integer from %s var $%s",
-		var_get_type_string(var), var->var_name);
-	return 0;
-}
-
-static double
-var_get_dbl(var_t *var)
-{
-	randdist_t *rndp;
-
-	if (!var)
-		return 0.0;
-
-	if (VAR_HAS_INTEGER(var))
-		return (double)var->var_val.integer;
-
-	if (VAR_HAS_DOUBLE(var))
-		return var->var_val.dbl_flt;
-
-	if (VAR_HAS_RANDDIST(var)) {
-		rndp = var->var_val.randptr;
-		if (rndp)
-			return rndp->rnd_get(rndp);
-		return 0.0;
-	}
-
-	filebench_log(LOG_ERROR,
-		"Attempt to get double float from %s var $%s",
-		var_get_type_string(var), var->var_name);
-	return 0.0;
-}
-
-static char *
-var_get_str(var_t *var)
-{
-	if (!var)
-		return 0;
-
-	if (VAR_HAS_STRING(var))
-		return var->var_val.string;
-
-	filebench_log(LOG_ERROR,
-		"Attempt to get string from %s var $%s",
-		var_get_type_string(var), var->var_name);
-	return NULL;
 }
 
 char *
@@ -920,9 +765,6 @@ var_copy(var_t *dst_var, var_t *src_var) {
 		VAR_SET_STR(dst_var, strptr);
 	}
 
-	if (VAR_HAS_INDVAR(src_var))
-		VAR_SET_INDVAR(dst_var, src_var->var_varptr1);
-
 	return 0;
 }
 
@@ -1001,15 +843,6 @@ var_lvar_assign_var(char *name, char *src_name)
 	if (!dst_var) {
 		filebench_log(LOG_ERROR, "Cannot assign variable %s", name);
 		return NULL;
-	}
-
-	/*
-	 * if referencing another local var which is currently
-	 * empty, indirect to it
-	 */
-	if ((src_var->var_type & VAR_TYPE_MASK) == VAR_TYPE_LOCAL) {
-		VAR_SET_INDVAR(dst_var, src_var);
-		return dst_var;
 	}
 
 	if (VAR_HAS_BOOLEAN(src_var)) {
@@ -1215,28 +1048,8 @@ var_find_dynamic(char *name)
 void
 avd_update(avd_t *avdp, var_t *lvar_list)
 {
-	var_t *old_lvar, *new_lvar;
-
-	if ((*avdp)->avd_type == AVD_IND_VAR) {
-
-		/* Make sure there is a local var */
-		old_lvar = (*avdp)->avd_val.varptr;
-		if (!old_lvar) {
-			filebench_log(LOG_ERROR,
-			"avd_update: local var not found");
-			return;
-		}
-	} else {
-		/* Empty or not indirect, so no update needed */
-		return;
-	}
-
-	/* allocate a new avd using the new or old lvar contents */
-	new_lvar = var_find_list(old_lvar->var_name, lvar_list);
-	if (new_lvar)
-		(*avdp) = avd_alloc_var_ptr(new_lvar);
-	else
-		(*avdp) = avd_alloc_var_ptr(old_lvar);
+	/* Empty or not indirect, so no update needed */
+	return;
 }
 
 void
@@ -1258,22 +1071,5 @@ var_update_comp_lvars(var_t *newlvar, var_t *proto_comp_vars,
 	if ((newlvar->var_type & VAR_TYPE_SET_MASK) == 0) {
 		/* copy value from prototype lvar to new lvar */
 		(void) var_copy(newlvar, proto_lvar);
-	}
-
-	/* If proto lvar is indirect, see if we can colapse indirection */
-	if (VAR_HAS_INDVAR(proto_lvar)) {
-		var_t *uplvp;
-
-		uplvp = (var_t *)proto_lvar->var_varptr1;
-
-		/* search for more current uplvar on comp master list */
-		if (mstr_lvars) {
-			uplvp = var_find_list_only(
-				uplvp->var_name, mstr_lvars);
-			VAR_SET_INDVAR(newlvar, uplvp);
-		}
-
-		if (VAR_HAS_INDVAR(uplvp))
-			VAR_SET_INDVAR(newlvar, uplvp->var_varptr1);
 	}
 }

@@ -42,8 +42,7 @@ typedef enum avd_type {
 	AVD_VARVAL_STR,		/* avd points to a string in a var_t */
 	AVD_VAL_DBL,		/* avd contains a double float */
 	AVD_VARVAL_DBL,		/* avd points to the double in a var_t */
-	AVD_IND_VAR,		/* avd points a var_t */
-	AVD_IND_RANDVAR		/* avd points to the randdist_t associated */
+	AVD_RANDVAR		/* avd points to the randdist_t associated */
 				/* with a random type var_t */
 } avd_type_t;
 
@@ -64,11 +63,11 @@ typedef struct avd {
 	} avd_val;
 } *avd_t;
 
-#define	AVD_IS_RANDOM(vp)	((vp) && ((vp)->avd_type == AVD_IND_RANDVAR))
+#define	AVD_IS_RANDOM(vp)	((vp) && ((vp)->avd_type == AVD_RANDVAR))
 #define	AVD_IS_STRING(vp)	((vp) && (((vp)->avd_type == AVD_VAL_STR) || \
 				((vp)->avd_type == AVD_VARVAL_STR)))
-#define	AVD_IS_VAR(vp)		((vp) && (((vp)->avd_type == AVD_IND_VAR) || \
-				((vp)->avd_type == AVD_IND_RANDVAR) || \
+#define	AVD_IS_VAR(vp)		((vp) && \
+				(((vp)->avd_type == AVD_RANDVAR) || \
 				((vp)->avd_type == AVD_VARVAL_BOOL) || \
 				((vp)->avd_type == AVD_VARVAL_INT) || \
 				((vp)->avd_type == AVD_VARVAL_STR) || \
@@ -102,45 +101,7 @@ typedef struct var {
 #define	VAR_TYPE_STR_SET	0x0300	/* var contains a string */
 #define	VAR_TYPE_DBL_SET	0x0400	/* var contains a double */
 #define	VAR_TYPE_RAND_SET	0x0500	/* var contains a randdist pointer */
-#define	VAR_TYPE_INDVAR_SET	0x0700	/* var points to another variable(s) */
 #define	VAR_TYPE_SET_MASK	0x0f00
-
-/* indirection to another variable or variables with binary op */
-#define	VAR_IND_ASSIGN		0x0000	/* just assignment to another var */
-#define	VAR_IND_BINOP_INT	0x0010	/* binary op with an integer */
-#define	VAR_IND_BINOP_DBL	0x0020	/* binary op with a double float */
-#define	VAR_IND_BINOP_VAR	0x0030	/* binary op with another var */
-#define	VAR_INDBINOP_MASK	0x00f0
-
-#define	VAR_IND_VAR_SUM_VC	0x0001	/* var sums var | cnst and *varptr1 */
-#define	VAR_IND_VAR_DIF_VC	0x0002	/* var subs var | cnst and *varptr1 */
-#define	VAR_IND_C_DIF_VAR	0x0003	/* var subs *varptr1 and constant */
-#define	VAR_IND_VAR_MUL_VC	0x0005	/* var muls var | cnst and *varptr1 */
-#define	VAR_IND_VAR_DIV_VC	0x0006	/* var divs var | cnst by *varptr1 */
-#define	VAR_IND_C_DIV_VAR	0x0007	/* var divs *varptr1 by constant */
-#define	VAR_INDVAR_MASK		0x000f
-
-/* Binary ops between an integer and a variable */
-#define	VAR_IND_INT_SUM_IV	(VAR_IND_BINOP_INT | VAR_IND_VAR_SUM_VC)
-#define	VAR_IND_IV_DIF_INT	(VAR_IND_BINOP_INT | VAR_IND_VAR_DIF_VC)
-#define	VAR_IND_INT_DIF_IV	(VAR_IND_BINOP_INT | VAR_IND_C_DIF_VAR)
-#define	VAR_IND_INT_MUL_IV	(VAR_IND_BINOP_INT | VAR_IND_VAR_MUL_VC)
-#define	VAR_IND_IV_DIV_INT	(VAR_IND_BINOP_INT | VAR_IND_VAR_DIV_VC)
-#define	VAR_IND_INT_DIV_IV	(VAR_IND_BINOP_INT | VAR_IND_C_DIV_VAR)
-
-/* Binary ops between a double float and a variable */
-#define	VAR_IND_DBL_SUM_IV	(VAR_IND_BINOP_DBL | VAR_IND_VAR_SUM_VC)
-#define	VAR_IND_IV_DIF_DBL	(VAR_IND_BINOP_DBL | VAR_IND_VAR_DIF_VC)
-#define	VAR_IND_DBL_DIF_IV	(VAR_IND_BINOP_DBL | VAR_IND_C_DIF_VAR)
-#define	VAR_IND_DBL_MUL_IV	(VAR_IND_BINOP_DBL | VAR_IND_VAR_MUL_VC)
-#define	VAR_IND_IV_DIV_DBL	(VAR_IND_BINOP_DBL | VAR_IND_VAR_DIV_VC)
-#define	VAR_IND_DBL_DIV_IV	(VAR_IND_BINOP_DBL | VAR_IND_C_DIV_VAR)
-
-/* Binary ops between two variables: varptr2 op varptr1 */
-#define	VAR_IND_IV_SUM_IV	(VAR_IND_BINOP_VAR | VAR_IND_VAR_SUM_VC)
-#define	VAR_IND_IV_DIF_IV	(VAR_IND_BINOP_VAR | VAR_IND_VAR_DIF_VC)
-#define	VAR_IND_IV_MUL_IV	(VAR_IND_BINOP_VAR | VAR_IND_VAR_MUL_VC)
-#define	VAR_IND_IV_DIV_IV	(VAR_IND_BINOP_VAR | VAR_IND_VAR_DIV_VC)
 
 /* useful macroses */
 
@@ -158,14 +119,6 @@ typedef struct var {
 
 #define	VAR_HAS_RANDDIST(vp) \
 	(((vp)->var_type & VAR_TYPE_SET_MASK) == VAR_TYPE_RAND_SET)
-
-#define	VAR_HAS_INDVAR(vp) \
-	((((vp)->var_type & VAR_TYPE_SET_MASK) == VAR_TYPE_INDVAR_SET) && \
-	(((vp)->var_type & VAR_INDBINOP_MASK) == VAR_IND_ASSIGN))
-
-#define	VAR_HAS_BINOP(vp) \
-	((((vp)->var_type & VAR_TYPE_SET_MASK) == VAR_TYPE_INDVAR_SET) && \
-	(((vp)->var_type & VAR_INDBINOP_MASK) != VAR_IND_ASSIGN))
 
 #define	VAR_SET_BOOL(vp, val)	\
 	{			\
@@ -203,24 +156,6 @@ typedef struct var {
 		(vp)->var_type = \
 		    (((vp)->var_type & (~VAR_TYPE_SET_MASK)) | \
 		    VAR_TYPE_RAND_SET); \
-	}
-
-#define	VAR_SET_INDVAR(vp, val)	\
-	{			\
-		(vp)->var_varptr1 = (val); \
-		(vp)->var_type = \
-		    (((vp)->var_type & (~(VAR_TYPE_SET_MASK | \
-		    VAR_INDVAR_MASK))) | \
-		    VAR_TYPE_INDVAR_SET); \
-	}
-
-#define	VAR_SET_BINOP_INDVAR(vp, val, st)	\
-	{			\
-		(vp)->var_varptr1 = (val); \
-		(vp)->var_type = \
-		    (((vp)->var_type & (~(VAR_TYPE_SET_MASK | \
-		    VAR_INDVAR_MASK))) | \
-		    (VAR_TYPE_INDVAR_SET | st)); \
 	}
 
 avd_t avd_bool_alloc(boolean_t bool);
