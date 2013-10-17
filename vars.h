@@ -18,8 +18,9 @@
  *
  * CDDL HEADER END
  */
+
 /*
- * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  * Use is subject to license terms.
  */
 
@@ -35,8 +36,8 @@ typedef enum avd_type {
 	AVD_INVALID = 0,	/* avd is empty */
 	AVD_VAL_BOOL,		/* avd contains a boolean_t */
 	AVD_VARVAL_BOOL,	/* avd points to the boolean_t in a var_t */
-	AVD_VAL_INT,		/* avd contains an fbint_t */
-	AVD_VARVAL_INT,		/* avd points to the fbint_t in a var_t */
+	AVD_VAL_INT,		/* avd contains an uint64_t */
+	AVD_VARVAL_INT,		/* avd points to the uint64_t in a var_t */
 	AVD_VAL_STR,		/* avd contains a sting (*char) */
 	AVD_VARVAL_STR,		/* avd points to a string in a var_t */
 	AVD_VAL_DBL,		/* avd contains a double float */
@@ -46,15 +47,14 @@ typedef enum avd_type {
 				/* with a random type var_t */
 } avd_type_t;
 
-
 /* Attribute Value Descriptor */
 typedef struct avd {
-	avd_type_t  avd_type;
+	avd_type_t avd_type;
 	union {
 		boolean_t	boolval;
 		boolean_t	*boolptr;
-		fbint_t		intval;
-		fbint_t		*intptr;
+		uint64_t	intval;
+		uint64_t	*intptr;
 		double		dblval;
 		double		*dblptr;
 		char		*strval;
@@ -68,16 +68,19 @@ typedef struct avd {
 #define	AVD_IS_STRING(vp)	((vp) && (((vp)->avd_type == AVD_VAL_STR) || \
 				((vp)->avd_type == AVD_VARVAL_STR)))
 #define	AVD_IS_VAR(vp)		((vp) && (((vp)->avd_type == AVD_IND_VAR) || \
+				((vp)->avd_type == AVD_IND_RANDVAR) || \
+				((vp)->avd_type == AVD_VARVAL_BOOL) || \
 				((vp)->avd_type == AVD_VARVAL_INT) || \
+				((vp)->avd_type == AVD_VARVAL_STR) || \
 				((vp)->avd_type == AVD_VARVAL_DBL)))
 
 typedef struct var {
 	char		*var_name;
-	int		var_type;
+	int		var_type;	/* for types and subtypes below */
 	struct var	*var_next;
 	union {
 		boolean_t	boolean;
-		fbint_t		integer;
+		uint64_t		integer;
 		double		dbl_flt;
 		char		*string;
 		struct randdist *randptr;
@@ -88,9 +91,9 @@ typedef struct var {
 
 /* basic var types */
 #define	VAR_TYPE_GLOBAL		0x0000	/* global variable */
-#define	VAR_TYPE_DYNAMIC	0x1000	/* Dynamic variable */
+#define	VAR_TYPE_DYNAMIC	0x1000	/* dynamic variable */
 #define	VAR_TYPE_RANDOM		0x2000	/* random variable */
-#define	VAR_TYPE_LOCAL		0x3000	/* Local variable */
+#define	VAR_TYPE_LOCAL		0x3000	/* local variable */
 #define	VAR_TYPE_MASK		0xf000
 
 /* various var subtypes that a var can be set to */
@@ -221,31 +224,31 @@ typedef struct var {
 	}
 
 avd_t avd_bool_alloc(boolean_t bool);
-avd_t avd_int_alloc(fbint_t integer);
+avd_t avd_int_alloc(uint64_t integer);
 avd_t avd_str_alloc(char *string);
 boolean_t avd_get_bool(avd_t);
-fbint_t avd_get_int(avd_t);
+uint64_t avd_get_int(avd_t);
 double avd_get_dbl(avd_t);
 char *avd_get_str(avd_t);
 void avd_update(avd_t *avdp, var_t *lvar_list);
 avd_t var_ref_attr(char *name);
 int var_assign_boolean(char *name, boolean_t bool);
-int var_assign_integer(char *name, fbint_t integer);
+int var_assign_integer(char *name, uint64_t integer);
 int var_assign_double(char *name, double dbl);
 int var_assign_string(char *name, char *string);
 int var_assign_var(char *name, char *string);
-int var_assign_op_var_int(char *name, int optype, char *src1, fbint_t src2);
+int var_assign_op_var_int(char *name, int optype, char *src1, uint64_t src2);
 int var_assign_op_var_var(char *name, int optype, char *src1, char *src2);
 void var_update_comp_lvars(var_t *newlvar, var_t *proto_comp_vars,
-    var_t *mstr_lvars);
+				var_t *mstr_lvars);
 var_t *var_define_randvar(char *name);
 var_t *var_find_randvar(char *name);
 boolean_t var_to_boolean(char *name);
-fbint_t var_to_integer(char *name);
+uint64_t var_to_integer(char *name);
 double var_to_double(char *name);
 var_t *var_lvar_alloc_local(char *name);
 var_t *var_lvar_assign_boolean(char *name, boolean_t);
-var_t *var_lvar_assign_integer(char *name, fbint_t);
+var_t *var_lvar_assign_integer(char *name, uint64_t);
 var_t *var_lvar_assign_double(char *name, double);
 var_t *var_lvar_assign_string(char *name, char *string);
 var_t *var_lvar_assign_var(char *name, char *src_name);
