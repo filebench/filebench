@@ -331,7 +331,7 @@ fatal:
 		    line);
 
 		if (my_procflow == NULL)
-			(void) fprintf(stderr, " on line %d", lex_lineno);
+			(void) fprintf(stderr, " around line %d", lex_lineno);
 
 		(void) fprintf(stderr, "\n");
 		(void) fflush(stderr);
