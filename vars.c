@@ -39,8 +39,6 @@
 #include "eventgen.h"
 #include "fb_random.h"
 
-static var_t *var_find_special(char *name);
-
 /*
  * The filebench variables system has attribute value descriptors (avd_t) where
  * an avd contains a boolean, integer, double, string, random distribution
@@ -405,33 +403,6 @@ var_alloc_special(char *name)
 	return var_alloc_cmn(name, VAR_TYPE_SPECIAL);
 }
 
-/*
- * Searches for var_t with name "name" in the shm_var_loc_list,
- * then, if not found, in the normal shm_var_list. If a matching
- * local or normal var is found, returns a pointer to the var_t,
- * otherwise returns NULL.
- */
-static var_t *
-var_find(char *name)
-{
-	var_t *var;
-
-	for (var = filebench_shm->shm_var_loc_list; var; var = var->var_next) {
-		if (!strcmp(var->var_name, name))
-			return var;
-	}
-
-	for (var = filebench_shm->shm_var_list; var; var = var->var_next) {
-		if (!strcmp(var->var_name, name))
-			return (var);
-	}
-
-	return NULL;
-}
-
-/*
- * Searches for var_t with name "name" in the supplied list.
- */
 static var_t *
 var_find_list_only(char *name, var_t *var_list)
 {
@@ -443,6 +414,130 @@ var_find_list_only(char *name, var_t *var_list)
 	}
 
 	return NULL;
+}
+
+static var_t *
+var_find_local_normal(char *name)
+{
+	var_t *var;
+
+	var = var_find_list_only(name, filebench_shm->shm_var_loc_list);
+	if (!var)
+		var = var_find_list_only(name, filebench_shm->shm_var_list);
+
+	return var;
+}
+
+static var_t *
+var_find_internal(var_t *var)
+{
+	char *n = fb_stralloc(var->var_name);
+	char *name = n;
+	var_t *rtn = NULL;
+
+	name++;
+	if (name[strlen(name) - 1] != '}')
+		return NULL;
+	name[strlen(name) - 1] = 0;
+
+	if (!strncmp(name, STATS_VAR, strlen(STATS_VAR)))
+		rtn = stats_findvar(var, name + strlen(STATS_VAR));
+
+	if (!strcmp(name, EVENTGEN_VAR))
+		rtn = eventgen_ratevar(var);
+
+	if (!strcmp(name, DATE_VAR))
+		rtn = date_var(var);
+
+	if (!strcmp(name, SCRIPT_VAR))
+		rtn = script_var(var);
+
+	if (!strcmp(name, HOST_VAR))
+		rtn = host_var(var);
+
+	free(n);
+
+	return rtn;
+}
+
+static var_t *
+var_find_environment(var_t *var)
+{
+	char *n = fb_stralloc(var->var_name);
+	char *name = n;
+	char *strptr;
+
+	name++;
+	if (name[strlen(name) - 1] != ')') {
+		free(n);
+		return NULL;
+	}
+
+	name[strlen(name) - 1] = '\0';
+
+	strptr = getenv(name);
+	if (strptr) {
+		VAR_SET_STR(var, strptr);
+		free(n);
+		return var;
+	} else {
+		free(n);
+		return NULL;
+	}
+}
+
+static var_t *
+var_find_special(char *name)
+{
+	var_t *var = NULL;
+	var_t *v = filebench_shm->shm_var_special_list;
+	var_t *rtn;
+
+	for (v = filebench_shm->shm_var_special_list; v; v = v->var_next) {
+		if (!strcmp(v->var_name, name)) {
+			var = v;
+			break;
+		}
+	}
+
+	if (!var)
+		var = var_alloc_special(name);
+
+	/* Internal system control variable */
+	if (*name == '{') {
+		rtn = var_find_internal(var);
+		if (!rtn)
+			filebench_log(LOG_ERROR,
+			"Cannot find internal variable %s",
+			var->var_name);
+		return rtn;
+	}
+
+	/* Lookup variable in environment */
+	if (*name == '(') {
+		rtn = var_find_environment(var);
+		if (!rtn)
+			filebench_log(LOG_ERROR,
+			"Cannot find environment variable %s",
+			var->var_name);
+		return rtn;
+	}
+
+	return NULL;
+}
+
+
+
+static var_t *
+var_find_local_normal_special(char *name)
+{
+	var_t *var;
+
+	var = var_find_local_normal(name);
+	if (!var)
+		var = var_find_special(name);
+
+	return var;
 }
 
 /*
@@ -463,7 +558,7 @@ var_find_alloc(char *name)
 	/* ommits $ sign in the beginning */
 	name += 1;
 
-	var = var_find(name);
+	var = var_find_local_normal(name);
 	if (!var)
 		var = var_alloc(name);
 
@@ -528,7 +623,7 @@ var_find_randvar(char *name)
 
 	name += 1;
 
-	newvar = var_find(name);
+	newvar = var_find_local_normal(name);
 	if (!newvar) {
 		filebench_log(LOG_ERROR,
 			"failed to locate random variable $%s\n", name);
@@ -559,7 +654,7 @@ var_define_randvar(char *name)
 	name += 1;
 
 	/* make sure variable doesn't already exist */
-	if (var_find(name)) {
+	if (var_find_local_normal(name)) {
 		filebench_log(LOG_ERROR, "variable name already in use\n");
 		return NULL;
 	}
@@ -586,12 +681,12 @@ var_define_randvar(char *name)
 }
 
 /*
- * Searches for the named var, and if found returns an avd_t
- * pointing to the var's var_integer, var_string or var_double
- * as appropriate. If not found, attempts to allocate
- * a var named "name" and returns an avd_t to it with
- * no value set. If the var cannot be found or allocated, an
- * error is logged and the run is terminated.
+ * This function is called during the workload description parsing prior to the
+ * execution phase. It is called when parser encounters a variable used as a
+ * value (for attributes or command arguments, e.g., instances=$myinstances).
+ *
+ * At this point, the user might or might NOT have set the value (and consequently
+ * its type is not known as well).
  */
 avd_t
 var_ref_attr(char *name)
@@ -600,10 +695,7 @@ var_ref_attr(char *name)
 
 	name += 1;
 
-	var = var_find(name);
-	if (!var)
-		var = var_find_special(name);
-
+	var = var_find_local_normal_special(name);
 	if (!var)
 		var = var_alloc(name);
 
@@ -663,10 +755,7 @@ var_to_string(char *name)
 
 	name += 1;
 
-	var = var_find(name);
-	if (!var)
-		var = var_find_special(name);
-
+	var = var_find_local_normal_special(name);
 	if (!var)
 		return NULL;
 
@@ -680,7 +769,7 @@ var_randvar_to_string(char *name, int param_name)
 	uint64_t value;
 	char tmp[128];
 
-	var = var_find(name + 1);
+	var = var_find_local_normal(name + 1);
 	if (!var)
 		return var_to_string(name);
 
@@ -776,7 +865,7 @@ var_assign_string(char *name, char *string)
 
 	name += 1;
 
-	var = var_find(name);
+	var = var_find_local_normal(name);
 	if (!var)
 		var = var_alloc(name);
 
@@ -832,7 +921,7 @@ var_lvar_assign_var(char *name, char *src_name)
 
 	src_name += 1;
 
-	src_var = var_find(src_name);
+	src_var = var_find_local_normal(src_name);
 	if (!src_var) {
 		filebench_log(LOG_ERROR,
 			"Cannot find source variable %s", src_name);
@@ -940,104 +1029,6 @@ var_lvar_assign_string(char *name, char *string)
 	VAR_SET_STR(var, strptr);
 
 	return var;
-}
-
-static var_t *
-var_find_internal(var_t *var)
-{
-	char *n = fb_stralloc(var->var_name);
-	char *name = n;
-	var_t *rtn = NULL;
-
-	name++;
-	if (name[strlen(name) - 1] != '}')
-		return NULL;
-	name[strlen(name) - 1] = 0;
-
-	if (!strncmp(name, STATS_VAR, strlen(STATS_VAR)))
-		rtn = stats_findvar(var, name + strlen(STATS_VAR));
-
-	if (!strcmp(name, EVENTGEN_VAR))
-		rtn = eventgen_ratevar(var);
-
-	if (!strcmp(name, DATE_VAR))
-		rtn = date_var(var);
-
-	if (!strcmp(name, SCRIPT_VAR))
-		rtn = script_var(var);
-
-	if (!strcmp(name, HOST_VAR))
-		rtn = host_var(var);
-
-	free(n);
-
-	return rtn;
-}
-
-static var_t *
-var_find_environment(var_t *var)
-{
-	char *n = fb_stralloc(var->var_name);
-	char *name = n;
-	char *strptr;
-
-	name++;
-	if (name[strlen(name) - 1] != ')') {
-		free(n);
-		return NULL;
-	}
-
-	name[strlen(name) - 1] = '\0';
-
-	strptr = getenv(name);
-	if (strptr) {
-		VAR_SET_STR(var, strptr);
-		free(n);
-		return var;
-	} else {
-		free(n);
-		return NULL;
-	}
-}
-
-static var_t *
-var_find_special(char *name)
-{
-	var_t *var = NULL;
-	var_t *v = filebench_shm->shm_var_special_list;
-	var_t *rtn;
-
-	for (v = filebench_shm->shm_var_special_list; v; v = v->var_next) {
-		if (!strcmp(v->var_name, name)) {
-			var = v;
-			break;
-		}
-	}
-
-	if (!var)
-		var = var_alloc_special(name);
-
-	/* Internal system control variable */
-	if (*name == '{') {
-		rtn = var_find_internal(var);
-		if (!rtn)
-			filebench_log(LOG_ERROR,
-			"Cannot find internal variable %s",
-			var->var_name);
-		return rtn;
-	}
-
-	/* Lookup variable in environment */
-	if (*name == '(') {
-		rtn = var_find_environment(var);
-		if (!rtn)
-			filebench_log(LOG_ERROR,
-			"Cannot find environment variable %s",
-			var->var_name);
-		return rtn;
-	}
-
-	return NULL;
 }
 
 /*
