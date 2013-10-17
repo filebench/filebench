@@ -2258,7 +2258,6 @@ parser_list2varstring(list_t *list)
 {
 	char *lstr = avd_get_str(list->list_string);
 
-	/*	printf("parser_list2varstring: Called\n"); */
 	/* Special case - variable name */
 	if ((list->list_next == NULL) && (*lstr == '$'))
 		return (var_ref_attr(lstr));
