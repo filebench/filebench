@@ -428,7 +428,7 @@ var_alloc_cmn(char *name, int var_type)
 	}
 
 	/* add to the end of list */
-	for (var = *var_listp; var != NULL; var = var->var_next)
+	for (var = *var_listp; var; var = var->var_next)
 		prev = var;
 	if (prev)
 		prev->var_next = newvar;
@@ -436,19 +436,6 @@ var_alloc_cmn(char *name, int var_type)
 		*var_listp = newvar;
 
 	return newvar;
-}
-
-/*
- * Allocates a var (var_t) from interprocess shared memory after
- * first adjusting the name to elminate the leading $.
- */
-var_t *
-var_lvar_alloc_local(char *name)
-{
-	if (name[0] == '$')
-		name += 1;
-
-	return var_alloc_cmn(name, VAR_TYPE_LOCAL);
 }
 
 static var_t *
@@ -592,209 +579,6 @@ var_assign_integer(char *name, uint64_t integer)
 }
 
 /*
- * Add, subtract, multiply or divide two integers based on optype
- * passed from caller.
- */
-static uint64_t
-var_binary_integer_op(var_t *var)
-{
-	uint64_t result;
-	uint64_t src1, src2 = 0;
-
-	if (!var)
-		return (0);
-
-	switch (var->var_type & VAR_INDBINOP_MASK) {
-	case VAR_IND_BINOP_INT:
-		src2 = var->var_val.integer;
-		break;
-
-	case VAR_IND_BINOP_DBL:
-		src2 = (uint64_t)var->var_val.dbl_flt;
-		break;
-
-	case VAR_IND_BINOP_VAR:
-		if (var->var_val.varptr2)
-			src2 = var_get_int(var->var_val.varptr2);
-		else
-			src2 = 0;
-		break;
-	}
-
-	if (var->var_varptr1)
-		src1 = var_get_int(var->var_varptr1);
-	else
-		src1 = 0;
-
-	switch (var->var_type & VAR_INDVAR_MASK) {
-	case VAR_IND_VAR_SUM_VC:
-		result = src1 + src2;
-		break;
-
-	case VAR_IND_VAR_DIF_VC:
-		result = src1 - src2;
-		break;
-
-	case VAR_IND_C_DIF_VAR:
-		result = src2 - src1;
-		break;
-
-	case VAR_IND_VAR_MUL_VC:
-		result = src1 * src2;
-		break;
-
-	case VAR_IND_VAR_DIV_VC:
-		result = src1 / src2;
-		break;
-
-	case VAR_IND_C_DIV_VAR:
-		result = src2 / src1;
-		break;
-
-	default:
-		filebench_log(LOG_DEBUG_IMPL,
-			"var_binary_integer_op: Called with unknown IND_TYPE");
-		result = 0;
-		break;
-	}
-	return (result);
-}
-
-/*
- * Add, subtract, multiply or divide two double precision floating point
- * numbers based on optype passed from caller.
- */
-static double
-var_binary_dbl_flt_op(var_t *var)
-{
-	double result;
-	double src1, src2 = 0;
-
-	if (!var)
-		return 0.0;
-
-	switch (var->var_type & VAR_INDBINOP_MASK) {
-	case VAR_IND_BINOP_INT:
-		src2 = (double)var->var_val.integer;
-		break;
-
-	case VAR_IND_BINOP_DBL:
-		src2 = var->var_val.dbl_flt;
-		break;
-
-	case VAR_IND_BINOP_VAR:
-		if (var->var_val.varptr2)
-			src2 = var_get_dbl(var->var_val.varptr2);
-		else
-			src2 = 0;
-		break;
-	}
-
-	if (var->var_varptr1)
-		src1 = var_get_dbl(var->var_varptr1);
-	else
-		src1 = 0;
-
-	switch (var->var_type & VAR_INDVAR_MASK) {
-	case VAR_IND_VAR_SUM_VC:
-		result = src1 + src2;
-		break;
-
-	case VAR_IND_VAR_DIF_VC:
-		result = src1 - src2;
-		break;
-
-	case VAR_IND_C_DIF_VAR:
-		result = src2 - src1;
-		break;
-
-	case VAR_IND_VAR_MUL_VC:
-		result = src1 * src2;
-		break;
-
-	case VAR_IND_C_DIV_VAR:
-		result = src2 / src1;
-		break;
-
-	case VAR_IND_VAR_DIV_VC:
-		result = src1 / src2;
-		break;
-
-	default:
-		filebench_log(LOG_DEBUG_IMPL,
-			"var_binary_dbl_flt_op: Called with unknown IND_TYPE");
-		result = 0;
-		break;
-	}
-	return result;
-}
-
-/*
- * Perform a binary operation on a variable and an integer.
- */
-int
-var_assign_op_var_int(char *name, int optype, char *src1, uint64_t src2)
-{
-	var_t *var;
-	var_t *var_src1;
-
-	printf("var_assign_op_var_int: Called\n");
-
-	var_src1 = var_find(src1 + 1);
-
-	if (!var_src1)
-		return FILEBENCH_ERROR;
-
-	var = var_find_alloc(name);
-	if (!var)
-		return FILEBENCH_ERROR;
-
-	if ((var->var_type & VAR_TYPE_MASK) == VAR_TYPE_RANDOM) {
-		filebench_log(LOG_ERROR,
-			"Cannot assign integer to random variable %s", name);
-		return FILEBENCH_ERROR;
-	}
-
-	VAR_SET_BINOP_INDVAR(var, var_src1, optype);
-
-	var->var_val.integer = src2;
-
-	return FILEBENCH_OK;
-}
-
-int
-var_assign_op_var_var(char *name, int optype, char *src1, char *src2)
-{
-	var_t *var;
-	var_t *var_src1;
-	var_t *var_src2;
-
-	var_src1 = var_find(src1 + 1);
-	if (!var_src1)
-		return FILEBENCH_ERROR;
-
-	var_src2 = var_find(src2 + 1);
-	if (!var_src2)
-		return FILEBENCH_ERROR;
-
-	var = var_find_alloc(name);
-	if (!var)
-		return FILEBENCH_ERROR;
-
-	if ((var->var_type & VAR_TYPE_MASK) == VAR_TYPE_RANDOM) {
-		filebench_log(LOG_ERROR,
-			"Cannot assign integer to random variable %s", name);
-		return FILEBENCH_ERROR;
-	}
-
-	VAR_SET_BINOP_INDVAR(var, var_src1, optype);
-
-	var->var_val.varptr2 = var_src2;
-
-	return FILEBENCH_OK;
-}
-
-/*
  * Find a variable, and set it to random type.
  * If it does not have a random extension, allocate one.
  */
@@ -859,7 +643,7 @@ var_define_randvar(char *name)
 	rndp->rnd_var = newvar;
 	VAR_SET_RAND(newvar, rndp);
 
-	return (newvar);
+	return newvar;
 }
 
 /*
@@ -937,17 +721,6 @@ __var_to_string(var_t *var)
 			return __var_to_string(ivp);
 	}
 
-	if (VAR_HAS_BINOP(var)) {
-#if defined(_LP64) || (__WORDSIZE == 64)
-			(void) snprintf(tmp, sizeof (tmp),
-				"%lu", var_binary_integer_op(var));
-#else
-			(void) snprintf(tmp, sizeof (tmp),
-				"%llu", var_binary_integer_op(var));
-#endif
-		return fb_stralloc(tmp);
-	}
-
 	return fb_stralloc("No default");
 }
 
@@ -1007,9 +780,6 @@ var_get_int(var_t *var)
 		return 0;
 	}
 
-	if (VAR_HAS_BINOP(var))
-		return var_binary_integer_op(var);
-
 	filebench_log(LOG_ERROR,
 		"Attempt to get integer from %s var $%s",
 		var_get_type_string(var), var->var_name);
@@ -1037,9 +807,6 @@ var_get_dbl(var_t *var)
 		return 0.0;
 	}
 
-	if (VAR_HAS_BINOP(var))
-		return var_binary_dbl_flt_op(var);
-
 	filebench_log(LOG_ERROR,
 		"Attempt to get double float from %s var $%s",
 		var_get_type_string(var), var->var_name);
@@ -1061,13 +828,6 @@ var_get_str(var_t *var)
 	return NULL;
 }
 
-/*
- * Searches for the named random var, and if found, converts the
- * requested parameter into a string or a decimal number string
- * representation, into a malloc'd bit of memory using fb_stralloc().
- * Returns a pointer to the created string, or calls var_to_string()
- * if a random variable isn't found.
- */
 char *
 var_randvar_to_string(char *name, int param_name)
 {
@@ -1133,33 +893,21 @@ var_randvar_to_string(char *name, int param_name)
 }
 
 /*
- * Copies the value stored in the source string into the destination
- * string. Returns -1 if any problems encountered, 0 otherwise.
+ * Copies the value stored in the source variable into the destination
+ * variable.  Returns -1 if any problems encountered, 0 otherwise.
  */
 static int
 var_copy(var_t *dst_var, var_t *src_var) {
 	char *strptr;
 
-	if (VAR_HAS_BOOLEAN(src_var)) {
+	if (VAR_HAS_BOOLEAN(src_var))
 		VAR_SET_BOOL(dst_var, src_var->var_val.boolean);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign var %s=%s", dst_var->var_name,
-			dst_var->var_val.boolean ? "true":"false");
-	}
 
-	if (VAR_HAS_INTEGER(src_var)) {
+	if (VAR_HAS_INTEGER(src_var))
 		VAR_SET_INT(dst_var, src_var->var_val.integer);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign var %s=%llu", dst_var->var_name,
-			(u_longlong_t)dst_var->var_val.integer);
-	}
 
-	if (VAR_HAS_DOUBLE(src_var)) {
+	if (VAR_HAS_DOUBLE(src_var))
 		VAR_SET_DBL(dst_var, src_var->var_val.dbl_flt);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign var %s=%lf", dst_var->var_name,
-			dst_var->var_val.dbl_flt);
-	}
 
 	if (VAR_HAS_STRING(src_var)) {
 		strptr = ipc_stralloc(src_var->var_val.string);
@@ -1170,70 +918,14 @@ var_copy(var_t *dst_var, var_t *src_var) {
 			return -1;
 		}
 		VAR_SET_STR(dst_var, strptr);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign var %s=%s", dst_var->var_name,
-			dst_var->var_val.string);
 	}
 
-	if (VAR_HAS_INDVAR(src_var)) {
+	if (VAR_HAS_INDVAR(src_var))
 		VAR_SET_INDVAR(dst_var, src_var->var_varptr1);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign var %s to var %s", dst_var->var_name,
-			src_var->var_name);
-	}
 
 	return 0;
 }
 
-/*
- * Searches for the var named "name", and if not found
- * allocates it. The then copies the value from
- * the src_var into the destination var "name"
- * If the var "name" cannot be found or allocated, or the var "src_name"
- * cannot be found, the routine returns -1, otherwise it returns 0.
- */
-int
-var_assign_var(char *name, char *src_name)
-{
-	var_t *dst_var, *src_var;
-
-	name += 1;
-	src_name += 1;
-
-	if ((src_var = var_find(src_name)) == NULL) {
-		filebench_log(LOG_ERROR,
-		 	"Cannot find source variable %s", src_name);
-		return (-1);
-	}
-
-	if ((dst_var = var_find(name)) == NULL)
-		dst_var = var_alloc(name);
-
-	if (dst_var == NULL) {
-		filebench_log(LOG_ERROR, "Cannot assign variable %s",
-			name);
-		return (-1);
-	}
-
-	if ((dst_var->var_type & VAR_TYPE_MASK) == VAR_TYPE_RANDOM) {
-		filebench_log(LOG_ERROR,
-			"Cannot assign var to Random variable %s", name);
-		return (-1);
-	}
-
-	return (var_copy(dst_var, src_var));
-}
-
-/*
- * Like var_assign_integer, only this routine copies the
- * supplied "string" into the var named "name". If the var
- * named "name" cannot be found then it is first allocated
- * before the copy. Space for the string in the var comes
- * from interprocess shared memory. If the var "name"
- * cannot be found or allocated, or the memory for the
- * var_val.string copy of "string" cannot be allocated, the
- * routine returns -1, otherwise it returns 0.
- */
 int
 var_assign_string(char *name, char *string)
 {
@@ -1242,36 +934,49 @@ var_assign_string(char *name, char *string)
 
 	name += 1;
 
-	if ((var = var_find(name)) == NULL)
+	var = var_find(name);
+	if (!var)
 		var = var_alloc(name);
 
-	if (var == NULL) {
+	if (!var) {
 		filebench_log(LOG_ERROR, "Cannot assign variable %s",
 			name);
-		return (-1);
+		return -1;
 	}
 
 	if ((var->var_type & VAR_TYPE_MASK) == VAR_TYPE_RANDOM) {
 		filebench_log(LOG_ERROR,
 			"Cannot assign string to random variable %s", name);
-		return (-1);
+		return -1;
 	}
 
-	if ((strptr = ipc_stralloc(string)) == NULL) {
+	strptr = ipc_stralloc(string);
+	if (!strptr) {
 		filebench_log(LOG_ERROR, "Cannot assign variable %s",
 			name);
-		return (-1);
+		return -1;
 	}
+
 	VAR_SET_STR(var, strptr);
 
-	filebench_log(LOG_DEBUG_SCRIPT,
-		"Var assign string $%s=%s", name, string);
-
-	return (0);
+	return 0;
 }
 
 /*
- * Allocates a local var. The then extracts the var_string from
+ * Allocates a local var (var_t) from interprocess shared memory after
+ * first adjusting the name to elminate the leading $.
+ */
+var_t *
+var_lvar_alloc_local(char *name)
+{
+	if (name[0] == '$')
+		name += 1;
+
+	return var_alloc_cmn(name, VAR_TYPE_LOCAL);
+}
+
+/*
+ * Allocates a local var and then extracts the var_string from
  * the var named "string" and copies it into the var_string
  * of the var "name", after first allocating a piece of
  * interprocess shared string memory. Returns a pointer to the
@@ -1281,21 +986,21 @@ var_t *
 var_lvar_assign_var(char *name, char *src_name)
 {
 	var_t *dst_var, *src_var;
+	char *strptr;
 
 	src_name += 1;
 
-	if ((src_var = var_find(src_name)) == NULL) {
+	src_var = var_find(src_name);
+	if (!src_var) {
 		filebench_log(LOG_ERROR,
 			"Cannot find source variable %s", src_name);
-		return (NULL);
+		return NULL;
 	}
 
 	dst_var = var_lvar_alloc_local(name);
-
-	if (dst_var == NULL) {
-		filebench_log(LOG_ERROR, "Cannot assign variable %s",
-			name);
-		return (NULL);
+	if (!dst_var) {
+		filebench_log(LOG_ERROR, "Cannot assign variable %s", name);
+		return NULL;
 	}
 
 	/*
@@ -1304,108 +1009,63 @@ var_lvar_assign_var(char *name, char *src_name)
 	 */
 	if ((src_var->var_type & VAR_TYPE_MASK) == VAR_TYPE_LOCAL) {
 		VAR_SET_INDVAR(dst_var, src_var);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign local var %s to %s", name, src_name);
-		return (dst_var);
+		return dst_var;
 	}
 
 	if (VAR_HAS_BOOLEAN(src_var)) {
 		VAR_SET_BOOL(dst_var, src_var->var_val.boolean);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign var (%s, %p)=%s", name,
-			dst_var, src_var->var_val.boolean?"true":"false");
 	} else if (VAR_HAS_INTEGER(src_var)) {
 		VAR_SET_INT(dst_var, src_var->var_val.integer);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign var (%s, %p)=%llu", name,
-			dst_var, (u_longlong_t)src_var->var_val.integer);
 	} else if (VAR_HAS_STRING(src_var)) {
-		char *strptr;
-
-		if ((strptr = ipc_stralloc(src_var->var_val.string)) == NULL) {
+		strptr = ipc_stralloc(src_var->var_val.string);
+		if (!strptr) {
 			filebench_log(LOG_ERROR,
-				"Cannot assign variable %s",
-				name);
-			return (NULL);
+				"Cannot assign variable %s", name);
+			return NULL;
 		}
 		VAR_SET_STR(dst_var, strptr);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign var (%s, %p)=%s", name,
-			dst_var, src_var->var_val.string);
 	} else if (VAR_HAS_DOUBLE(src_var)) {
-		/* LINTED E_ASSIGMENT_CAUSE_LOSS_PREC */
 		VAR_SET_INT(dst_var, src_var->var_val.dbl_flt);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign var (%s, %p)=%8.2f", name,
-			dst_var, src_var->var_val.dbl_flt);
-	} else if (VAR_HAS_RANDDIST(src_var)) {
+	} else if (VAR_HAS_RANDDIST(src_var))
 		VAR_SET_RAND(dst_var, src_var->var_val.randptr);
-		filebench_log(LOG_DEBUG_SCRIPT,
-			"Assign var (%s, %p)=%llu", name,
-			dst_var, (u_longlong_t)src_var->var_val.integer);
-	}
 
-	return (dst_var);
+	return dst_var;
 }
 
-/*
- * the routine allocates a new local var and sets
- * its var_boolean's value to that of the supplied
- * boolean. It returns a pointer to the new local var
- */
 var_t *
 var_lvar_assign_boolean(char *name, boolean_t bool)
 {
 	var_t *var;
 
 	var = var_lvar_alloc_local(name);
-
-	if (var == NULL) {
+	if (!var) {
 		filebench_log(LOG_ERROR, "Cannot assign variable %s",
 			name);
-		return (NULL);
+		return NULL;
 	}
 
 	VAR_SET_BOOL(var, bool);
 
-	filebench_log(LOG_DEBUG_SCRIPT, "Assign integer %s=%s",
-				name, bool ? "true" : "false");
-
-	return (var);
+	return var;
 }
 
-/*
- * the routine allocates a new local var and sets
- * its var_integers's value to that of the supplied
- * integer. It returns a pointer to the new local var
- */
 var_t *
 var_lvar_assign_integer(char *name, uint64_t integer)
 {
 	var_t *var;
 
 	var = var_lvar_alloc_local(name);
-
-	if (var == NULL) {
+	if (!var) {
 		filebench_log(LOG_ERROR, "Cannot assign variable %s",
 			name);
-		return (NULL);
+		return NULL;
 	}
 
 	VAR_SET_INT(var, integer);
 
-	filebench_log(LOG_DEBUG_SCRIPT, "Assign integer %s=%llu",
-		name, (u_longlong_t)integer);
-
-	return (var);
+	return var;
 }
 
-/*
- * the routine allocates a new local var and sets
- * its var_dbl_flt value to that of the supplied
- * double precission floating point number. It returns
- * a pointer to the new local var
- */
 var_t *
 var_lvar_assign_double(char *name, double dbl)
 {
@@ -1413,27 +1073,17 @@ var_lvar_assign_double(char *name, double dbl)
 
 	var = var_lvar_alloc_local(name);
 
-	if (var == NULL) {
+	if (!var) {
 		filebench_log(LOG_ERROR, "Cannot assign variable %s",
 						name);
-		return (NULL);
+		return NULL;
 	}
 
 	VAR_SET_DBL(var, dbl);
 
-	filebench_log(LOG_DEBUG_SCRIPT, "Assign integer %s=%8.2f", name, dbl);
-
-	return (var);
+	return var;
 }
 
-/*
- * Like var_lvar_assign_integer, only this routine copies the
- * supplied "string" into the var named "name". If the var
- * named "name" cannot be found then it is first allocated
- * before the copy. Space for the string in the var comes
- * from interprocess shared memory. The allocated local var
- * is returned at as a char *, or NULL on error.
- */
 var_t *
 var_lvar_assign_string(char *name, char *string)
 {
@@ -1441,80 +1091,24 @@ var_lvar_assign_string(char *name, char *string)
 	char *strptr;
 
 	var = var_lvar_alloc_local(name);
-
-	if (var == NULL) {
+	if (!var) {
 		filebench_log(LOG_ERROR, "Cannot assign variable %s",
 					name);
-		return (NULL);
+		return NULL;
 	}
 
-	if ((strptr = ipc_stralloc(string)) == NULL) {
+	strptr = ipc_stralloc(string);
+	if (!strptr) {
 		filebench_log(LOG_ERROR, "Cannot assign variable %s",
 				name);
-		return (NULL);
+		return NULL;
 	}
+
 	VAR_SET_STR(var, strptr);
 
-	filebench_log(LOG_DEBUG_SCRIPT,
-		"Lvar_assign_string (%s, %p)=%s", name, var, string);
-
-	return (var);
+	return var;
 }
 
-/*
- * Tests to see if the supplied variable name without the portion after
- * the last period is that of a random variable. If it is, it returns
- * the number of characters to backspace to skip the period and field
- * name. Otherwise it returns 0.
- */
-int
-var_is_set4_randvar(char *name)
-{
-	var_t *var;
-	char varname[128];
-	int namelength;
-	char *sp;
-
-	(void) strncpy(varname, name, 128);
-	namelength = strlen(varname);
-	sp = varname + namelength;
-
-	while (sp != varname) {
-		int c = *sp;
-
-		*sp = 0;
-		if (c == '.')
-			break;
-
-		sp--;
-	}
-
-	/* not a variable name + field? */
-	if (sp == varname)
-		return (0);
-
-	/* first part not a variable name? */
-	if ((var = var_find(varname+1)) == NULL)
-		return (0);
-
-	/* Make sure it is a random variable */
-	if ((var->var_type & VAR_TYPE_MASK) != VAR_TYPE_RANDOM)
-		return (0);
-
-	/* calculate offset from end of random variable name */
-	return (namelength - (sp - varname));
-}
-
-/*
- * Implements a simple path name like scheme for finding values
- * to place in certain specially named vars. The first part of
- * the name is interpreted as a category of either: stats,
- * eventgen, date, script, or host var. If a match is found,
- * the appropriate routine is called to fill in the requested
- * value in the provided var_t, and a pointer to the supplied
- * var_t is returned. If the requested value is not found, NULL
- * is returned.
- */
 static var_t *
 var_find_internal(var_t *var)
 {
@@ -1524,35 +1118,29 @@ var_find_internal(var_t *var)
 
 	name++;
 	if (name[strlen(name) - 1] != '}')
-		return (NULL);
+		return NULL;
 	name[strlen(name) - 1] = 0;
 
-	if (strncmp(name, STATS_VAR, strlen(STATS_VAR)) == 0)
+	if (!strncmp(name, STATS_VAR, strlen(STATS_VAR)))
 		rtn = stats_findvar(var, name + strlen(STATS_VAR));
 
-	if (strcmp(name, EVENTGEN_VAR) == 0)
+	if (!strcmp(name, EVENTGEN_VAR))
 		rtn = eventgen_ratevar(var);
 
-	if (strcmp(name, DATE_VAR) == 0)
+	if (!strcmp(name, DATE_VAR))
 		rtn = date_var(var);
 
-	if (strcmp(name, SCRIPT_VAR) == 0)
+	if (!strcmp(name, SCRIPT_VAR))
 		rtn = script_var(var);
 
-	if (strcmp(name, HOST_VAR) == 0)
+	if (!strcmp(name, HOST_VAR))
 		rtn = host_var(var);
 
 	free(n);
 
-	return (rtn);
+	return rtn;
 }
 
-/*
- * Calls the C library routine getenv() to obtain the value
- * for the environment variable specified by var->var_name.
- * If found, the value string is returned in var->var_val.string.
- * If the requested value is not found, NULL is returned.
- */
 static var_t *
 var_find_environment(var_t *var)
 {
@@ -1563,31 +1151,22 @@ var_find_environment(var_t *var)
 	name++;
 	if (name[strlen(name) - 1] != ')') {
 		free(n);
-		return (NULL);
+		return NULL;
 	}
-	name[strlen(name) - 1] = 0;
 
-	if ((strptr = getenv(name)) != NULL) {
-		free(n);
+	name[strlen(name) - 1] = '\0';
+
+	strptr = getenv(name);
+	if (strptr) {
 		VAR_SET_STR(var, strptr);
-		return (var);
+		free(n);
+		return var;
 	} else {
 		free(n);
-		return (NULL);
+		return NULL;
 	}
 }
 
-/*
- * Look up special variables. The "name" argument is used to find
- * the desired special var and fill it with an appropriate string
- * value. Looks for an already allocated var of the same name on
- * the shm_var_dyn_list. If not found a new dynamic var is allocated.
- * if the name begins with '{', it is an internal variable, and
- * var_find_internal() is called. If the name begins with '(' it
- * is an environment varable, and var_find_environment() is
- * called. On success, a pointer to the var_t is returned,
- * otherwise, NULL is returned.
- */
 static var_t *
 var_find_dynamic(char *name)
 {
@@ -1595,41 +1174,37 @@ var_find_dynamic(char *name)
 	var_t *v = filebench_shm->shm_var_dyn_list;
 	var_t *rtn;
 
-	/*
-	 * Lookup a reference to the var handle for this
-	 * special var
-	 */
-	for (v = filebench_shm->shm_var_dyn_list; v != NULL; v = v->var_next) {
-		if (strcmp(v->var_name, name) == 0) {
+	for (v = filebench_shm->shm_var_dyn_list; v; v = v->var_next) {
+		if (!strcmp(v->var_name, name)) {
 			var = v;
 			break;
 		}
 	}
 
-	if (var == NULL)
+	if (!var)
 		var = var_alloc_dynamic(name);
 
 	/* Internal system control variable */
 	if (*name == '{') {
 		rtn = var_find_internal(var);
-		if (rtn == NULL)
+		if (!rtn)
 			filebench_log(LOG_ERROR,
 			"Cannot find internal variable %s",
 			var->var_name);
-		return (rtn);
+		return rtn;
 	}
 
 	/* Lookup variable in environment */
 	if (*name == '(') {
 		rtn = var_find_environment(var);
-		if (rtn == NULL)
+		if (!rtn)
 			filebench_log(LOG_ERROR,
 			"Cannot find environment variable %s",
 			var->var_name);
-		return (rtn);
+		return rtn;
 	}
 
-	return (NULL);
+	return NULL;
 }
 
 /*
@@ -1645,7 +1220,8 @@ avd_update(avd_t *avdp, var_t *lvar_list)
 	if ((*avdp)->avd_type == AVD_IND_VAR) {
 
 		/* Make sure there is a local var */
-		if ((old_lvar = (*avdp)->avd_val.varptr) == NULL) {
+		old_lvar = (*avdp)->avd_val.varptr;
+		if (!old_lvar) {
 			filebench_log(LOG_ERROR,
 			"avd_update: local var not found");
 			return;
@@ -1656,8 +1232,8 @@ avd_update(avd_t *avdp, var_t *lvar_list)
 	}
 
 	/* allocate a new avd using the new or old lvar contents */
-	if ((new_lvar =
-		var_find_list(old_lvar->var_name, lvar_list)) != NULL)
+	new_lvar = var_find_list(old_lvar->var_name, lvar_list);
+	if (new_lvar)
 		(*avdp) = avd_alloc_var_ptr(new_lvar);
 	else
 		(*avdp) = avd_alloc_var_ptr(old_lvar);
@@ -1672,7 +1248,7 @@ var_update_comp_lvars(var_t *newlvar, var_t *proto_comp_vars,
 	/* find the prototype lvar from the inherited list */
 	proto_lvar = var_find_list_only(newlvar->var_name, proto_comp_vars);
 
-	if (proto_lvar == NULL)
+	if (!proto_lvar)
 		return;
 
 	/*
@@ -1680,7 +1256,6 @@ var_update_comp_lvars(var_t *newlvar, var_t *proto_comp_vars,
 	 * a value, try to copy a value from the prototype local variable
 	 */
 	if ((newlvar->var_type & VAR_TYPE_SET_MASK) == 0) {
-
 		/* copy value from prototype lvar to new lvar */
 		(void) var_copy(newlvar, proto_lvar);
 	}

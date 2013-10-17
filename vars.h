@@ -226,34 +226,35 @@ typedef struct var {
 avd_t avd_bool_alloc(boolean_t bool);
 avd_t avd_int_alloc(uint64_t integer);
 avd_t avd_str_alloc(char *string);
+
 boolean_t avd_get_bool(avd_t);
 uint64_t avd_get_int(avd_t);
 double avd_get_dbl(avd_t);
 char *avd_get_str(avd_t);
+
 void avd_update(avd_t *avdp, var_t *lvar_list);
+
 avd_t var_ref_attr(char *name);
+
 int var_assign_boolean(char *name, boolean_t bool);
 int var_assign_integer(char *name, uint64_t integer);
 int var_assign_double(char *name, double dbl);
 int var_assign_string(char *name, char *string);
-int var_assign_var(char *name, char *string);
-int var_assign_op_var_int(char *name, int optype, char *src1, uint64_t src2);
-int var_assign_op_var_var(char *name, int optype, char *src1, char *src2);
+
 void var_update_comp_lvars(var_t *newlvar, var_t *proto_comp_vars,
 				var_t *mstr_lvars);
 var_t *var_define_randvar(char *name);
+
 var_t *var_find_randvar(char *name);
-boolean_t var_to_boolean(char *name);
-uint64_t var_to_integer(char *name);
-double var_to_double(char *name);
+
 var_t *var_lvar_alloc_local(char *name);
 var_t *var_lvar_assign_boolean(char *name, boolean_t);
 var_t *var_lvar_assign_integer(char *name, uint64_t);
 var_t *var_lvar_assign_double(char *name, double);
 var_t *var_lvar_assign_string(char *name, char *string);
 var_t *var_lvar_assign_var(char *name, char *src_name);
+
 char *var_to_string(char *name);
 char *var_randvar_to_string(char *name, int param);
-int var_is_set4_randvar(char *name);
 
 #endif	/* _FB_VARS_H */
