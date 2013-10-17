@@ -141,11 +141,10 @@ typedef struct filebench_shm {
 	/*
 	 * lists related to variables
 	 */
-
-	var_t		*shm_var_list;	   /* normal variables */
-	var_t		*shm_var_special_list; /* special system variables */
-	var_t		*shm_var_loc_list; /* variables local to comp flowops */
-	randdist_t	*shm_rand_list;	   /* random variables */
+	var_t		*shm_var_list;		/* normal variables */
+	var_t		*shm_var_special_list;	/* special system variables */
+	var_t		*shm_var_loc_list;	/* variables local to composite flowops */
+	randdist_t	*shm_rand_list;		/* random variables */
 
 	/*
 	 * log and statistics dumping controls and state

@@ -363,7 +363,7 @@ var_alloc_cmn(char *name, int var_type)
 
 	switch (var_type & VAR_TYPE_MASK) {
 	case VAR_TYPE_RANDOM:
-	case VAR_TYPE_GLOBAL:
+	case VAR_TYPE_NORMAL:
 		var_listp = &filebench_shm->shm_var_list;
 		break;
 
@@ -396,7 +396,7 @@ var_alloc_cmn(char *name, int var_type)
 static var_t *
 var_alloc(char *name)
 {
-	return var_alloc_cmn(name, VAR_TYPE_GLOBAL);
+	return var_alloc_cmn(name, VAR_TYPE_NORMAL);
 }
 
 static var_t *
@@ -407,8 +407,8 @@ var_alloc_special(char *name)
 
 /*
  * Searches for var_t with name "name" in the shm_var_loc_list,
- * then, if not found, in the global shm_var_list. If a matching
- * local or global var is found, returns a pointer to the var_t,
+ * then, if not found, in the normal shm_var_list. If a matching
+ * local or normal var is found, returns a pointer to the var_t,
  * otherwise returns NULL.
  */
 static var_t *
