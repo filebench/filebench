@@ -31,9 +31,10 @@
 
 typedef uint64_t fbint_t;
 
-/* Attribute Value Descriptor types */
+/* Attribute Value Descriptor (AVD) types */
 typedef enum avd_type {
 	AVD_INVALID = 0,	/* avd is empty */
+
 	AVD_VAL_BOOL,		/* avd contains a boolean_t */
 	AVD_VARVAL_BOOL,	/* avd points to the boolean_t in a var_t */
 	AVD_VAL_INT,		/* avd contains an uint64_t */
@@ -42,11 +43,15 @@ typedef enum avd_type {
 	AVD_VARVAL_STR,		/* avd points to a string in a var_t */
 	AVD_VAL_DBL,		/* avd contains a double float */
 	AVD_VARVAL_DBL,		/* avd points to the double in a var_t */
+
+	AVD_VARVAL_UNKNOWN,	/* avd points to a variable whose type is not
+				 * known yet */
+
 	AVD_RANDVAR		/* avd points to the randdist_t associated */
 				/* with a random type var_t */
 } avd_type_t;
 
-/* Attribute Value Descriptor */
+/* Attribute Value Descriptor (AVD) */
 typedef struct avd {
 	avd_type_t avd_type;
 	union {
@@ -58,8 +63,8 @@ typedef struct avd {
 		double		*dblptr;
 		char		*strval;
 		char		**strptr;
-		struct randdist *randptr;
 		struct var	*varptr;
+		struct randdist *randptr;
 	} avd_val;
 } *avd_t;
 
@@ -73,115 +78,98 @@ typedef struct avd {
 				((vp)->avd_type == AVD_VARVAL_STR) || \
 				((vp)->avd_type == AVD_VARVAL_DBL)))
 
+/* Variable Types */
+typedef enum var_type {
+	VAR_INVALID = 0,
+	VAR_BOOL,
+	VAR_INT,
+	VAR_STR,
+	VAR_DBL,
+	VAR_RANDVAR,
+	VAR_UNKNOWN,
+} var_type_t;
+
 typedef struct var {
 	char		*var_name;
-	int		var_type;	/* for types and subtypes below */
+	var_type_t	var_type;
 	struct var	*var_next;
 	union {
 		boolean_t	boolean;
-		uint64_t		integer;
-		double		dbl_flt;
+		uint64_t	integer;
+		double		dbl;
 		char		*string;
 		struct randdist *randptr;
-		struct var	*varptr2;
 	} var_val;
-	struct var	*var_varptr1;
 } var_t;
 
-/* basic var types */
-#define	VAR_TYPE_NORMAL		0x0000	/* normal variable */
-#define	VAR_TYPE_SPECIAL	0x1000	/* special variable */
-#define	VAR_TYPE_RANDOM		0x2000	/* random variable */
-#define	VAR_TYPE_LOCAL		0x3000	/* local variable */
-#define	VAR_TYPE_MASK		0xf000
-
-/* various var subtypes that a var can be set to */
-#define	VAR_TYPE_BOOL_SET	0x0100	/* var contains a boolean */
-#define	VAR_TYPE_INT_SET	0x0200	/* var contains an integer */
-#define	VAR_TYPE_STR_SET	0x0300	/* var contains a string */
-#define	VAR_TYPE_DBL_SET	0x0400	/* var contains a double */
-#define	VAR_TYPE_RAND_SET	0x0500	/* var contains a randdist pointer */
-#define	VAR_TYPE_SET_MASK	0x0f00
-
-/* useful macroses */
 
 #define	VAR_HAS_BOOLEAN(vp) \
-	(((vp)->var_type & VAR_TYPE_SET_MASK) == VAR_TYPE_BOOL_SET)
-
+	((vp)->var_type == VAR_BOOL)
 #define	VAR_HAS_INTEGER(vp) \
-	(((vp)->var_type & VAR_TYPE_SET_MASK) == VAR_TYPE_INT_SET)
-
+	((vp)->var_type == VAR_INT)
 #define	VAR_HAS_DOUBLE(vp) \
-	(((vp)->var_type & VAR_TYPE_SET_MASK) == VAR_TYPE_DBL_SET)
-
+	((vp)->var_type == VAR_DBL)
 #define	VAR_HAS_STRING(vp) \
-	(((vp)->var_type & VAR_TYPE_SET_MASK) == VAR_TYPE_STR_SET)
-
+	((vp)->var_type == VAR_STR)
 #define	VAR_HAS_RANDDIST(vp) \
-	(((vp)->var_type & VAR_TYPE_SET_MASK) == VAR_TYPE_RAND_SET)
+	((vp)->var_type == VAR_RANDVAR)
+#define	VAR_HAS_UNKNOWN(vp) \
+	((vp)->var_type == VAR_UNKNOWN)
 
 #define	VAR_SET_BOOL(vp, val)	\
 	{			\
 		(vp)->var_val.boolean = (val); \
-		(vp)->var_type = \
-		(((vp)->var_type & (~VAR_TYPE_SET_MASK)) | VAR_TYPE_BOOL_SET);\
+		(vp)->var_type = VAR_BOOL;\
 	}
-
 #define	VAR_SET_INT(vp, val)	\
 	{			\
 		(vp)->var_val.integer = (val); \
-		(vp)->var_type = \
-		(((vp)->var_type & (~VAR_TYPE_SET_MASK)) | VAR_TYPE_INT_SET); \
+		(vp)->var_type = VAR_INT; \
 	}
-
 #define	VAR_SET_DBL(vp, val)	\
 	{			\
-		(vp)->var_val.dbl_flt = (val); \
-		(vp)->var_type = \
-		    (((vp)->var_type & (~VAR_TYPE_SET_MASK)) | \
-		    VAR_TYPE_DBL_SET); \
+		(vp)->var_val.dbl = (val); \
+		(vp)->var_type = VAR_DBL; \
 	}
-
 #define	VAR_SET_STR(vp, val)	\
 	{			\
 		(vp)->var_val.string = (val); \
-		(vp)->var_type = \
-		    (((vp)->var_type & (~VAR_TYPE_SET_MASK)) | \
-		    VAR_TYPE_STR_SET); \
+		(vp)->var_type = VAR_STR; \
 	}
-
 #define	VAR_SET_RAND(vp, val)	\
 	{			\
 		(vp)->var_val.randptr = (val); \
-		(vp)->var_type = \
-		    (((vp)->var_type & (~VAR_TYPE_SET_MASK)) | \
-		    VAR_TYPE_RAND_SET); \
+		(vp)->var_type = VAR_RANDVAR; \
+	}
+#define	VAR_SET_UNKNOWN(vp)	\
+	{			\
+		(vp)->var_type = VAR_UNKNOWN; \
 	}
 
 avd_t avd_bool_alloc(boolean_t bool);
 avd_t avd_int_alloc(uint64_t integer);
+avd_t avd_dbl_alloc(double integer);
 avd_t avd_str_alloc(char *string);
-
-boolean_t avd_get_bool(avd_t);
-uint64_t avd_get_int(avd_t);
-double avd_get_dbl(avd_t);
-char *avd_get_str(avd_t);
-
-void avd_update(avd_t *avdp, var_t *lvar_list);
-
-avd_t var_ref_attr(char *name);
+avd_t avd_var_alloc(char *varname);
 
 int var_assign_boolean(char *name, boolean_t bool);
 int var_assign_integer(char *name, uint64_t integer);
 int var_assign_double(char *name, double dbl);
 int var_assign_string(char *name, char *string);
 
-void var_update_comp_lvars(var_t *newlvar, var_t *proto_comp_vars,
-				var_t *mstr_lvars);
-var_t *var_define_randvar(char *name);
+boolean_t avd_get_bool(avd_t);
+uint64_t avd_get_int(avd_t);
+double avd_get_dbl(avd_t);
+char *avd_get_str(avd_t);
 
+/* Random variables related */
+var_t *var_define_randvar(char *name);
 var_t *var_find_randvar(char *name);
 
+/* Local variables related */
+void avd_update(avd_t *avdp, var_t *lvar_list);
+void var_update_comp_lvars(var_t *newlvar, var_t *proto_comp_vars,
+				var_t *mstr_lvars);
 var_t *var_lvar_alloc_local(char *name);
 var_t *var_lvar_assign_boolean(char *name, boolean_t);
 var_t *var_lvar_assign_integer(char *name, uint64_t);
@@ -189,6 +177,7 @@ var_t *var_lvar_assign_double(char *name, double);
 var_t *var_lvar_assign_string(char *name, char *string);
 var_t *var_lvar_assign_var(char *name, char *src_name);
 
+/* miscelaneous */
 char *var_to_string(char *name);
 char *var_randvar_to_string(char *name, int param);
 

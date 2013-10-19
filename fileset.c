@@ -1763,6 +1763,30 @@ fileset_createsets()
 
 	list = filebench_shm->shm_filesetlist;
 	while (list) {
+		/* Verify fileset parameters are valid */
+		if ((avd_get_int(list->fs_entries) == 0) &&
+			    (avd_get_int(list->fs_leafdirs) == 0)) {
+				filebench_log(LOG_ERROR, "Fileset has no files or leafdirs");
+		}
+
+		if (list->fs_dirdepthrv && !AVD_IS_RANDOM(list->fs_dirdepthrv)) {
+			filebench_log(LOG_ERROR,
+			    "Define fileset: dirdepthrv must be random var");
+			filebench_shutdown(1);
+		}
+
+		if (AVD_IS_RANDOM(list->fs_dirgamma)) {
+			filebench_log(LOG_ERROR,
+			    "Define fileset: dirgamma attr cannot be random");
+			filebench_shutdown(1);
+		}
+
+		if (AVD_IS_RANDOM(list->fs_sizegamma)) {
+			filebench_log(LOG_ERROR,
+			    "Define fileset: filesizegamma cannot be random");
+			filebench_shutdown(1);
+		}
+
 		/* check for raw files */
 		if (fileset_checkraw(list)) {
 			filebench_log(LOG_INFO,

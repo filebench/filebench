@@ -4651,7 +4651,7 @@ yyreduce:
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
-	(yyval.attr)->attr_avd = var_ref_attr((yyvsp[(1) - (1)].sval));
+	(yyval.attr)->attr_avd = avd_var_alloc((yyvsp[(1) - (1)].sval));
 }
     break;
 
@@ -4706,7 +4706,7 @@ yyreduce:
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
-	(yyval.attr)->attr_avd = var_ref_attr((yyvsp[(1) - (1)].sval));
+	(yyval.attr)->attr_avd = avd_var_alloc((yyvsp[(1) - (1)].sval));
 }
     break;
 
@@ -4724,7 +4724,7 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 1742 "parser_gram.y"
     {
-	(yyval.avd) = var_ref_attr((yyvsp[(1) - (1)].sval));
+	(yyval.avd) = avd_var_alloc((yyvsp[(1) - (1)].sval));
 }
     break;
 
@@ -5461,7 +5461,7 @@ parser_list2varstring(list_t *list)
 
 	/* Special case - variable name */
 	if ((list->list_next == NULL) && (*lstr == '$'))
-		return (var_ref_attr(lstr));
+		return (avd_var_alloc(lstr));
 
 	return (avd_str_alloc(parser_list2string(list)));
 }
@@ -5480,7 +5480,7 @@ parser_list2avd(list_t *list)
 	char *lstr;
 
 	if (list && ((lstr = avd_get_str(list->list_string)) != NULL)) {
-		avd = var_ref_attr(lstr);
+		avd = avd_var_alloc(lstr);
 		return (avd);
 	}
 
@@ -5681,42 +5681,18 @@ parser_thread_define(cmd_t *cmd, procflow_t *procflow, int procinstances)
 
 	/* Get the number of instances from attribute */
 	if ((attr = get_attr_integer(cmd, FSA_INSTANCES))) {
-		if (AVD_IS_RANDOM(attr->attr_avd)) {
-			filebench_log(LOG_ERROR,
-			    "define thread: Instances attr cannot be random");
-			filebench_shutdown(1);
-		}
-		filebench_log(LOG_DEBUG_IMPL,
-		    "define thread: Setting instances = %llu",
-		    (u_longlong_t)avd_get_int(attr->attr_avd));
 		instances = attr->attr_avd;
 	} else
 		instances = avd_int_alloc(1);
 
 	/* Get the memory size from attribute */
 	if ((attr = get_attr_integer(cmd, FSA_MEMSIZE))) {
-		if (AVD_IS_RANDOM(attr->attr_avd)) {
-			filebench_log(LOG_ERROR,
-			    "define thread: Memory size cannot be random");
-			filebench_shutdown(1);
-		}
-		filebench_log(LOG_DEBUG_IMPL,
-		    "define thread: Setting memsize = %llu",
-		    (u_longlong_t)avd_get_int(attr->attr_avd));
 		template.tf_memsize = attr->attr_avd;
 	} else
 		template.tf_memsize = avd_int_alloc(0);
 
 	/* Get ioprio parameters from attribute */
 	if ((attr = get_attr_integer(cmd, FSA_IOPRIO))) {
-		if (AVD_IS_RANDOM(attr->attr_avd)) {
-			filebench_log(LOG_ERROR,
-			    "define thread: ioprio cannot be random");
-			filebench_shutdown(1);
-		}
-		filebench_log(LOG_DEBUG_IMPL,
-		    "define thread: Setting ioprio = %llu",
-		    (u_longlong_t)avd_get_int(attr->attr_avd));
 		template.tf_ioprio = attr->attr_avd;
 	} else
 		template.tf_ioprio = avd_int_alloc(8);
@@ -6283,6 +6259,7 @@ parser_fileset_define(cmd_t *cmd)
 		filebench_shutdown(1);
 		return;
 	}
+
 	/* Get the number of files in the fileset */
 	if ((attr = get_attr_integer(cmd, FSA_ENTRIES))) {
 		fileset->fs_entries = attr->attr_avd;
@@ -6297,11 +6274,6 @@ parser_fileset_define(cmd_t *cmd)
 		fileset->fs_leafdirs = avd_int_alloc(0);
 	}
 
-	if ((avd_get_int(fileset->fs_entries) == 0) &&
-	    (avd_get_int(fileset->fs_leafdirs) == 0)) {
-		filebench_log(LOG_ERROR, "Fileset has no files or leafdirs");
-	}
-
 	/* Get the mean dir width of the fileset */
 	if ((attr = get_attr_integer(cmd, FSA_DIRWIDTH))) {
 		fileset->fs_dirwidth = attr->attr_avd;
@@ -6310,13 +6282,8 @@ parser_fileset_define(cmd_t *cmd)
 		fileset->fs_dirwidth = avd_int_alloc(0);
 	}
 
-	/* Get the random variable for dir depth, if supplied */
+	/* Get the dir depth */
 	if ((attr = get_attr_integer(cmd, FSA_DIRDEPTHRV))) {
-		if (!AVD_IS_RANDOM(attr->attr_avd)) {
-			filebench_log(LOG_ERROR,
-			    "Define fileset: dirdepthrv must be random var");
-			filebench_shutdown(1);
-		}
 		fileset->fs_dirdepthrv = attr->attr_avd;
 	} else {
 		fileset->fs_dirdepthrv = NULL;
@@ -6324,22 +6291,12 @@ parser_fileset_define(cmd_t *cmd)
 
 	/* Get the gamma value for dir depth distributions */
 	if ((attr = get_attr_integer(cmd, FSA_DIRGAMMA))) {
-		if (AVD_IS_RANDOM(attr->attr_avd)) {
-			filebench_log(LOG_ERROR,
-			    "Define fileset: dirgamma attr cannot be random");
-			filebench_shutdown(1);
-		}
 		fileset->fs_dirgamma = attr->attr_avd;
 	} else
 		fileset->fs_dirgamma = avd_int_alloc(1500);
 
 	/* Get the gamma value for dir width distributions */
 	if ((attr = get_attr_integer(cmd, FSA_FILESIZEGAMMA))) {
-		if (AVD_IS_RANDOM(attr->attr_avd)) {
-			filebench_log(LOG_ERROR,
-			    "Define fileset: filesizegamma cannot be random");
-			filebench_shutdown(1);
-		}
 		fileset->fs_sizegamma = attr->attr_avd;
 	} else
 		fileset->fs_sizegamma = avd_int_alloc(1500);
@@ -6674,7 +6631,7 @@ parser_psrun(cmd_t *cmd)
 static void
 parser_run_variable(cmd_t *cmd)
 {
-	avd_t integer = var_ref_attr(cmd->cmd_tgt1);
+	avd_t integer = avd_var_alloc(cmd->cmd_tgt1);
 	int runtime;
 	int timeslept;
 
@@ -6797,7 +6754,7 @@ parser_warmup(cmd_t *cmd)
 static void
 parser_warmup_variable(cmd_t *cmd)
 {
-	avd_t integer = var_ref_attr(cmd->cmd_tgt1);
+	avd_t integer = avd_var_alloc(cmd->cmd_tgt1);
 	int sleeptime;
 
 	if (integer == NULL) {
@@ -6845,7 +6802,7 @@ parser_sleep(cmd_t *cmd)
 static void
 parser_sleep_variable(cmd_t *cmd)
 {
-	avd_t integer = var_ref_attr(cmd->cmd_tgt1);
+	avd_t integer = avd_var_alloc(cmd->cmd_tgt1);
 	int sleeptime;
 	int timeslept;
 

@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "filebench.h"
 #include "vars.h"
@@ -97,29 +98,83 @@ avd_get_type_string(avd_t avd)
 	}
 }
 
+static void
+set_avd_type_by_var(avd_t avd, var_t *var, int error_on_unknown) {
+	switch (var->var_type) {
+	case VAR_BOOL:
+		avd->avd_type = AVD_VARVAL_BOOL;
+		avd->avd_val.boolptr = &var->var_val.boolean;
+		break;
+
+	case VAR_INT:
+		avd->avd_type = AVD_VARVAL_INT;
+		avd->avd_val.intptr = &var->var_val.integer;
+		break;
+
+	case VAR_STR:
+		avd->avd_type = AVD_VARVAL_STR;
+		avd->avd_val.strptr = &var->var_val.string;
+		break;
+
+	case VAR_DBL:
+		avd->avd_type = AVD_VARVAL_DBL;
+		avd->avd_val.dblptr = &var->var_val.dbl;
+		break;
+
+	case VAR_RANDVAR:
+		avd->avd_type = AVD_RANDVAR;
+		avd->avd_val.randptr = var->var_val.randptr;
+		break;
+
+	case VAR_UNKNOWN:
+		if (error_on_unknown) {
+			filebench_log(LOG_ERROR,	
+				"Uninitialized variable %s", var->var_name);
+			filebench_shutdown(1);
+		}
+		avd->avd_type = AVD_VARVAL_UNKNOWN;
+		avd->avd_val.varptr = var;
+		break;
+
+	default:
+		filebench_log(LOG_ERROR, "Illegal  variable type");
+		filebench_shutdown(1);
+	}
+}
+
 uint64_t
 avd_get_int(avd_t avd)
 {
 	randdist_t *rndp;
+	var_t *var;
 
-	if (!avd)
-		return 0;
+	assert(avd);
 
 	switch (avd->avd_type) {
 	case AVD_VAL_INT:
 		return avd->avd_val.intval;
 
 	case AVD_VARVAL_INT:
-		if (avd->avd_val.intptr)
-			return *(avd->avd_val.intptr);
-		return 0;
+		assert(avd->avd_val.intptr);
+		return *(avd->avd_val.intptr);
+
+	case AVD_VAL_DBL:
+		return avd->avd_val.dblval;
+
+	case AVD_VARVAL_DBL:
+		assert(avd->avd_val.dblptr);
+		return *(avd->avd_val.dblptr);
 
 	case AVD_RANDVAR:
 		rndp = avd->avd_val.randptr;
-		if (rndp)
-			return (uint64_t)rndp->rnd_get(rndp);
-		return 0;
+		assert(rndp);
+		return (uint64_t)rndp->rnd_get(rndp);
 
+	case AVD_VARVAL_UNKNOWN:
+		var = avd->avd_val.varptr;
+		set_avd_type_by_var(avd, var, 1);
+		return avd_get_int(avd);
+		
 	default:
 		filebench_log(LOG_ERROR,
 			"Attempt to get integer from %s avd",
@@ -132,32 +187,34 @@ double
 avd_get_dbl(avd_t avd)
 {
 	randdist_t *rndp;
+	var_t *var;
 
-	if (!avd)
-		return 0.0;
+	assert(avd);
 
 	switch (avd->avd_type) {
-	case AVD_VAL_INT:
-		return (double)avd->avd_val.intval;
-
 	case AVD_VAL_DBL:
 		return avd->avd_val.dblval;
 
-	case AVD_VARVAL_INT:
-		if (avd->avd_val.intptr)
-			return (double)(*(avd->avd_val.intptr));
-		return 0.0;
-
 	case AVD_VARVAL_DBL:
-		if (avd->avd_val.dblptr)
-			return *(avd->avd_val.dblptr);
-		return 0.0;
+		assert(avd->avd_val.dblptr);
+		return *(avd->avd_val.dblptr);
+
+	case AVD_VAL_INT:
+		return (double)avd->avd_val.intval;
+
+	case AVD_VARVAL_INT:
+		assert(avd->avd_val.intptr);
+		return (double)(*(avd->avd_val.intptr));
 
 	case AVD_RANDVAR:
 		rndp = avd->avd_val.randptr;
-		if (rndp)
-			return rndp->rnd_get(rndp);
-		return 0.0;
+		assert(rndp);
+		return rndp->rnd_get(rndp);
+
+	case AVD_VARVAL_UNKNOWN:
+		var = avd->avd_val.varptr;
+		set_avd_type_by_var(avd, var, 1);
+		return avd_get_dbl(avd);
 
 	default:
 		filebench_log(LOG_ERROR,
@@ -170,17 +227,16 @@ avd_get_dbl(avd_t avd)
 boolean_t
 avd_get_bool(avd_t avd)
 {
-	if (!avd)
-		return 0;
+	assert(avd);
+	var_t *var;
 
 	switch (avd->avd_type) {
 	case AVD_VAL_BOOL:
 		return avd->avd_val.boolval;
 
 	case AVD_VARVAL_BOOL:
-		if (avd->avd_val.boolptr)
-			return *(avd->avd_val.boolptr);
-		return FALSE;
+		assert(avd->avd_val.boolptr);
+		return *(avd->avd_val.boolptr);
 
 	case AVD_VAL_INT:
 		if (avd->avd_val.intval)
@@ -188,9 +244,26 @@ avd_get_bool(avd_t avd)
 		return FALSE;
 
 	case AVD_VARVAL_INT:
-		if (avd->avd_val.intptr && *(avd->avd_val.intptr))
+		assert(avd->avd_val.intptr);
+		if (*(avd->avd_val.intptr))
 			return TRUE;
 		return FALSE;
+
+	case AVD_VAL_DBL:
+		if (avd->avd_val.dblval)
+			return TRUE;
+		return FALSE;
+
+	case AVD_VARVAL_DBL:
+		assert(avd->avd_val.dblptr);
+		if (*(avd->avd_val.dblptr))
+			return TRUE;
+		return FALSE;
+
+	case AVD_VARVAL_UNKNOWN:
+		var = avd->avd_val.varptr;
+		set_avd_type_by_var(avd, var, 1);
+		return avd_get_bool(avd);
 
 	default:
 		filebench_log(LOG_ERROR,
@@ -203,17 +276,21 @@ avd_get_bool(avd_t avd)
 char *
 avd_get_str(avd_t avd)
 {
-	if (!avd)
-		return NULL;
+	assert(avd);
+	var_t *var;
 
 	switch (avd->avd_type) {
 	case AVD_VAL_STR:
 		return avd->avd_val.strval;
 
 	case AVD_VARVAL_STR:
-		if (avd->avd_val.strptr)
-			return *avd->avd_val.strptr;
-		return NULL;
+		assert(avd->avd_val.strptr);
+		return *avd->avd_val.strptr;
+
+	case AVD_VARVAL_UNKNOWN:
+		var = avd->avd_val.varptr;
+		set_avd_type_by_var(avd, var, 1);
+		return avd_get_str(avd);
 
 	default:
 		filebench_log(LOG_ERROR,
@@ -266,6 +343,21 @@ avd_int_alloc(uint64_t val)
 }
 
 avd_t
+avd_dbl_alloc(double val)
+{
+	avd_t avd;
+
+	avd = avd_alloc_cmn();
+	if (!avd)
+		return NULL;
+
+	avd->avd_type = AVD_VAL_DBL;
+	avd->avd_val.dblval = val;
+
+	return avd;
+}
+
+avd_t
 avd_str_alloc(char *string)
 {
 	avd_t avd;
@@ -285,112 +377,7 @@ avd_str_alloc(char *string)
 	return avd;
 }
 
-/*
- * Allocates an avd_t and points it to the var that
- * it will eventually be filled from.
- */
-static avd_t
-avd_alloc_var_ptr(var_t *var)
-{
-	avd_t avd;
-
-	if (!var)
-		return NULL;
-
-	avd = avd_alloc_cmn();
-	if (!avd)
-		return NULL;
-
-	switch (var->var_type & VAR_TYPE_SET_MASK) {
-	case VAR_TYPE_BOOL_SET:
-		avd->avd_type = AVD_VARVAL_BOOL;
-		avd->avd_val.boolptr = &var->var_val.boolean;
-		break;
-
-	case VAR_TYPE_INT_SET:
-		avd->avd_type = AVD_VARVAL_INT;
-		avd->avd_val.intptr = &var->var_val.integer;
-		break;
-
-	case VAR_TYPE_STR_SET:
-		avd->avd_type = AVD_VARVAL_STR;
-		avd->avd_val.strptr = &var->var_val.string;
-		break;
-
-	case VAR_TYPE_DBL_SET:
-		avd->avd_type = AVD_VARVAL_DBL;
-		avd->avd_val.dblptr = &var->var_val.dbl_flt;
-		break;
-
-	case VAR_TYPE_RAND_SET:
-		avd->avd_type = AVD_RANDVAR;
-		avd->avd_val.randptr = var->var_val.randptr;
-		break;
-
-	default:
-		filebench_log(LOG_ERROR, "Illegal  variable type");
-		return NULL;
-	}
-
-	return avd;
-}
-
-static var_t *
-var_alloc_cmn(char *name, int var_type)
-{
-	var_t **var_listp;
-	var_t *var = NULL;
-	var_t *prev = NULL;
-	var_t *newvar;
-
-	newvar = (var_t *)ipc_malloc(FILEBENCH_VARIABLE);
-	if (!newvar) {
-		filebench_log(LOG_ERROR, "Out of memory for variables");
-		return NULL;
-	}
-
-	memset(newvar, 0, sizeof(*newvar));
-
-	newvar->var_type = var_type;
-
-	newvar->var_name = ipc_stralloc(name);
-	if (!newvar->var_name) {
-		filebench_log(LOG_ERROR, "Out of memory for strings");
-		return NULL;
-	}
-
-	switch (var_type & VAR_TYPE_MASK) {
-	case VAR_TYPE_RANDOM:
-	case VAR_TYPE_NORMAL:
-		var_listp = &filebench_shm->shm_var_list;
-		break;
-
-	case VAR_TYPE_SPECIAL:
-		var_listp = &filebench_shm->shm_var_special_list;
-		break;
-
-	case VAR_TYPE_LOCAL:
-		/* place on head of shared local list */
-		newvar->var_next = filebench_shm->shm_var_loc_list;
-		filebench_shm->shm_var_loc_list = newvar;
-		return newvar;
-
-	default:
-		filebench_log(LOG_ERROR, "Illegal variable type");
-		return NULL;
-	}
-
-	/* add to the end of list */
-	for (var = *var_listp; var; var = var->var_next)
-		prev = var;
-	if (prev)
-		prev->var_next = newvar;
-	else
-		*var_listp = newvar;
-
-	return newvar;
-}
-
+#if 0
 static var_t *
 var_alloc(char *name)
 {
@@ -401,6 +388,15 @@ static var_t *
 var_alloc_special(char *name)
 {
 	return var_alloc_cmn(name, VAR_TYPE_SPECIAL);
+}
+#endif
+
+static var_t *
+var_alloc_cmn(char *name, int type)
+{
+	/* Just a Stub */
+	assert(0);
+	return NULL;
 }
 
 static var_t *
@@ -486,6 +482,7 @@ var_find_environment(var_t *var)
 	}
 }
 
+#if 0
 static var_t *
 var_find_special(char *name)
 {
@@ -527,7 +524,6 @@ var_find_special(char *name)
 }
 
 
-
 static var_t *
 var_find_local_normal_special(char *name)
 {
@@ -539,26 +535,52 @@ var_find_local_normal_special(char *name)
 
 	return var;
 }
+#endif
 
-/*
- * Searches for the named var and returns it if found. If not
- * found it allocates a new variable
- */
+static var_t *
+var_alloc(char *name)
+{
+	var_t *var;
+
+	var = (var_t *)ipc_malloc(FILEBENCH_VARIABLE);
+	if (!var) {
+		filebench_log(LOG_ERROR, "Out of memory for variables");
+		return NULL;
+	}
+
+	memset(var, 0, sizeof(*var));
+	VAR_SET_UNKNOWN(var);
+
+	var->var_name = ipc_stralloc(name);
+	if (!var->var_name) {
+		filebench_log(LOG_ERROR, "Out of memory for strings");
+		return NULL;
+	}
+
+	var->var_next = filebench_shm->shm_var_list;
+	filebench_shm->shm_var_list = var;
+
+	return var;
+}
+
+static var_t *
+var_find(char *name)
+{
+	var_t *var;
+
+	for (var = filebench_shm->shm_var_list; var; var = var->var_next)
+		if (!strcmp(var->var_name, name))
+			return var;
+
+	return NULL;
+}
+
 static var_t *
 var_find_alloc(char *name)
 {
 	var_t *var;
 
-	if (!name) {
-		filebench_log(LOG_ERROR,
-			"var_find_alloc: Var name not supplied");
-		return NULL;
-	}
-
-	/* ommits $ sign in the beginning */
-	name += 1;
-
-	var = var_find_local_normal(name);
+	var = var_find(name);
 	if (!var)
 		var = var_alloc(name);
 
@@ -572,17 +594,27 @@ var_assign_boolean(char *name, boolean_t bool)
 
 	var = var_find_alloc(name);
 	if (!var) {
-		filebench_log(LOG_ERROR, "Cannot assign variable %s", name);
-		return -1;
-	}
-
-	if ((var->var_type & VAR_TYPE_MASK) == VAR_TYPE_RANDOM) {
-		filebench_log(LOG_ERROR,
-			"Cannot assign boolean to random variable %s", name);
+		filebench_log(LOG_ERROR, "Could not assign variable %s", name);
 		return -1;
 	}
 
 	VAR_SET_BOOL(var, bool);
+
+	return 0;
+}
+
+int
+var_assign_double(char *name, double dbl)
+{
+	var_t *var;
+
+	var = var_find_alloc(name);
+	if (!var) {
+		filebench_log(LOG_ERROR, "Could not assign variable %s", name);
+		return -1;
+	}
+
+	VAR_SET_DBL(var, dbl);
 
 	return 0;
 }
@@ -594,24 +626,41 @@ var_assign_integer(char *name, uint64_t integer)
 
 	var = var_find_alloc(name);
 	if (!var) {
-		filebench_log(LOG_ERROR, "Cannot assign variable %s", name);
-		return -1;
-	}
-
-	if ((var->var_type & VAR_TYPE_MASK) == VAR_TYPE_RANDOM) {
-		filebench_log(LOG_ERROR,
-			"Cannot assign integer to random variable %s", name);
+		filebench_log(LOG_ERROR, "Could not assign variable %s", name);
 		return -1;
 	}
 
 	VAR_SET_INT(var, integer);
 
-	filebench_log(LOG_DEBUG_SCRIPT, "Assign integer %s=%llu",
-				name, (u_longlong_t)integer);
+	return 0;
+}
+
+int
+var_assign_string(char *name, char *string)
+{
+	var_t *var;
+	char *strptr;
+
+	var = var_find_alloc(name);
+	if (!var) {
+		filebench_log(LOG_ERROR, "Could not assign variable %s", name);
+		return -1;
+	}
+
+	strptr = ipc_stralloc(string);
+	if (!strptr) {
+		filebench_log(LOG_ERROR, "Could not assign variable %s", name);
+		return -1;
+	}
+
+	VAR_SET_STR(var, strptr);
 
 	return 0;
 }
 
+
+
+#if 0
 /*
  * Find a variable, and set it to random type.
  * If it does not have a random extension, allocate one.
@@ -640,6 +689,7 @@ var_find_randvar(char *name)
 
 	return newvar;
 }
+#endif
 
 /*
  * Allocate a variable, and set it to random type. Then
@@ -660,7 +710,7 @@ var_define_randvar(char *name)
 	}
 
 	/* allocate a random variable */
-	newvar = var_alloc_cmn(name, VAR_TYPE_RANDOM);
+	newvar = var_alloc(name);
 	if (!newvar) {
 		filebench_log(LOG_ERROR, "failed to alloc random variable\n");
 		return NULL;
@@ -689,34 +739,32 @@ var_define_randvar(char *name)
  * its type is not known as well).
  */
 avd_t
-var_ref_attr(char *name)
+avd_var_alloc(char *varname)
 {
 	var_t *var;
+	avd_t avd;
 
-	name += 1;
-
-	var = var_find_local_normal_special(name);
-	if (!var)
-		var = var_alloc(name);
-
+	var = var_find_alloc(varname);
 	if (!var) {
-		filebench_log(LOG_ERROR, "Invalid variable $%s", name);
+		filebench_log(LOG_ERROR, "Could not access variable %s", varname);
 		filebench_shutdown(1);
 	}
 
-	/* allocate pointer to var and return */
-	return avd_alloc_var_ptr(var);
+	avd = avd_alloc_cmn();
+	if (!avd)
+		return NULL;
+
+	set_avd_type_by_var(avd, var, 0);
+
+	return avd;
 }
 
-/*
- * Converts the contents of a var to a string.
- */
 static char *
 __var_to_string(var_t *var)
 {
 	char tmp[128];
 
-	if ((var->var_type & VAR_TYPE_MASK) == VAR_TYPE_RANDOM) {
+	if (VAR_HAS_RANDDIST(var)) {
 		switch (var->var_val.randptr->rnd_type & RAND_TYPE_MASK) {
 		case RAND_TYPE_UNIFORM:
 			return fb_stralloc("uniform random var");
@@ -745,6 +793,12 @@ __var_to_string(var_t *var)
 		return fb_stralloc(tmp);
 	}
 
+	if (VAR_HAS_DOUBLE(var)) {
+		(void) snprintf(tmp, sizeof (tmp), "%lf",
+			var->var_val.dbl);
+		return fb_stralloc(tmp);
+	}
+
 	return fb_stralloc("No default");
 }
 
@@ -753,9 +807,7 @@ var_to_string(char *name)
 {
 	var_t *var;
 
-	name += 1;
-
-	var = var_find_local_normal_special(name);
+	var = var_find(name);
 	if (!var)
 		return NULL;
 
@@ -773,8 +825,7 @@ var_randvar_to_string(char *name, int param_name)
 	if (!var)
 		return var_to_string(name);
 
-	if (((var->var_type & VAR_TYPE_MASK) != VAR_TYPE_RANDOM) ||
-	 	!VAR_HAS_RANDDIST(var))
+	if (!VAR_HAS_RANDDIST(var))
 		return var_to_string(name);
 
 	switch (param_name) {
@@ -841,7 +892,7 @@ var_copy(var_t *dst_var, var_t *src_var) {
 		VAR_SET_INT(dst_var, src_var->var_val.integer);
 
 	if (VAR_HAS_DOUBLE(src_var))
-		VAR_SET_DBL(dst_var, src_var->var_val.dbl_flt);
+		VAR_SET_DBL(dst_var, src_var->var_val.dbl);
 
 	if (VAR_HAS_STRING(src_var)) {
 		strptr = ipc_stralloc(src_var->var_val.string);
@@ -857,42 +908,6 @@ var_copy(var_t *dst_var, var_t *src_var) {
 	return 0;
 }
 
-int
-var_assign_string(char *name, char *string)
-{
-	var_t *var;
-	char *strptr;
-
-	name += 1;
-
-	var = var_find_local_normal(name);
-	if (!var)
-		var = var_alloc(name);
-
-	if (!var) {
-		filebench_log(LOG_ERROR, "Cannot assign variable %s",
-			name);
-		return -1;
-	}
-
-	if ((var->var_type & VAR_TYPE_MASK) == VAR_TYPE_RANDOM) {
-		filebench_log(LOG_ERROR,
-			"Cannot assign string to random variable %s", name);
-		return -1;
-	}
-
-	strptr = ipc_stralloc(string);
-	if (!strptr) {
-		filebench_log(LOG_ERROR, "Cannot assign variable %s",
-			name);
-		return -1;
-	}
-
-	VAR_SET_STR(var, strptr);
-
-	return 0;
-}
-
 /*
  * Allocates a local var (var_t) from interprocess shared memory after
  * first adjusting the name to elminate the leading $.
@@ -902,6 +917,8 @@ var_lvar_alloc_local(char *name)
 {
 	if (name[0] == '$')
 		name += 1;
+
+#define VAR_TYPE_LOCAL 1
 
 	return var_alloc_cmn(name, VAR_TYPE_LOCAL);
 }
@@ -947,7 +964,7 @@ var_lvar_assign_var(char *name, char *src_name)
 		}
 		VAR_SET_STR(dst_var, strptr);
 	} else if (VAR_HAS_DOUBLE(src_var)) {
-		VAR_SET_INT(dst_var, src_var->var_val.dbl_flt);
+		VAR_SET_INT(dst_var, src_var->var_val.dbl);
 	} else if (VAR_HAS_RANDDIST(src_var))
 		VAR_SET_RAND(dst_var, src_var->var_val.randptr);
 
@@ -1059,7 +1076,7 @@ var_update_comp_lvars(var_t *newlvar, var_t *proto_comp_vars,
 	 * if the new local variable has not already been assigned
 	 * a value, try to copy a value from the prototype local variable
 	 */
-	if ((newlvar->var_type & VAR_TYPE_SET_MASK) == 0) {
+	if (VAR_HAS_UNKNOWN(newlvar)) {
 		/* copy value from prototype lvar to new lvar */
 		(void) var_copy(newlvar, proto_lvar);
 	}
