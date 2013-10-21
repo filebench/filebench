@@ -172,14 +172,6 @@ eventgen_setrate(avd_t rate)
 		    "eventgen_setrate() called without a rate");
 		return;
 	}
-
-	if (AVD_IS_VAR(rate)) {
-		filebench_log(LOG_VERBOSE,
-		    "Eventgen rate taken from variable");
-	} else {
-		filebench_log(LOG_VERBOSE, "Eventgen: %llu per second",
-		    (u_longlong_t)avd_get_int(rate));
-	}
 }
 
 /*

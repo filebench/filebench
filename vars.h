@@ -29,8 +29,6 @@
 
 #include "filebench.h"
 
-typedef uint64_t fbint_t;
-
 /* Attribute Value Descriptor (AVD) types */
 typedef enum avd_type {
 	AVD_INVALID = 0,	/* avd is empty */
@@ -71,12 +69,6 @@ typedef struct avd {
 #define	AVD_IS_RANDOM(vp)	((vp) && ((vp)->avd_type == AVD_RANDVAR))
 #define	AVD_IS_STRING(vp)	((vp) && (((vp)->avd_type == AVD_VAL_STR) || \
 				((vp)->avd_type == AVD_VARVAL_STR)))
-#define	AVD_IS_VAR(vp)		((vp) && \
-				(((vp)->avd_type == AVD_RANDVAR) || \
-				((vp)->avd_type == AVD_VARVAL_BOOL) || \
-				((vp)->avd_type == AVD_VARVAL_INT) || \
-				((vp)->avd_type == AVD_VARVAL_STR) || \
-				((vp)->avd_type == AVD_VARVAL_DBL)))
 
 /* Variable Types */
 typedef enum var_type {
@@ -162,9 +154,6 @@ boolean_t avd_get_bool(avd_t);
 uint64_t avd_get_int(avd_t);
 double avd_get_dbl(avd_t);
 char *avd_get_str(avd_t);
-
-/* Random variables related */
-var_t *var_find_randvar(char *name);
 
 /* Local variables related */
 void avd_update(avd_t *avdp, var_t *lvar_list);

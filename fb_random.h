@@ -64,7 +64,6 @@ typedef struct randdist {
 	double		(*rnd_get)(struct randdist *);
 	double		(*rnd_src)(unsigned short *);
 	struct randdist *rnd_next;
-	struct var	*rnd_var;
 	avd_t		rnd_seed;
 	avd_t		rnd_mean;
 	avd_t		rnd_gamma;

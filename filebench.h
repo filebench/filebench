@@ -73,6 +73,7 @@ function */
 #include <dirent.h>
 
 /* Defining our internal types */
+typedef uint64_t fbint_t;
 #ifndef HAVE_BOOLEAN_T
 typedef enum { B_FALSE, B_TRUE } boolean_t;
 #endif
