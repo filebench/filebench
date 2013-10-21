@@ -226,6 +226,8 @@ noreadahead             { return FSA_NOREADAHEAD; }
 
 <INITIAL>\{			{ return FSK_OPENLST; }
 <INITIAL>\}			{ return FSK_CLOSELST; }
+<INITIAL>\(			{ return FSK_OPENPAR; }
+<INITIAL>\)			{ return FSK_CLOSEPAR; }
 <INITIAL>=			{ return FSK_ASSIGN; }
 <INITIAL>\,			{ return FSK_SEPLST; }
 <INITIAL>in                     { return FSK_IN; }

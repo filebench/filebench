@@ -156,6 +156,7 @@ int var_assign_boolean(char *name, boolean_t bool);
 int var_assign_integer(char *name, uint64_t integer);
 int var_assign_double(char *name, double dbl);
 int var_assign_string(char *name, char *string);
+int var_assign_randvar(char *name, struct randdist *rndp);
 
 boolean_t avd_get_bool(avd_t);
 uint64_t avd_get_int(avd_t);
@@ -163,7 +164,6 @@ double avd_get_dbl(avd_t);
 char *avd_get_str(avd_t);
 
 /* Random variables related */
-var_t *var_define_randvar(char *name);
 var_t *var_find_randvar(char *name);
 
 /* Local variables related */

@@ -102,7 +102,7 @@ static void parser_flowop_define(cmd_t *, threadflow_t *, flowop_t **, int);
 static void parser_file_define(cmd_t *);
 static void parser_fileset_define(cmd_t *);
 static void parser_posset_define(cmd_t *);
-static void parser_randvar_define(cmd_t *);
+static void parser_var_assign_randvar(char *, cmd_t *);
 static void parser_composite_flowop_define(cmd_t *);
 
 /* Create Commands */
@@ -173,7 +173,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %token FSE_FILE FSE_PROC FSE_THREAD FSE_CLEAR FSE_ALL FSE_SNAP FSE_DUMP
 %token FSE_DIRECTORY FSE_COMMAND FSE_FILESET FSE_POSSET FSE_XMLDUMP FSE_RAND FSE_MODE
 %token FSE_MULTI FSE_MULTIDUMP
-%token FSK_SEPLST FSK_OPENLST FSK_CLOSELST FSK_ASSIGN FSK_IN FSK_QUOTE
+%token FSK_SEPLST FSK_OPENLST FSK_CLOSELST FSK_OPENPAR FSK_CLOSEPAR FSK_ASSIGN FSK_IN FSK_QUOTE
 %token FSK_DIRSEPLST FSK_PLUS FSK_MINUS FSK_MULTIPLY FSK_DIVIDE
 %token FSA_SIZE FSA_PREALLOC FSA_PARALLOC FSA_PATH FSA_REUSE
 %token FSA_PROCESS FSA_MEMSIZE FSA_RATE FSA_CACHED FSA_READONLY FSA_TRUSTTREE
@@ -210,7 +210,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <val>  value
 
 %type <cmd> command inner_commands run_command list_command psrun_command
-%type <cmd> proc_define_command files_define_command posset_define_command randvar_define_command
+%type <cmd> proc_define_command files_define_command posset_define_command
 %type <cmd> fo_define_command debug_command create_command
 %type <cmd> sleep_command stats_command set_command shutdown_command
 %type <cmd> foreach_command log_command system_command flowop_command
@@ -218,7 +218,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> thread echo_command usage_command help_command
 %type <cmd> version_command enable_command multisync_command
 %type <cmd> warmup_command fscheck_command fsflush_command
-%type <cmd> set_variable set_mode
+%type <cmd> set_variable set_random_variable set_mode
 %type <cmd> osprof_enable_command osprof_disable_command
 
 %type <attr> files_attr_op files_attr_ops posset_attr_ops posset_attr_op pt_attr_op pt_attr_ops
@@ -283,7 +283,6 @@ command:
   proc_define_command
 | files_define_command
 | posset_define_command
-| randvar_define_command
 | fo_define_command
 | debug_command
 | eventgen_command
@@ -753,7 +752,7 @@ debug_command: FSC_DEBUG FSV_VAL_INT
 		yydebug = 1;
 };
 
-set_command: set_variable | set_mode;
+set_command: set_variable | set_mode | set_random_variable;
 
 set_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_INT
 {
@@ -795,6 +794,18 @@ FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
 
 	$$->cmd = NULL;
 };
+
+set_random_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSE_RAND FSK_OPENPAR randvar_attr_ops FSK_CLOSEPAR
+{
+	$$ = alloc_cmd();
+	if (!$$)
+		YYERROR;
+
+	$$->cmd_attr_list = $6;
+	$$->cmd = NULL;
+
+	parser_var_assign_randvar($2, $$);
+}
 
 set_mode: FSC_SET FSE_MODE FSC_QUIT FSA_TIMEOUT
 {
@@ -991,14 +1002,6 @@ posset_define_command: FSC_DEFINE FSE_POSSET
 } | posset_define_command posset_attr_ops
 {
 	$1->cmd_attr_list = $2;
-};
-
-randvar_define_command: FSC_DEFINE FSE_RAND randvar_attr_ops
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = &parser_randvar_define;
-	$$->cmd_attr_list = $3;
 };
 
 fo_define_command: FSC_DEFINE FSC_FLOWOP comp_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
@@ -4163,30 +4166,18 @@ parser_abort(int arg)
  * define a random variable and initialize the distribution parameters
  */
 static void
-parser_randvar_define(cmd_t *cmd)
+parser_var_assign_randvar(char *name, cmd_t *cmd)
 {
-	var_t		*var;
 	randdist_t	*rndp;
 	attr_t		*attr;
-	char		*name;
 
-	/* Get the name for the random variable */
-	if ((attr = get_attr(cmd, FSA_NAME))) {
-		name = avd_get_str(attr->attr_avd);
-	} else {
+	rndp = randdist_alloc();
+	if (!rndp) {
 		filebench_log(LOG_ERROR,
-		    "define randvar: no name specified");
+			"failed to alloc random distribution object\n");
 		return;
 	}
 
-	if ((var = var_define_randvar(name)) == NULL) {
-		filebench_log(LOG_ERROR,
-		    "define randvar: failed for random variable %s",
-		    name);
-		return;
-	}
-
-	rndp = var->var_val.randptr;
 	rndp->rnd_type = 0;
 
 	/* Get the source of the random numbers */
@@ -4270,6 +4261,8 @@ parser_randvar_define(cmd_t *cmd)
 	} else {
 		rndp->rnd_mean = avd_int_alloc(0);
 	}
+
+	var_assign_randvar(name, rndp);
 
 randdist_init:
 	randdist_init(rndp);

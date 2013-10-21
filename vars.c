@@ -691,43 +691,21 @@ var_find_randvar(char *name)
 }
 #endif
 
-/*
- * Allocate a variable, and set it to random type. Then
- * allocate a random extension.
- */
-var_t *
-var_define_randvar(char *name)
+int
+var_assign_randvar(char *name, randdist_t *rndp)
 {
-	var_t *newvar;
-	randdist_t *rndp = NULL;
+	var_t *var;
 
-	name += 1;
-
-	/* make sure variable doesn't already exist */
-	if (var_find_local_normal(name)) {
-		filebench_log(LOG_ERROR, "variable name already in use\n");
-		return NULL;
+	var = var_find_alloc(name);
+	if (!var) {
+		filebench_log(LOG_ERROR, "Could not assign variable %s", name);
+		return -1;
 	}
 
-	/* allocate a random variable */
-	newvar = var_alloc(name);
-	if (!newvar) {
-		filebench_log(LOG_ERROR, "failed to alloc random variable\n");
-		return NULL;
-	}
+	rndp->rnd_var = var;
+	VAR_SET_RAND(var, rndp);
 
-	/* set randdist pointer */
-	rndp = randdist_alloc();
-	if (!rndp) {
-		filebench_log(LOG_ERROR,
-			"failed to alloc random distribution object\n");
-		return NULL;
-	}
-
-	rndp->rnd_var = newvar;
-	VAR_SET_RAND(newvar, rndp);
-
-	return newvar;
+	return 0;
 }
 
 /*
