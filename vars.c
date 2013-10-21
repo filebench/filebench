@@ -699,7 +699,7 @@ var_copy(var_t *dst_var, var_t *src_var) {
 var_t *
 var_lvar_alloc_local(char *name)
 {
-	var_alloc(name);
+	return var_alloc(name);
 }
 
 /*
