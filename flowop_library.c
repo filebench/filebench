@@ -242,8 +242,7 @@ flowoplib_pickfile(filesetentry_t **filep, flowop_t *flowop, int flags, int tid)
 	}
 
 	if (flowop->fo_fileindex) {
-		fileindex = (int)(avd_get_dbl(flowop->fo_fileindex) *
-		    ((double)(fileset->fs_constentries / 2)));
+		fileindex = (int)(avd_get_dbl(flowop->fo_fileindex));
 		fileindex = fileindex % fileset->fs_constentries;
 		flags |= FILESET_PICKBYINDEX;
 	} else {
