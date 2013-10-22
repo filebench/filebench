@@ -126,7 +126,6 @@ filename                { return FSA_FILE; }
 filesetname             { return FSA_FILE; }
 possetname             	{ return FSA_POSSET; }
 filesize                { return FSA_SIZE; }
-filesizegamma           { return FSA_FILESIZEGAMMA; }
 firstdone               { return FSA_FIRSTDONE; }
 fstype		        { return FSA_FSTYPE; }
 gamma                   { return FSA_RANDGAMMA; }

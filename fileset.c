@@ -1345,7 +1345,6 @@ fileset_populate_file(fileset_t *fileset, filesetentry_t *parent, int serial)
 {
 	char tmpname[16];
 	filesetentry_t *entry;
-	double drand;
 	uint_t index;
 
 	if ((entry = (filesetentry_t *)ipc_malloc(FILEBENCH_FILESETENTRY))
@@ -1372,22 +1371,7 @@ fileset_populate_file(fileset_t *fileset, filesetentry_t *parent, int serial)
 		return (FILEBENCH_ERROR);
 	}
 
-	/* see if random variable was supplied for file size */
-	if (fileset->fs_meansize == -1) {
-		entry->fse_size = (off64_t)avd_get_int(fileset->fs_size);
-	} else {
-		double gamma;
-
-		gamma = avd_get_int(fileset->fs_sizegamma) / 1000.0;
-		if (gamma > 0) {
-			drand = gamma_dist_knuth(gamma,
-			    fileset->fs_meansize / gamma);
-			entry->fse_size = (off64_t)drand;
-		} else {
-			entry->fse_size = (off64_t)fileset->fs_meansize;
-		}
-	}
-
+	entry->fse_size = (off64_t)avd_get_int(fileset->fs_size);
 	fileset->fs_bytes += entry->fse_size;
 
 	fileset->fs_realfiles++;
@@ -1667,12 +1651,6 @@ fileset_populate(fileset_t *fileset)
 		    fileset->fs_meandepth;
 	}
 
-	/* test for random size variable */
-	if (AVD_IS_RANDOM(fileset->fs_size))
-		fileset->fs_meansize = -1;
-	else
-		fileset->fs_meansize = avd_get_int(fileset->fs_size);
-
 	if ((ret = fileset_populate_subdir(fileset, NULL, 1, 0)) != 0)
 		return (ret);
 
@@ -1724,7 +1702,6 @@ fileset_define(avd_t name)
 	(void) ipc_mutex_lock(&filebench_shm->shm_fileset_lock);
 
 	fileset->fs_dirgamma = avd_int_alloc(1500);
-	fileset->fs_sizegamma = avd_int_alloc(1500);
 	fileset->fs_histo_id = -1;
 
 	/* Add fileset to global list */
@@ -1778,12 +1755,6 @@ fileset_createsets()
 		if (AVD_IS_RANDOM(list->fs_dirgamma)) {
 			filebench_log(LOG_ERROR,
 			    "Define fileset: dirgamma attr cannot be random");
-			filebench_shutdown(1);
-		}
-
-		if (AVD_IS_RANDOM(list->fs_sizegamma)) {
-			filebench_log(LOG_ERROR,
-			    "Define fileset: filesizegamma cannot be random");
 			filebench_shutdown(1);
 		}
 

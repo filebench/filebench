@@ -180,7 +180,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %token FSA_IOSIZE FSA_FILE FSA_POSSET FSA_WSS FSA_NAME FSA_RANDOM FSA_INSTANCES
 %token FSA_DSYNC FSA_TARGET FSA_ITERS FSA_NICE FSA_VALUE FSA_BLOCKING
 %token FSA_HIGHWATER FSA_DIRECTIO FSA_DIRWIDTH FSA_FD FSA_SRCFD FSA_ROTATEFD
-%token FSA_NAMELENGTH FSA_FILESIZE FSA_ENTRIES FSA_FILESIZEGAMMA FSA_DIRDEPTHRV
+%token FSA_NAMELENGTH FSA_FILESIZE FSA_ENTRIES FSA_DIRDEPTHRV
 %token FSA_DIRGAMMA FSA_USEISM FSA_TYPE FSA_RANDTABLE FSA_RANDSRC FSA_RANDROUND
 %token FSA_LEAFDIRS FSA_INDEXED FSA_FSTYPE
 %token FSA_RANDSEED FSA_RANDGAMMA FSA_RANDMEAN FSA_RANDMIN FSA_RANDMAX FSA_MASTER
@@ -980,13 +980,17 @@ proc_define_command: FSC_DEFINE FSE_PROC pt_attr_ops FSK_OPENLST thread_list FSK
 
 files_define_command: FSC_DEFINE FSE_FILE
 {
-	if (($$ = alloc_cmd()) == NULL)
+	$$ = alloc_cmd();
+	if (!$$)
 		YYERROR;
+
 	$$->cmd = &parser_file_define;
 }| FSC_DEFINE FSE_FILESET
 {
-	if (($$ = alloc_cmd()) == NULL)
+	$$ = alloc_cmd();
+	if (!$$)
 		YYERROR;
+
 	$$->cmd = &parser_fileset_define;
 }
 | files_define_command files_attr_ops
@@ -1196,9 +1200,8 @@ files_attr_ops: files_attr_op
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
 
-	for (attr = $1; attr != NULL;
-	    attr = attr->attr_next)
-		list_end = attr; /* Find end of list */
+	for (attr = $1; attr; attr = attr->attr_next)
+		list_end = attr;
 
 	list_end->attr_next = $3;
 
@@ -1242,8 +1245,10 @@ files_attr_op: files_attr_name FSK_ASSIGN attr_list_value
 }
 | files_attr_name
 {
-	if (($$ = alloc_attr()) == NULL)
+	$$ = alloc_attr();
+	if (!$$)
 		YYERROR;
+
 	$$->attr_name = $1;
 };
 
@@ -1485,8 +1490,7 @@ binary_op:
  | FSK_MULTIPLY {$$ = FSK_MULTIPLY;}
  | FSK_DIVIDE {$$ = FSK_DIVIDE;};
 
-files_attr_name: attrs_define_file
-|attrs_define_fileset;
+files_attr_name: attrs_define_file | attrs_define_fileset;
 
 posset_attr_name: attrs_define_posset;
 
@@ -1514,9 +1518,10 @@ attrs_define_file:
 | FSA_WRITEONLY { $$ = FSA_WRITEONLY;}
 
 attrs_define_fileset:
-  FSA_SIZE { $$ = FSA_SIZE;}
-| FSA_NAME { $$ = FSA_NAME;}
+  FSA_NAME { $$ = FSA_NAME;}
 | FSA_PATH { $$ = FSA_PATH;}
+| FSA_ENTRIES { $$ = FSA_ENTRIES;}
+| FSA_SIZE { $$ = FSA_SIZE;}
 | FSA_DIRWIDTH { $$ = FSA_DIRWIDTH;}
 | FSA_DIRDEPTHRV { $$ = FSA_DIRDEPTHRV;}
 | FSA_PREALLOC { $$ = FSA_PREALLOC;}
@@ -1524,10 +1529,8 @@ attrs_define_fileset:
 | FSA_REUSE { $$ = FSA_REUSE;}
 | FSA_READONLY { $$ = FSA_READONLY;}
 | FSA_TRUSTTREE { $$ = FSA_TRUSTTREE;}
-| FSA_FILESIZEGAMMA { $$ = FSA_FILESIZEGAMMA;}
 | FSA_DIRGAMMA { $$ = FSA_DIRGAMMA;}
 | FSA_CACHED { $$ = FSA_CACHED;}
-| FSA_ENTRIES { $$ = FSA_ENTRIES;}
 | FSA_LEAFDIRS { $$ = FSA_LEAFDIRS;};
 | FSA_WRITEONLY { $$ = FSA_WRITEONLY;}
 
@@ -3040,7 +3043,6 @@ parser_file_define(cmd_t *cmd)
 
 	/* Set the dir and size gammas to 0 */
 	fileset->fs_dirgamma = avd_int_alloc(0);
-	fileset->fs_sizegamma = avd_int_alloc(0);
 }
 
 /*
@@ -3096,12 +3098,6 @@ parser_fileset_define(cmd_t *cmd)
 		fileset->fs_dirgamma = attr->attr_avd;
 	} else
 		fileset->fs_dirgamma = avd_int_alloc(1500);
-
-	/* Get the gamma value for dir width distributions */
-	if ((attr = get_attr_integer(cmd, FSA_FILESIZEGAMMA))) {
-		fileset->fs_sizegamma = attr->attr_avd;
-	} else
-		fileset->fs_sizegamma = avd_int_alloc(1500);
 }
 
 static void

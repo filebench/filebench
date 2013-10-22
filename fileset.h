@@ -96,9 +96,6 @@ typedef struct fileset {
 	avd_t		fs_dirgamma;	/* Dirdepth Gamma distribution */
 					/* (* 1000) defaults to 1500, set */
 					/* to 0 for explicit depth */
-	avd_t		fs_sizegamma;	/* Filesize and dirwidth Gamma */
-					/* distribution (* 1000), default */
-					/* is 1500, set to 0 for explicit */
 	avd_t		fs_create;	/* Attr */
 	avd_t		fs_prealloc;	/* Attr */
 	avd_t		fs_paralloc;	/* Attr */
@@ -109,7 +106,6 @@ typedef struct fileset {
 	avd_t		fs_trust_tree;	/* Attr */
 	double		fs_meandepth;	/* Computed mean depth */
 	double		fs_meanwidth;	/* Specified mean dir width */
-	double		fs_meansize;	/* Specified mean file size */
 	int		fs_realfiles;	/* Actual files */
 	int		fs_realleafdirs; /* Actual explicit leaf directories */
 	off64_t		fs_bytes;	/* Total space consumed by files */
