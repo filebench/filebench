@@ -130,7 +130,7 @@ alloc_cvar_lib_info(const char *filename)
 out:
 	if (ret && cli) {
 		/* NOTE: There is no mechanism to free cli->filename and cli->type. */
-		ipc_free(FILEBENCH_NCVAR_LIB_INFO, (char *) cli);
+		ipc_free(FILEBENCH_CVAR_LIB_INFO, (char *) cli);
 	}
 
 	return ret;
