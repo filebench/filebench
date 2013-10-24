@@ -55,16 +55,18 @@
  * ipc_malloc() gets the type as an argument and
  * allocates a slot from the appropriate pool.
  * */
-#define	FILEBENCH_FILESET	0
+#define	FILEBENCH_FILESET		0
 #define	FILEBENCH_FILESETENTRY	1
-#define	FILEBENCH_POSSET	2
-#define	FILEBENCH_PROCFLOW	3
+#define	FILEBENCH_POSSET		2
+#define	FILEBENCH_PROCFLOW		3
 #define	FILEBENCH_THREADFLOW	4
-#define	FILEBENCH_FLOWOP	5
-#define	FILEBENCH_VARIABLE	6
-#define	FILEBENCH_AVD		7
-#define	FILEBENCH_RANDDIST	8
-#define	FILEBENCH_MAXTYPE	FILEBENCH_RANDDIST
+#define	FILEBENCH_FLOWOP		5
+#define	FILEBENCH_VARIABLE		6
+#define	FILEBENCH_AVD			7
+#define	FILEBENCH_RANDDIST		8
+#define FILEBENCH_CVAR			9
+#define FILEBENCH_CVAR_LIB_INFO	10
+#define	FILEBENCH_MAXTYPE		FILEBENCH_CVAR_LIB_INFO
 
 /*
  * The values below are selected by intuition: these limits
@@ -86,11 +88,14 @@
 #define	FILEBENCH_NVARIABLES		(1024)
 #define	FILEBENCH_NAVDS			(4096)
 #define	FILEBENCH_NRANDDISTS		(16)
+#define FILEBENCH_NCVARS		(16)
+#define FILEBENCH_NCVAR_LIB_INFO	(32)
 #define	FILEBENCH_MAXBITMAP		FILEBENCH_NFILESETENTRIES
 
 /* these below are not regular pools and are allocated separately from ipc_malloc() */
 #define	FILEBENCH_FILESETPATHMEMORY	(FILEBENCH_NFILESETENTRIES * FSE_MAXPATHLEN)
 #define	FILEBENCH_STRINGMEMORY		(FILEBENCH_NVARIABLES * 128)
+#define FILEBENCH_CVAR_HEAPSIZE		(FILEBENCH_NCVARS * 4096)
 
 typedef struct filebench_shm {
 	/*
@@ -146,6 +151,8 @@ typedef struct filebench_shm {
 
 	/* List of randdist instances (randdist for every random variable) */
 	randdist_t	*shm_rand_list;
+	cvar_t		*shm_cvar_list;    /* custom variables */
+	cvar_library_info_t *shm_cvar_lib_info_list;
 
 	/*
 	 * log and statistics dumping controls and state
@@ -188,6 +195,7 @@ typedef struct filebench_shm {
 	hrtime_t	shm_starttime;
 	int		shm_utid;
 	int		osprof_enabled;
+	int		shm_cvar_heapsize;
 
 	/*
 	 * Shared memory allocation control
@@ -236,10 +244,13 @@ typedef struct filebench_shm {
 	var_t		shm_var[FILEBENCH_NVARIABLES];
 	struct avd	shm_avd_ptrs[FILEBENCH_NAVDS];
 	randdist_t	shm_randdist[FILEBENCH_NRANDDISTS];
+	cvar_t		shm_cvar[FILEBENCH_NCVARS];
+	cvar_library_info_t shm_cvar_lib_info[FILEBENCH_NCVAR_LIB_INFO];
 
 	/* these below are not regular pools and are allocated separately from ipc_malloc() */
 	char		shm_strings[FILEBENCH_STRINGMEMORY];
 	char		shm_filesetpaths[FILEBENCH_FILESETPATHMEMORY];
+	char		shm_cvar_heap[FILEBENCH_CVAR_HEAPSIZE];
 
 } filebench_shm_t;
 
@@ -255,8 +266,10 @@ pthread_mutexattr_t *ipc_mutexattr(int);
 pthread_condattr_t *ipc_condattr(void);
 int ipc_semidalloc(void);
 void ipc_semidfree(int semid);
-char *ipc_stralloc(char *string);
+char *ipc_stralloc(const char *string);
 char *ipc_pathalloc(char *string);
+void *ipc_cvar_heapalloc(size_t size);
+void ipc_cvar_heapfree(void *ptr);
 int ipc_mutex_lock(pthread_mutex_t *mutex);
 int ipc_mutex_unlock(pthread_mutex_t *mutex);
 void ipc_seminit(void);

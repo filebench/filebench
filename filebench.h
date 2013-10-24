@@ -129,6 +129,7 @@ typedef unsigned int uint_t;
 
 #include "flag.h"
 #include "vars.h"
+#include "fb_cvar.h"
 #include "fb_avl.h"
 #include "stats.h"
 #include "procflow.h"

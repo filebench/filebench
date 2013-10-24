@@ -37,6 +37,7 @@
 #include <pthread.h>
 #include <sys/shm.h>
 #include "filebench.h"
+#include "fb_cvar.h"
 
 filebench_shm_t *filebench_shm = NULL;
 char shmpath[128] = "/tmp/filebench-shm-XXXXXX";
@@ -471,6 +472,14 @@ preallocated_entries(int obj_type)
 		entries = sizeof(filebench_shm->shm_randdist)
 						/ sizeof(randdist_t);
 		break;
+	case FILEBENCH_CVAR:
+		entries = sizeof(filebench_shm->shm_cvar)
+						/ sizeof(cvar_t);
+		break;
+	case FILEBENCH_CVAR_LIB_INFO:
+		entries = sizeof(filebench_shm->shm_cvar_lib_info)
+						/ sizeof(cvar_library_info_t);
+		break;
 	default:
 		entries = -1;
 		filebench_log(LOG_ERROR, "preallocated_entries: "
@@ -577,6 +586,16 @@ ipc_malloc(int obj_type)
 		(void) ipc_mutex_unlock(&filebench_shm->shm_malloc_lock);
 		return ((char *)&filebench_shm->shm_randdist[i]);
 
+	case FILEBENCH_CVAR:
+		(void) memset((char *)&filebench_shm->shm_cvar[i], 0, sizeof(cvar_t));
+		(void) ipc_mutex_unlock(&filebench_shm->shm_malloc_lock);
+		return ((char *)&filebench_shm->shm_cvar[i]);
+
+	case FILEBENCH_CVAR_LIB_INFO:
+		(void) memset((char *)&filebench_shm->shm_cvar_lib_info[i], 0,
+			sizeof(cvar_library_info_t));
+		(void) ipc_mutex_unlock(&filebench_shm->shm_malloc_lock);
+		return ((char *)&filebench_shm->shm_cvar_lib_info[i]);
 	}
 
 	filebench_log(LOG_ERROR, "Attempt to ipc_malloc unknown object type (%d)!",
@@ -651,6 +670,15 @@ ipc_free(int type, char *addr)
 		size = sizeof (randdist_t);
 		break;
 
+	case FILEBENCH_CVAR:
+		base = (caddr_t)&filebench_shm->shm_cvar[0];
+		size = sizeof (cvar_t);
+		break;
+
+	case FILEBENCH_CVAR_LIB_INFO:
+		base = (caddr_t)&filebench_shm->shm_cvar_lib_info[0];
+		size = sizeof(cvar_library_info_t);
+		break;
 	}
 
 	offset = ((size_t)addr - (size_t)base);
@@ -668,7 +696,7 @@ ipc_free(int type, char *addr)
  * copied to the newly allocated string.
  */
 char *
-ipc_stralloc(char *string)
+ipc_stralloc(const char *string)
 {
 	char *allocstr = filebench_shm->shm_string_ptr;
 
@@ -723,6 +751,39 @@ void
 ipc_freepaths(void)
 {
 	filebench_shm->shm_path_ptr = &filebench_shm->shm_filesetpaths[0];
+}
+
+/*
+ * Limited functionality allocator for use by custom variables to allocate
+ * state.
+ */
+void
+*ipc_cvar_heapalloc(size_t size)
+{
+	void *memory;
+
+	(void) ipc_mutex_lock(&filebench_shm->shm_malloc_lock);
+
+	if ((filebench_shm->shm_cvar_heapsize + size) <= FILEBENCH_CVAR_HEAPSIZE) {
+		memory = filebench_shm->shm_cvar_heap +
+				filebench_shm->shm_cvar_heapsize;
+
+		filebench_shm->shm_cvar_heapsize += size;
+	} else
+		memory = NULL;
+
+	(void) ipc_mutex_unlock(&filebench_shm->shm_malloc_lock);
+
+	return memory;
+}
+
+void
+ipc_cvar_heapfree(void *ptr)
+{
+	/* Since Filebench will shutdown when the allocation of a custom variable
+	 * handle fails, there's no immediate need to implement free functionality
+	 * here. */
+	return;
 }
 
 /*
