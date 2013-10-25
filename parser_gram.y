@@ -235,7 +235,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <attr> cvar_attr_ops cvar_attr_op
 %type <list> integer_seplist string_seplist var_string_list
 %type <list> var_string whitevar_string whitevar_string_list
-%type <ival> attrs_define_thread attrs_define_file attrs_flowop
+%type <ival> attrs_define_thread attrs_flowop
 %type <ival> attrs_define_fileset attrs_define_proc attrs_eventgen attrs_define_comp
 %type <ival> files_attr_name pt_attr_name fo_attr_name ev_attr_name
 %type <ival> randvar_attr_name FSA_TYPE randtype_name
@@ -1433,7 +1433,7 @@ fscheck_attr_op: fscheck_attr_name FSK_ASSIGN FSV_STRING
 	$$->attr_name = $1;
 };
 
-files_attr_name: attrs_define_file | attrs_define_fileset;
+files_attr_name: attrs_define_fileset;
 
 pt_attr_name: attrs_define_thread
 |attrs_define_proc;
@@ -1446,17 +1446,6 @@ attrs_define_proc:
   FSA_NICE { $$ = FSA_NICE;}
 | FSA_NAME { $$ = FSA_NAME;}
 | FSA_INSTANCES { $$ = FSA_INSTANCES;};
-
-attrs_define_file:
-  FSA_SIZE { $$ = FSA_SIZE;}
-| FSA_NAME { $$ = FSA_NAME;}
-| FSA_PATH { $$ = FSA_PATH;}
-| FSA_READONLY { $$ = FSA_READONLY;}
-| FSA_TRUSTTREE { $$ = FSA_TRUSTTREE;}
-| FSA_REUSE { $$ = FSA_REUSE;}
-| FSA_PREALLOC { $$ = FSA_PREALLOC;}
-| FSA_PARALLOC { $$ = FSA_PARALLOC;};
-| FSA_WRITEONLY { $$ = FSA_WRITEONLY;}
 
 attrs_define_fileset:
   FSA_NAME { $$ = FSA_NAME;}
@@ -3036,6 +3025,8 @@ parser_file_define(cmd_t *cmd)
 
 	/* Set the dir and size gammas to 0 */
 	fileset->fs_dirgamma = avd_int_alloc(0);
+
+	fileset->fs_leafdirs = avd_int_alloc(0);
 }
 
 /*
