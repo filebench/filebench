@@ -1688,10 +1688,6 @@ attr_list_value: var_string_list {
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
 	$$->attr_param_list = $1;
-} | FSV_STRING {
-	if (($$ = alloc_attr()) == NULL)
-		YYERROR;
-	$$->attr_avd = avd_str_alloc($1);
 } | FSV_VAL_INT {
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
@@ -1700,10 +1696,6 @@ attr_list_value: var_string_list {
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
 	$$->attr_avd = avd_bool_alloc($1);
-} | FSV_VARIABLE {
-	if (($$ = alloc_attr()) == NULL)
-		YYERROR;
-	$$->attr_avd = avd_var_alloc($1);
 };
 
 var_int_val: FSV_VAL_INT
