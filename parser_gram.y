@@ -225,7 +225,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> set_variable set_random_variable set_custom_variable set_mode
 %type <cmd> osprof_enable_command osprof_disable_command
 
-%type <attr> files_attr_op files_attr_ops pt_attr_op pt_attr_ops
+%type <attr> files_attr_op files_attr_ops p_attr_op t_attr_op p_attr_ops t_attr_ops
 %type <attr> fo_attr_op fo_attr_ops ev_attr_op ev_attr_ops
 %type <attr> randvar_attr_op randvar_attr_ops randvar_attr_typop
 %type <attr> randvar_attr_srcop attr_value attr_list_value
@@ -237,7 +237,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <list> var_string whitevar_string whitevar_string_list
 %type <ival> attrs_define_thread attrs_flowop
 %type <ival> attrs_define_fileset attrs_define_proc attrs_eventgen attrs_define_comp
-%type <ival> files_attr_name pt_attr_name fo_attr_name ev_attr_name
+%type <ival> files_attr_name fo_attr_name ev_attr_name
 %type <ival> randvar_attr_name FSA_TYPE randtype_name
 %type <ival> randsrc_name FSA_RANDSRC em_attr_name
 %type <ival> FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC
@@ -924,7 +924,7 @@ flowop_list: flowop_command
 	$$ = $1;
 };
 
-thread: FSE_THREAD pt_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
+thread: FSE_THREAD t_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
 {
 	/*
 	 * Allocate a cmd node per thread, with a
@@ -957,7 +957,7 @@ thread_list: thread
 	$$ = $1;
 };
 
-proc_define_command: FSC_DEFINE FSE_PROC pt_attr_ops FSK_OPENLST thread_list FSK_CLOSELST
+proc_define_command: FSC_DEFINE FSE_PROC p_attr_ops FSK_OPENLST thread_list FSK_CLOSELST
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -966,7 +966,7 @@ proc_define_command: FSC_DEFINE FSE_PROC pt_attr_ops FSK_OPENLST thread_list FSK
 	$$->cmd_attr_list = $3;
 
 }
-| proc_define_command pt_attr_ops
+| proc_define_command p_attr_ops
 {
 	$1->cmd_attr_list = $2;
 };
@@ -1288,12 +1288,12 @@ probtabentry_list: probtabentry
 	$$ = $1;
 };
 
-/* attribute parsing for define thread and process */
-pt_attr_ops: pt_attr_op
+/* attribute parsing for define process */
+p_attr_ops: p_attr_op
 {
 	$$ = $1;
 }
-| pt_attr_ops FSK_SEPLST pt_attr_op
+| p_attr_ops FSK_SEPLST p_attr_op
 {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -1307,12 +1307,43 @@ pt_attr_ops: pt_attr_op
 	$$ = $1;
 };
 
-pt_attr_op: pt_attr_name FSK_ASSIGN attr_value
+p_attr_op: attrs_define_proc FSK_ASSIGN attr_value
 {
 	$$ = $3;
 	$$->attr_name = $1;
 }
-| pt_attr_name
+| attrs_define_proc
+{
+	if (($$ = alloc_attr()) == NULL)
+		YYERROR;
+	$$->attr_name = $1;
+};
+
+/* attribute parsing thread options */
+t_attr_ops: t_attr_op
+{
+	$$ = $1;
+}
+| t_attr_ops FSK_SEPLST t_attr_op
+{
+	attr_t *attr = NULL;
+	attr_t *list_end = NULL;
+
+	for (attr = $1; attr != NULL;
+	    attr = attr->attr_next)
+		list_end = attr; /* Find end of list */
+
+	list_end->attr_next = $3;
+
+	$$ = $1;
+};
+
+t_attr_op: attrs_define_thread FSK_ASSIGN attr_value
+{
+	$$ = $3;
+	$$->attr_name = $1;
+}
+| attrs_define_thread
 {
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
@@ -1434,9 +1465,6 @@ fscheck_attr_op: fscheck_attr_name FSK_ASSIGN FSV_STRING
 };
 
 files_attr_name: attrs_define_fileset;
-
-pt_attr_name: attrs_define_thread
-|attrs_define_proc;
 
 fo_attr_name: attrs_flowop;
 
