@@ -200,6 +200,8 @@ AC_CHECK_LIB(
 	[pthread_mutexattr_setprotocol],
         [ AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_SETPROTOCOL, 1, [ Define if you have POSIX setprotocol ])])
 
+AC_CHECK_LIB([dl],[dlopen])
+
 ####
 #### Check for files
 ####

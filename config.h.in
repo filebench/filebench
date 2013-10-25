@@ -100,6 +100,9 @@
 /* Define if you have I/O priority syscalls. */
 #undef HAVE_IOPRIO
 
+/* Define to 1 if you have the `dl' library (-ldl). */
+#undef HAVE_LIBDL
+
 /* Define to 1 if you have the <libintl.h> header file. */
 #undef HAVE_LIBINTL_H
 

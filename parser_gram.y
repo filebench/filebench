@@ -31,6 +31,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <float.h>
+#include <limits.h>
 #include <signal.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -94,6 +96,8 @@ static void add_lvar_to_list(var_t *newlvar, var_t **lvar_list);
 /* Info Commands */
 static void parser_list(cmd_t *);
 static void parser_flowop_list(cmd_t *);
+static void parser_list_cvar_types(void);
+static void parser_list_cvar_type_parameters(cmd_t *);
 
 /* Define Commands */
 static void parser_proc_define(cmd_t *);
@@ -104,6 +108,7 @@ static void parser_fileset_define(cmd_t *);
 static void parser_posset_define(cmd_t *);
 static void parser_var_assign_randvar(char *, cmd_t *);
 static void parser_composite_flowop_define(cmd_t *);
+static void parser_cvar_define(cmd_t *);
 
 /* Create Commands */
 static void parser_proc_create(cmd_t *);
@@ -181,9 +186,9 @@ static void parser_osprof_disable(cmd_t *cmd);
 %token FSA_DSYNC FSA_TARGET FSA_ITERS FSA_NICE FSA_VALUE FSA_BLOCKING
 %token FSA_HIGHWATER FSA_DIRECTIO FSA_DIRWIDTH FSA_FD FSA_SRCFD FSA_ROTATEFD
 %token FSA_NAMELENGTH FSA_FILESIZE FSA_ENTRIES FSA_DIRDEPTHRV
-%token FSA_DIRGAMMA FSA_USEISM FSA_TYPE FSA_RANDTABLE FSA_RANDSRC FSA_RANDROUND
+%token FSA_DIRGAMMA FSA_USEISM FSA_TYPE FSA_RANDTABLE FSA_RANDSRC FSA_ROUND
 %token FSA_LEAFDIRS FSA_INDEXED FSA_FSTYPE
-%token FSA_RANDSEED FSA_RANDGAMMA FSA_RANDMEAN FSA_RANDMIN FSA_RANDMAX FSA_MASTER
+%token FSA_RANDSEED FSA_RANDGAMMA FSA_RANDMEAN FSA_MIN FSA_MAX FSA_MASTER
 %token FSA_CLIENT
 %token FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC FSS_ROUND
 %token FSV_SET_LOCAL_VAR FSA_LVAR_ASSIGN
@@ -192,6 +197,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %token FSA_NOREADAHEAD
 %token FSA_IOPRIO
 %token FSA_WRITEONLY
+%token FSE_CVAR FSA_PARAMETERS FSA_TYPES
 
 %type <ival> FSV_VAL_INT FSV_VAL_NEGINT
 %type <bval> FSV_VAL_BOOLEAN
@@ -220,6 +226,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> warmup_command fscheck_command fsflush_command
 %type <cmd> set_variable set_random_variable set_mode
 %type <cmd> osprof_enable_command osprof_disable_command
+%type <cmd> cvar_define_command list_cvar_types_command list_cvar_type_parameters_command;
 
 %type <attr> files_attr_op files_attr_ops posset_attr_ops posset_attr_op pt_attr_op pt_attr_ops
 %type <attr> fo_attr_op fo_attr_ops ev_attr_op ev_attr_ops
@@ -228,6 +235,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <attr> comp_lvar_def comp_attr_op comp_attr_ops
 %type <attr> enable_multi_ops enable_multi_op multisync_op
 %type <attr> fscheck_attr_op
+%type <attr> cvar_attr_ops cvar_attr_op
 %type <list> integer_seplist string_seplist string_list var_string_list
 %type <list> var_string whitevar_string whitevar_string_list
 %type <ival> attrs_define_file attrs_define_thread attrs_flowop
@@ -237,6 +245,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <ival> randsrc_name FSA_RANDSRC randvar_attr_tsp em_attr_name
 %type <ival> FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC
 %type <ival> fscheck_attr_name FSA_FSTYPE binary_op
+%type <ival> cvar_attr_name 
 
 %type <rndtb>  probtabentry_list probtabentry
 %type <avd> var_int_val
@@ -308,7 +317,10 @@ command:
 | osprof_disable_command
 | enable_command
 | multisync_command
-| quit_command;
+| quit_command
+| cvar_define_command
+| list_cvar_types_command
+| list_cvar_type_parameters_command;
 
 foreach_command: FSC_FOREACH
 {
@@ -1539,15 +1551,15 @@ attrs_define_posset:
 | FSA_TYPE { $$ = FSA_TYPE;}
 | FSA_RANDSEED { $$ = FSA_RANDSEED;}
 | FSA_ENTRIES { $$ = FSA_ENTRIES;}
-| FSA_RANDMAX { $$ = FSA_RANDMAX;};
+| FSA_MAX { $$ = FSA_MAX;};
 
 randvar_attr_name:
   FSA_NAME { $$ = FSA_NAME;}
 | FSA_RANDSEED { $$ = FSA_RANDSEED;}
 | FSA_RANDGAMMA { $$ = FSA_RANDGAMMA;}
 | FSA_RANDMEAN { $$ = FSA_RANDMEAN;}
-| FSA_RANDMIN { $$ = FSA_RANDMIN;}
-| FSA_RANDROUND { $$ = FSA_RANDROUND;};
+| FSA_MIN { $$ = FSA_MIN;}
+| FSA_ROUND { $$ = FSA_ROUND;};
 
 randvar_attr_tsp:
   FSS_TYPE { $$ = FSS_TYPE;}
@@ -1587,6 +1599,14 @@ randvar_attr_srcop: randsrc_name
 randsrc_name:
   FSV_URAND { $$ = FSV_URAND;}
 | FSV_RAND48 { $$ = FSV_RAND48;};
+
+cvar_attr_name:
+  FSA_NAME { $$ = FSA_NAME;}
+| FSA_TYPE { $$ = FSA_TYPE;}
+| FSA_PARAMETERS { $$ = FSA_PARAMETERS;}
+| FSA_MIN { $$ = FSA_MIN;}
+| FSA_MAX { $$ = FSA_MAX;}
+| FSA_ROUND { $$ = FSA_ROUND;};
 
 attrs_define_thread:
   FSA_PROCESS { $$ = FSA_PROCESS;}
@@ -1695,6 +1715,78 @@ comp_lvar_def: FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
 		YYERROR;
 };
 
+list_cvar_types_command: FSC_LIST FSE_CVAR FSA_TYPES
+{
+	$$ = alloc_cmd();
+
+	if (!$$)
+		YYERROR;
+
+	$$->cmd = NULL;
+
+	(void) parser_list_cvar_types();
+};
+
+list_cvar_type_parameters_command: FSC_LIST FSE_CVAR FSA_TYPE FSA_PARAMETERS 
+	FSV_STRING
+{
+	attr_t *attr;
+
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+	if ((attr = alloc_attr()) == NULL)
+		YYERROR;
+
+	$$->cmd = &parser_list_cvar_type_parameters;
+	attr->attr_avd = avd_str_alloc($5);
+	$$->cmd_attr_list = attr;	
+};
+
+fo_define_command: FSC_DEFINE FSC_FLOWOP comp_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
+{
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+	$$->cmd = &parser_composite_flowop_define;
+	$$->cmd_list = $5;
+	$$->cmd_attr_list = $3;
+}
+| fo_define_command comp_attr_ops
+{
+	$1->cmd_attr_list = $2;
+};
+
+cvar_define_command: FSC_DEFINE FSE_CVAR cvar_attr_ops
+{
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+	$$->cmd = &parser_cvar_define;
+	$$->cmd_attr_list = $3;
+};
+
+/* attribute parsing for custom variables */
+cvar_attr_ops: cvar_attr_op
+{
+	$$ = $1;
+}
+| cvar_attr_ops FSK_SEPLST cvar_attr_op
+{
+	attr_t *attr = NULL;
+	attr_t *list_end = NULL;
+
+	for (attr = $1; attr != NULL;
+	    attr = attr->attr_next)
+		list_end = attr; /* Find end of list */
+
+	list_end->attr_next = $3;
+
+	$$ = $1;
+}
+
+cvar_attr_op: cvar_attr_name FSK_ASSIGN attr_list_value
+{
+	$$ = $3;
+	$$->attr_name = $1;
+};
 
 attrs_define_comp:
   FSA_NAME { $$ = FSA_NAME;}
@@ -1985,6 +2077,7 @@ main(int argc, char *argv[])
 #else /* HAVE_LIBTECLA */
 	char line[1024];
 #endif
+	int ret;
 
 	 /* parsing the parameters */
 	while ((opt = getopt(argc, argv, cmd_options)) > 0) {
@@ -2051,9 +2144,18 @@ main(int argc, char *argv[])
 			    procname);
 			exit(1);
 		}
-
+		
 		/* get correct function pointer for each working process */
 		filebench_plugin_funcvecinit();
+		
+		/* Load custom variable libraries and re-validate handles. */
+		ret = init_cvar_libraries();
+		if (ret)
+			exit(1);
+
+		ret = revalidate_cvar_handles();
+		if (ret)
+			exit(1);
 
 		/* execute corresponding procflow */
 		if (procflow_exec(procname, instance) < 0) {
@@ -2092,6 +2194,15 @@ main(int argc, char *argv[])
 	flowop_init();
 	stats_init();
 	eventgen_init();
+	
+	/* Initialize custom variables. */
+	ret = init_cvar_library_info(FILEBENCHDIR "/cvars");
+	if (ret)
+		filebench_shutdown(1);
+
+	ret = init_cvar_libraries();
+	if (ret)
+		filebench_shutdown(1);
 
 	signal(SIGINT, parser_abort);
 
@@ -3151,7 +3262,7 @@ parser_posset_define(cmd_t *cmd)
 	else
 		seed = avd_int_alloc(0);
 
-	if ((attr = get_attr_integer(cmd, FSA_RANDMAX)))
+	if ((attr = get_attr_integer(cmd, FSA_MAX)))
 		max = attr->attr_avd;
 	else
 		max = avd_int_alloc(0);
@@ -4194,13 +4305,13 @@ parser_var_assign_randvar(char *name, cmd_t *cmd)
 	}
 
 	/* Get the min value of the random distribution */
-	if ((attr = get_attr_integer(cmd, FSA_RANDMIN)))
+	if ((attr = get_attr_integer(cmd, FSA_MIN)))
 		rndp->rnd_min = attr->attr_avd;
 	else
 		rndp->rnd_min = avd_int_alloc(0);
 
 	/* Get the roundoff value for the random distribution */
-	if ((attr = get_attr_integer(cmd, FSA_RANDROUND)))
+	if ((attr = get_attr_integer(cmd, FSA_ROUND)))
 		rndp->rnd_round = attr->attr_avd;
 	else
 		rndp->rnd_round = avd_int_alloc(0);
@@ -4561,4 +4672,142 @@ alloc_list()
 
 	(void) memset(list, 0, sizeof (list_t));
 	return (list);
+}
+
+/*
+ * Define a custom variable and validate it's parameters.
+ * TODO: Clean up state when things go wrong.
+ */
+static void
+parser_cvar_define(cmd_t *cmd)
+{
+	var_t	*var;
+	cvar_t	*cvar;
+	attr_t	*attr;
+	char	*name;
+	char	*type;
+	char	*parameters;
+	int 	ret;
+
+	/* Get the name of the custom variable */
+	if ((attr = get_attr(cmd, FSA_NAME))) {
+		name = avd_get_str(attr->attr_avd);
+	} else {
+		filebench_log(LOG_ERROR,
+		    "define cvar: no name specified");
+		return;
+	}
+
+	/* Get the type and parameters of the custom variable and initialize the
+	 * handle. */
+	if ((attr = get_attr(cmd, FSA_TYPE))) {
+		type = avd_get_str(attr->attr_avd);
+	} else {
+		filebench_log(LOG_ERROR,
+		    "define cvar: no type specified");
+		return;
+	}
+
+	if ((attr = get_attr(cmd, FSA_PARAMETERS))) {
+		parameters = avd_get_str(attr->attr_avd);
+	} else
+		parameters = NULL;
+
+	if ((var = var_define_cvar(name)) == NULL) {
+		filebench_log(LOG_FATAL, "define cvar: failed for custom variable %s",
+		    name);
+		filebench_shutdown(1);
+		return;
+	}
+
+	cvar = var->var_val.cvar;
+
+	/* Initialize the custom variable mutex. */
+	(void) pthread_mutex_init(&cvar->cvar_lock,
+			ipc_mutexattr(IPC_MUTEX_NORMAL));
+
+	/* Get the min, max and round values for the custom variable. */
+	if ((attr = get_attr(cmd, FSA_MIN)))
+		cvar->min = avd_get_dbl(attr->attr_avd);
+	else
+		cvar->min = DBL_MIN;
+
+	if ((attr = get_attr(cmd, FSA_MAX)))
+		cvar->max = avd_get_dbl(attr->attr_avd);
+	else
+		cvar->max = DBL_MAX;
+
+	if ((attr = get_attr(cmd, FSA_ROUND)))
+		cvar->round = avd_get_dbl(attr->attr_avd);
+	else
+		cvar->round = 0;
+
+	ret = init_cvar_handle(cvar, type, parameters);
+	if (!ret) {
+		filebench_log(LOG_FATAL, "define cvar: failed for custom variable %s",
+		    name);
+		filebench_shutdown(1);
+		return;
+	}
+}
+
+void parser_list_cvar_types(void)
+{
+	cvar_library_info_t *t;
+
+	if (!filebench_shm->shm_cvar_lib_info_list) {
+		printf("No custom variables loaded.\n");
+		return;
+	}
+
+	for (t = filebench_shm->shm_cvar_lib_info_list; t != NULL; t = t->next)
+		printf("%s\n", t->type);
+
+	return;
+}
+
+void parser_list_cvar_type_parameters(cmd_t *cmd)
+{
+	char *type;
+	const char *version = NULL;
+	const char *usage = NULL;
+
+	cvar_library_info_t *t;
+
+	type = avd_get_str(cmd->cmd_attr_list->attr_avd);
+	if (type == NULL) { /* We will never ever be here. */
+		filebench_log(LOG_ERROR, "list cvar type parameters: internal error");
+		return;
+	}
+
+	for (t = filebench_shm->shm_cvar_lib_info_list; t != NULL; t = t->next) {
+		if (!strcmp(type, t->type))
+			break;
+	}
+
+	if (!t) {
+		printf("Unknown custom variable %s. Run 'list cvar types' to list "
+				"currently loaded custom variables.\n", type);
+		return;
+	}
+
+	if (cvar_libraries[t->index]->cvar_op.cvar_version)
+		version = cvar_libraries[t->index]->cvar_op.cvar_version();
+	
+	if (cvar_libraries[t->index]->cvar_op.cvar_usage)
+		usage = cvar_libraries[t->index]->cvar_op.cvar_usage();
+
+	printf("Supporting library: %s\n", t->filename);
+	
+	if (version)
+		printf("Version: %s\n", version);
+	else
+		printf("Oops. No version information provided.\n");
+	
+	if (usage)
+		printf("Usage:\n%s\n", usage);
+	else
+		printf("Oops. No usage information provided.\n");
+	
+	return;
 }

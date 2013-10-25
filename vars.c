@@ -487,6 +487,12 @@ var_assign_randvar(char *name, randdist_t *rndp)
 	return 0;
 }
 
+/* XXX: temporary for easyer merge: */
+var_t *var_define_cvar(char *name)
+{
+	return NULL;
+}
+
 /*
  * This function is called during the workload description parsing prior to the
  * execution phase. It is called when parser encounters a variable used as a

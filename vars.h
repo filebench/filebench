@@ -91,6 +91,8 @@ typedef struct var {
 		double		dbl;
 		char		*string;
 		struct randdist *randptr;
+		/* XXX: temporary for easyer merge: */
+		struct cvar 	*cvar;
 	} var_val;
 } var_t;
 
@@ -149,6 +151,8 @@ int var_assign_integer(char *name, uint64_t integer);
 int var_assign_double(char *name, double dbl);
 int var_assign_string(char *name, char *string);
 int var_assign_randvar(char *name, struct randdist *rndp);
+/* XXX: temporary for easyer merge: */
+var_t *var_define_cvar(char *name);
 
 boolean_t avd_get_bool(avd_t);
 uint64_t avd_get_int(avd_t);

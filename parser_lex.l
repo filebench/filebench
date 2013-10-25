@@ -110,6 +110,7 @@ multidump               { return FSE_MULTIDUMP; }
 all                     { return FSE_ALL; }
 mode                    { return FSE_MODE; }
 multi			{ return FSE_MULTI; }
+cvar                    { return FSE_CVAR; }
 
 alldone                 { return FSA_ALLDONE; }
 blocking                { return FSA_BLOCKING; }
@@ -124,7 +125,6 @@ entries                 { return FSA_ENTRIES;}
 fd                      { return FSA_FD; }
 filename                { return FSA_FILE; }
 filesetname             { return FSA_FILE; }
-possetname             	{ return FSA_POSSET; }
 filesize                { return FSA_SIZE; }
 firstdone               { return FSA_FIRSTDONE; }
 fstype		        { return FSA_FSTYPE; }
@@ -139,14 +139,16 @@ master			{ return FSA_MASTER; }
 mean                    { return FSA_RANDMEAN; }
 memsize                 { return FSA_MEMSIZE; }
 ioprio                  { return FSA_IOPRIO; }
-min                     { return FSA_RANDMIN; }
-max                     { return FSA_RANDMAX; }
+min                     { return FSA_MIN; }
+max                     { return FSA_MAX; }
 name                    { return FSA_NAME;}
 namelength              { return FSA_NAMELENGTH; }
 nice                    { return FSA_NICE;}
 opennext                { return FSA_ROTATEFD; }
 paralloc                { return FSA_PARALLOC; }
+parameters              { return FSA_PARAMETERS; }
 path                    { return FSA_PATH; }
+possetname             	{ return FSA_POSSET; }
 prealloc                { return FSA_PREALLOC; }
 procname                { return FSA_PROCESS; }
 random                  { return FSA_RANDOM;}
@@ -156,7 +158,7 @@ rate                    { return FSA_RATE;}
 readonly		{ return FSA_READONLY; }
 writeonly		{ return FSA_WRITEONLY; }
 reuse                   { return FSA_REUSE; }
-round			{ return FSA_RANDROUND; }
+round			{ return FSA_ROUND; }
 seed			{ return FSA_RANDSEED; }
 size                    { return FSA_SIZE; }
 srcfd                   { return FSA_SRCFD; }
@@ -164,6 +166,7 @@ target                  { return FSA_TARGET;}
 timeout                 { return FSA_TIMEOUT; }
 trusttree		{ return FSA_TRUSTTREE; }
 type			{ return FSA_TYPE; }
+types					{ return FSA_TYPES; }
 useism                  { return FSA_USEISM;}
 value                   { return FSA_VALUE;}
 workingset              { return FSA_WSS; }
@@ -309,7 +312,7 @@ $[({A-Za-z][A-Za-z0-9_]*[A-Za-z0-9][)}]*	{
  				return FSV_VARIABLE;
 			}
 
-<INITIAL>[/A-Za-z-][/A-Za-z0-9._-]*	{
+<INITIAL>[/A-Za-z-][/A-Za-z0-9._:;-]*	{
 				if ((yylval.sval = strdup(yytext)) == NULL) {
 					yyerror("Out of memory");
 					filebench_shutdown(1);

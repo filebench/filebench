@@ -148,15 +148,15 @@
      FSA_TYPE = 364,
      FSA_RANDTABLE = 365,
      FSA_RANDSRC = 366,
-     FSA_RANDROUND = 367,
+     FSA_ROUND = 367,
      FSA_LEAFDIRS = 368,
      FSA_INDEXED = 369,
      FSA_FSTYPE = 370,
      FSA_RANDSEED = 371,
      FSA_RANDGAMMA = 372,
      FSA_RANDMEAN = 373,
-     FSA_RANDMIN = 374,
-     FSA_RANDMAX = 375,
+     FSA_MIN = 374,
+     FSA_MAX = 375,
      FSA_MASTER = 376,
      FSA_CLIENT = 377,
      FSS_TYPE = 378,
@@ -175,7 +175,10 @@
      FSC_OSPROF_DISABLE = 391,
      FSA_NOREADAHEAD = 392,
      FSA_IOPRIO = 393,
-     FSA_WRITEONLY = 394
+     FSA_WRITEONLY = 394,
+     FSE_CVAR = 395,
+     FSA_PARAMETERS = 396,
+     FSA_TYPES = 397
    };
 #endif
 /* Tokens.  */
@@ -288,15 +291,15 @@
 #define FSA_TYPE 364
 #define FSA_RANDTABLE 365
 #define FSA_RANDSRC 366
-#define FSA_RANDROUND 367
+#define FSA_ROUND 367
 #define FSA_LEAFDIRS 368
 #define FSA_INDEXED 369
 #define FSA_FSTYPE 370
 #define FSA_RANDSEED 371
 #define FSA_RANDGAMMA 372
 #define FSA_RANDMEAN 373
-#define FSA_RANDMIN 374
-#define FSA_RANDMAX 375
+#define FSA_MIN 374
+#define FSA_MAX 375
 #define FSA_MASTER 376
 #define FSA_CLIENT 377
 #define FSS_TYPE 378
@@ -316,6 +319,9 @@
 #define FSA_NOREADAHEAD 392
 #define FSA_IOPRIO 393
 #define FSA_WRITEONLY 394
+#define FSE_CVAR 395
+#define FSA_PARAMETERS 396
+#define FSA_TYPES 397
 
 
 
@@ -325,7 +331,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 151 "parser_gram.y"
+#line 156 "parser_gram.y"
 
 	int64_t		 ival;
 	unsigned char	 bval;
@@ -340,7 +346,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 344 "parser_gram.h"
+#line 350 "parser_gram.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

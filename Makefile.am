@@ -12,7 +12,8 @@ filebench_SOURCES = eventgen.c fb_avl.c fb_localfs.c \
 		    eventgen.h  fb_random.h  fileset.h  fsplug.h \
 		    ipc.h   multi_client_sync.h  parsertypes.h  stats.h \
 		    utils.h config.h fb_avl.h filebench.h flowop.h gamma_dist.h \
-		    misc.h procflow.h threadflow.h vars.h posset.h ioprio.h flag.h
+		    misc.h procflow.h threadflow.h vars.h posset.h ioprio.h flag.h \
+		    fb_cvar.c fb_cvar.h
 
 EXTRA_DIST = LICENSE
 
