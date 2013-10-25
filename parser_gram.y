@@ -97,7 +97,7 @@ static void add_lvar_to_list(var_t *newlvar, var_t **lvar_list);
 static void parser_list(cmd_t *);
 static void parser_flowop_list(cmd_t *);
 static void parser_list_cvar_types(void);
-static void parser_list_cvar_type_parameters(cmd_t *);
+static void parser_list_cvar_type_parameters(char *);
 
 /* Define Commands */
 static void parser_proc_define(cmd_t *);
@@ -226,7 +226,6 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> warmup_command fscheck_command fsflush_command
 %type <cmd> set_variable set_random_variable set_custom_variable set_mode
 %type <cmd> osprof_enable_command osprof_disable_command
-%type <cmd> list_cvar_types_command list_cvar_type_parameters_command;
 
 %type <attr> files_attr_op files_attr_ops posset_attr_ops posset_attr_op pt_attr_op pt_attr_ops
 %type <attr> fo_attr_op fo_attr_ops ev_attr_op ev_attr_ops
@@ -318,8 +317,6 @@ command:
 | enable_command
 | multisync_command
 | quit_command
-| list_cvar_types_command
-| list_cvar_type_parameters_command;
 
 foreach_command: FSC_FOREACH
 {
@@ -1725,32 +1722,6 @@ comp_lvar_def: FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
 		YYERROR;
 };
 
-list_cvar_types_command: FSC_LIST FSE_CVAR FSA_TYPES
-{
-	$$ = alloc_cmd();
-
-	if (!$$)
-		YYERROR;
-
-	$$->cmd = NULL;
-
-	(void) parser_list_cvar_types();
-};
-
-list_cvar_type_parameters_command: FSC_LIST FSE_CVAR FSA_TYPE FSA_PARAMETERS FSV_STRING
-{
-	attr_t *attr;
-
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	if ((attr = alloc_attr()) == NULL)
-		YYERROR;
-
-	$$->cmd = &parser_list_cvar_type_parameters;
-	attr->attr_avd = avd_str_alloc($5);
-	$$->cmd_attr_list = attr;	
-};
-
 fo_define_command: FSC_DEFINE FSC_FLOWOP comp_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
 {
 	if (($$ = alloc_cmd()) == NULL)
@@ -2066,7 +2037,7 @@ fb_set_rlimit(void)
 int
 main(int argc, char *argv[])
 {
-	const char cmd_options[] = "m:s:a:i:hf:";
+	const char cmd_options[] = "m:s:a:i:hf:c:";
 	int opt;
 	char *procname = NULL;
 	int instance;
@@ -2079,6 +2050,17 @@ main(int argc, char *argv[])
 	char line[1024];
 #endif
 	int ret;
+	int ls_cvars = 0;
+	char *cvar_type = NULL;
+
+ 	/*
+	 * We don't want getopt() to print error messages because
+	 * sometimes what it percieves as an error is actually not
+	 * an error.  For example, "-c" option might have or might
+	 * not have an argument.  If opterr is non-zero, getopt()
+	 * prints an error message when "-c"'s argument is missing.
+	 */
+	opterr = 0;
 
 	 /* parsing the parameters */
 	while ((opt = getopt(argc, argv, cmd_options)) > 0) {
@@ -2086,6 +2068,10 @@ main(int argc, char *argv[])
 		/* public parameters */
 		case 'h':
 			usage(2);
+			break;
+		case 'c':	/* list cvar types or their parameters */
+			cvar_type = optarg;
+			ls_cvars = 1;
 			break;
 		case 'f':
 			if (!optarg)
@@ -2124,6 +2110,10 @@ main(int argc, char *argv[])
 			sscanf(optarg, "%d", &instance);
 			break;
 		case '?':
+			if (optopt == 'c') {
+				ls_cvars = 1;
+				break;
+			}
 		default:
 			usage(1);
 			break;
@@ -2204,6 +2194,14 @@ main(int argc, char *argv[])
 	ret = init_cvar_libraries();
 	if (ret)
 		filebench_shutdown(1);
+
+	if (ls_cvars) {
+		if (cvar_type)
+			parser_list_cvar_type_parameters(cvar_type);
+		else
+			parser_list_cvar_types();
+		exit(1);
+	}
 
 	signal(SIGINT, parser_abort);
 
@@ -4746,29 +4744,23 @@ void parser_list_cvar_types(void)
 	cvar_library_info_t *t;
 
 	if (!filebench_shm->shm_cvar_lib_info_list) {
-		printf("No custom variables loaded.\n");
+		printf("No custom variables supported.\n");
 		return;
 	}
 
-	for (t = filebench_shm->shm_cvar_lib_info_list; t != NULL; t = t->next)
-		printf("%s\n", t->type);
+	printf("Custom variable types supported:\n");
+	for (t = filebench_shm->shm_cvar_lib_info_list; t; t = t->next)
+		printf("  %s\n", t->type);
 
 	return;
 }
 
-void parser_list_cvar_type_parameters(cmd_t *cmd)
+void parser_list_cvar_type_parameters(char *type)
 {
-	char *type;
 	const char *version = NULL;
 	const char *usage = NULL;
 
 	cvar_library_info_t *t;
-
-	type = avd_get_str(cmd->cmd_attr_list->attr_avd);
-	if (type == NULL) { /* We will never ever be here. */
-		filebench_log(LOG_ERROR, "list cvar type parameters: internal error");
-		return;
-	}
 
 	for (t = filebench_shm->shm_cvar_lib_info_list; t != NULL; t = t->next) {
 		if (!strcmp(type, t->type))
@@ -4776,10 +4768,12 @@ void parser_list_cvar_type_parameters(cmd_t *cmd)
 	}
 
 	if (!t) {
-		printf("Unknown custom variable %s. Run 'list cvar types' to list "
-				"currently loaded custom variables.\n", type);
+		printf("Unknown custom variable type %s.", type);
 		return;
 	}
+
+	printf("Custom variable type: %s\n", t->type);
+	printf("Supporting library: %s\n", t->filename);
 
 	if (cvar_libraries[t->index]->cvar_op.cvar_version)
 		version = cvar_libraries[t->index]->cvar_op.cvar_version();
@@ -4787,7 +4781,6 @@ void parser_list_cvar_type_parameters(cmd_t *cmd)
 	if (cvar_libraries[t->index]->cvar_op.cvar_usage)
 		usage = cvar_libraries[t->index]->cvar_op.cvar_usage();
 
-	printf("Supporting library: %s\n", t->filename);
 	
 	if (version)
 		printf("Version: %s\n", version);
