@@ -106,7 +106,6 @@ snap                    { return FSE_SNAP; }
 dump                    { return FSE_DUMP; }
 xmldump                 { return FSE_XMLDUMP; }
 multidump               { return FSE_MULTIDUMP; }
-all                     { return FSE_ALL; }
 mode                    { return FSE_MODE; }
 multi			{ return FSE_MULTI; }
 cvar                    { return FSE_CVAR; }
@@ -141,7 +140,6 @@ ioprio                  { return FSA_IOPRIO; }
 min                     { return FSA_MIN; }
 max                     { return FSA_MAX; }
 name                    { return FSA_NAME;}
-namelength              { return FSA_NAMELENGTH; }
 nice                    { return FSA_NICE;}
 opennext                { return FSA_ROTATEFD; }
 paralloc                { return FSA_PARALLOC; }
@@ -164,20 +162,12 @@ target                  { return FSA_TARGET;}
 timeout                 { return FSA_TIMEOUT; }
 trusttree		{ return FSA_TRUSTTREE; }
 type			{ return FSA_TYPE; }
-types					{ return FSA_TYPES; }
 useism                  { return FSA_USEISM;}
 value                   { return FSA_VALUE;}
 workingset              { return FSA_WSS; }
 
 uniform                 { return FSV_RANDUNI; }
 tabular			{ return FSV_RANDTAB; }
-"."type			{ return FSS_TYPE; }
-"."seed			{ return FSS_SEED; }
-"."gamma		{ return FSS_GAMMA; }
-"."mean			{ return FSS_MEAN; }
-"."min			{ return FSS_MIN; }
-"."round		{ return FSS_ROUND; }
-"."randsrc		{ return FSS_SRC; }
 urandom			{ return FSV_URAND; }
 rand48			{ return FSV_RAND48; }
 noreadahead             { return FSA_NOREADAHEAD; }
@@ -231,10 +221,6 @@ noreadahead             { return FSA_NOREADAHEAD; }
 <INITIAL>=			{ return FSK_ASSIGN; }
 <INITIAL>\,			{ return FSK_SEPLST; }
 <INITIAL>in                     { return FSK_IN; }
-<INITIAL>\+                     { return FSK_PLUS; }
-<INITIAL>\-                     { return FSK_MINUS; }
-<INITIAL>\*                     { return FSK_MULTIPLY; }
-<INITIAL>\/                     { return FSK_DIVIDE; }
 
 <INITIAL>[0-9]+	{
                                 errno = 0;
