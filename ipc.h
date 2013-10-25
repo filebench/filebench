@@ -56,16 +56,15 @@
  * allocates a slot from the appropriate pool.
  * */
 #define	FILEBENCH_FILESET		0
-#define	FILEBENCH_FILESETENTRY	1
-#define	FILEBENCH_POSSET		2
-#define	FILEBENCH_PROCFLOW		3
-#define	FILEBENCH_THREADFLOW	4
-#define	FILEBENCH_FLOWOP		5
-#define	FILEBENCH_VARIABLE		6
-#define	FILEBENCH_AVD			7
-#define	FILEBENCH_RANDDIST		8
-#define FILEBENCH_CVAR			9
-#define FILEBENCH_CVAR_LIB_INFO	10
+#define	FILEBENCH_FILESETENTRY		1
+#define	FILEBENCH_PROCFLOW		2
+#define	FILEBENCH_THREADFLOW		3
+#define	FILEBENCH_FLOWOP		4
+#define	FILEBENCH_VARIABLE		5
+#define	FILEBENCH_AVD			6
+#define	FILEBENCH_RANDDIST		7
+#define FILEBENCH_CVAR			8
+#define FILEBENCH_CVAR_LIB_INFO		9
 #define	FILEBENCH_MAXTYPE		FILEBENCH_CVAR_LIB_INFO
 
 /*
@@ -76,7 +75,6 @@
  */
 #define	FILEBENCH_NFILESETS		(16)
 #define	FILEBENCH_NFILESETENTRIES	(1024 * 1024)
-#define	FILEBENCH_NPOSSETS		(16)
 #define	FILEBENCH_NPROCFLOWS		(1024)
 #define	FILEBENCH_NTHREADFLOWS 		(1024)
 /* 16 flowops per threadflow seems reasonable */
@@ -105,12 +103,10 @@ typedef struct filebench_shm {
 	
 	/*
 	 * Global lists and locks for main Filebench objects:
-	 * filesets, possets, procflows, threaflows, and flowops.
+	 * filesets, procflows, threaflows, and flowops.
 	 */
 	fileset_t	*shm_filesetlist;
 	pthread_mutex_t shm_fileset_lock;
-	struct posset	*shm_possetlist;
-	pthread_mutex_t shm_posset_lock;
 	procflow_t	*shm_procflowlist;
 	pthread_mutex_t shm_procflow_lock;
 	/* threadflow_t	*shm_threadflowlist; (this one is per procflow) */ 
@@ -237,7 +233,6 @@ typedef struct filebench_shm {
 	 */
 	fileset_t	shm_fileset[FILEBENCH_NFILESETS];
 	filesetentry_t	shm_filesetentry[FILEBENCH_NFILESETENTRIES];
-	struct posset	shm_posset[FILEBENCH_NPOSSETS];
 	procflow_t	shm_procflow[FILEBENCH_NPROCFLOWS];
 	threadflow_t	shm_threadflow[FILEBENCH_NTHREADFLOWS];
 	flowop_t	shm_flowop[FILEBENCH_NFLOWOPS];

@@ -105,7 +105,6 @@ static void parser_thread_define(cmd_t *, procflow_t *, int instances);
 static void parser_flowop_define(cmd_t *, threadflow_t *, flowop_t **, int);
 static void parser_file_define(cmd_t *);
 static void parser_fileset_define(cmd_t *);
-static void parser_posset_define(cmd_t *);
 static void parser_var_assign_random(char *, cmd_t *);
 static void parser_composite_flowop_define(cmd_t *);
 static void parser_var_assign_custom(char *, cmd_t *);
@@ -176,13 +175,13 @@ static void parser_osprof_disable(cmd_t *cmd);
 %token FSV_RANDUNI FSV_RANDTAB FSV_URAND FSV_RAND48
 %token FST_INT FST_BOOLEAN
 %token FSE_FILE FSE_PROC FSE_THREAD FSE_CLEAR FSE_ALL FSE_SNAP FSE_DUMP
-%token FSE_DIRECTORY FSE_COMMAND FSE_FILESET FSE_POSSET FSE_XMLDUMP FSE_RAND FSE_MODE
+%token FSE_DIRECTORY FSE_COMMAND FSE_FILESET FSE_XMLDUMP FSE_RAND FSE_MODE
 %token FSE_MULTI FSE_MULTIDUMP
 %token FSK_SEPLST FSK_OPENLST FSK_CLOSELST FSK_OPENPAR FSK_CLOSEPAR FSK_ASSIGN FSK_IN FSK_QUOTE
 %token FSK_DIRSEPLST FSK_PLUS FSK_MINUS FSK_MULTIPLY FSK_DIVIDE
 %token FSA_SIZE FSA_PREALLOC FSA_PARALLOC FSA_PATH FSA_REUSE
 %token FSA_PROCESS FSA_MEMSIZE FSA_RATE FSA_CACHED FSA_READONLY FSA_TRUSTTREE
-%token FSA_IOSIZE FSA_FILE FSA_POSSET FSA_WSS FSA_NAME FSA_RANDOM FSA_INSTANCES
+%token FSA_IOSIZE FSA_FILE FSA_WSS FSA_NAME FSA_RANDOM FSA_INSTANCES
 %token FSA_DSYNC FSA_TARGET FSA_ITERS FSA_NICE FSA_VALUE FSA_BLOCKING
 %token FSA_HIGHWATER FSA_DIRECTIO FSA_DIRWIDTH FSA_FD FSA_SRCFD FSA_ROTATEFD
 %token FSA_NAMELENGTH FSA_FILESIZE FSA_ENTRIES FSA_DIRDEPTHRV
@@ -216,7 +215,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <val>  value
 
 %type <cmd> command inner_commands run_command list_command psrun_command
-%type <cmd> proc_define_command files_define_command posset_define_command
+%type <cmd> proc_define_command files_define_command
 %type <cmd> fo_define_command debug_command create_command
 %type <cmd> sleep_command stats_command set_command shutdown_command
 %type <cmd> foreach_command log_command system_command flowop_command
@@ -227,7 +226,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> set_variable set_random_variable set_custom_variable set_mode
 %type <cmd> osprof_enable_command osprof_disable_command
 
-%type <attr> files_attr_op files_attr_ops posset_attr_ops posset_attr_op pt_attr_op pt_attr_ops
+%type <attr> files_attr_op files_attr_ops pt_attr_op pt_attr_ops
 %type <attr> fo_attr_op fo_attr_ops ev_attr_op ev_attr_ops
 %type <attr> randvar_attr_op randvar_attr_ops randvar_attr_typop
 %type <attr> randvar_attr_srcop attr_value attr_list_value
@@ -238,8 +237,8 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <list> integer_seplist string_seplist string_list var_string_list
 %type <list> var_string whitevar_string whitevar_string_list
 %type <ival> attrs_define_file attrs_define_thread attrs_flowop
-%type <ival> attrs_define_fileset attrs_define_posset attrs_define_proc attrs_eventgen attrs_define_comp
-%type <ival> files_attr_name posset_attr_name pt_attr_name fo_attr_name ev_attr_name
+%type <ival> attrs_define_fileset attrs_define_proc attrs_eventgen attrs_define_comp
+%type <ival> files_attr_name pt_attr_name fo_attr_name ev_attr_name
 %type <ival> randvar_attr_name FSA_TYPE randtype_name randvar_attr_param
 %type <ival> randsrc_name FSA_RANDSRC randvar_attr_tsp em_attr_name
 %type <ival> FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC
@@ -290,7 +289,6 @@ inner_commands: command
 command:
   proc_define_command
 | files_define_command
-| posset_define_command
 | fo_define_command
 | debug_command
 | eventgen_command
@@ -1018,16 +1016,6 @@ files_define_command: FSC_DEFINE FSE_FILE
 	$1->cmd_attr_list = $2;
 };
 
-posset_define_command: FSC_DEFINE FSE_POSSET
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = &parser_posset_define;
-} | posset_define_command posset_attr_ops
-{
-	$1->cmd_attr_list = $2;
-};
-
 fo_define_command: FSC_DEFINE FSC_FLOWOP comp_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
 {
 	if (($$ = alloc_cmd()) == NULL)
@@ -1226,36 +1214,6 @@ files_attr_ops: files_attr_op
 	list_end->attr_next = $3;
 
 	$$ = $1;
-};
-
-posset_attr_ops: posset_attr_op
-{
-	$$ = $1;
-}
-| posset_attr_ops FSK_SEPLST posset_attr_op
-{
-	attr_t *attr = NULL;
-	attr_t *list_end = NULL;
-
-	for (attr = $1; attr != NULL;
-	    attr = attr->attr_next)
-		list_end = attr; /* Find end of list */
-
-	list_end->attr_next = $3;
-
-	$$ = $1;
-};
-
-posset_attr_op: posset_attr_name FSK_ASSIGN attr_list_value
-{
-	$$ = $3;
-	$$->attr_name = $1;
-}
-| posset_attr_name
-{
-	if (($$ = alloc_attr()) == NULL)
-		YYERROR;
-	$$->attr_name = $1;
 };
 
 files_attr_op: files_attr_name FSK_ASSIGN attr_list_value
@@ -1512,8 +1470,6 @@ binary_op:
 
 files_attr_name: attrs_define_file | attrs_define_fileset;
 
-posset_attr_name: attrs_define_posset;
-
 pt_attr_name: attrs_define_thread
 |attrs_define_proc;
 
@@ -1553,13 +1509,6 @@ attrs_define_fileset:
 | FSA_CACHED { $$ = FSA_CACHED;}
 | FSA_LEAFDIRS { $$ = FSA_LEAFDIRS;};
 | FSA_WRITEONLY { $$ = FSA_WRITEONLY;}
-
-attrs_define_posset:
-  FSA_NAME { $$ = FSA_NAME;}
-| FSA_TYPE { $$ = FSA_TYPE;}
-| FSA_RANDSEED { $$ = FSA_RANDSEED;}
-| FSA_ENTRIES { $$ = FSA_ENTRIES;}
-| FSA_MAX { $$ = FSA_MAX;};
 
 randvar_attr_name:
   FSA_NAME { $$ = FSA_NAME;}
@@ -1626,7 +1575,6 @@ attrs_define_thread:
 attrs_flowop:
   FSA_WSS { $$ = FSA_WSS;}
 | FSA_FILE { $$ = FSA_FILE;}
-| FSA_POSSET { $$ = FSA_POSSET;}
 | FSA_NAME { $$ = FSA_NAME;}
 | FSA_RANDOM { $$ = FSA_RANDOM;}
 | FSA_FD { $$ = FSA_FD;}
@@ -2653,20 +2601,6 @@ parser_flowop_get_attrs(cmd_t *cmd, flowop_t *flowop)
 		flowop->fo_filename = NULL;
 	}
 
-	/* Get the possetname from attribute */
-	if ((attr = get_attr(cmd, FSA_POSSET))) {
-		flowop->fo_possetname = attr->attr_avd;
-		if (flowop->fo_possetname == NULL) {
-			filebench_log(LOG_ERROR,
-			    "parser_flowop_get_attrs: no "
-				"posset name specfied");
-			filebench_shutdown(1);
-		}
-	} else {
-		/* no possetname attribute specified */
-		flowop->fo_possetname = NULL;
-	}
-
 	/* Get the iosize of the op */
 	if ((attr = get_attr_integer(cmd, FSA_IOSIZE)))
 		flowop->fo_iosize = attr->attr_avd;
@@ -3208,79 +3142,6 @@ parser_fileset_define(cmd_t *cmd)
 		fileset->fs_dirgamma = attr->attr_avd;
 	} else
 		fileset->fs_dirgamma = avd_int_alloc(1500);
-}
-
-static void
-parser_posset_define(cmd_t *cmd)
-{
-	attr_t *attr;
-	avd_t name;
-	avd_t type;
-	avd_t seed;
-	avd_t max;
-	avd_t entries;
-	int i;
-
-	struct posset *ps;
-	
-	if ((attr = get_attr(cmd, FSA_NAME))) {
-		name = attr->attr_avd;
-	} else {
-		filebench_log(LOG_ERROR,
-		   "parser_posset_define: no name specified for the posset");
-		filebench_shutdown(1);
-		return;
-	}
-
-	if ((attr = get_attr(cmd, FSA_TYPE))) {
-		type = attr->attr_avd;
-	} else {
-		filebench_log(LOG_ERROR,
-		   "parser_posset_define: no type specified for the posset");
-		filebench_shutdown(1);
-		return;
-	}
-
-	if ((attr = get_attr_integer(cmd, FSA_ENTRIES))) {
-		entries = attr->attr_avd;
-	} else {
-		filebench_log(LOG_ERROR,
-		   "parser_posset_define: no entries number "
-					"specified for the posset");
-		filebench_shutdown(1);
-		return;
-	}
-
-	/*
-	 * two attributes below are mandatory only for specific types
-	 * of possets, so postpone their validation for posset type
-	 * specific functions.
-	 */
-	if ((attr = get_attr_integer(cmd, FSA_RANDSEED)))
-		seed = attr->attr_avd;
-	else
-		seed = avd_int_alloc(0);
-
-	if ((attr = get_attr_integer(cmd, FSA_MAX)))
-		max = attr->attr_avd;
-	else
-		max = avd_int_alloc(0);
-
-	filebench_log(LOG_INFO,"Defining position set: %s type: %s",
-				 avd_get_str(name), avd_get_str(type));
-
-	ps = posset_alloc(name, type, seed, max, entries);
-	if (!ps) {
-		filebench_log(LOG_ERROR, "Cannot define fileset");
-		filebench_shutdown(1);
-		/* NOT REACHABLE */
-		return;
-	}
-
-	/* printing all positions */
-	for (i = 0; i < avd_get_int(ps->ps_entries); i++)
-		filebench_log(LOG_INFO,"pos %d: %llu", i, ps->ps_positions[i]);
-
 }
 
 /*

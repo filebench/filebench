@@ -136,7 +136,6 @@ typedef unsigned int uint_t;
 #include "misc.h"
 #include "fsplug.h"
 #include "fileset.h"
-#include "posset.h"
 #include "threadflow.h"
 #include "flowop.h"
 #include "fb_random.h"

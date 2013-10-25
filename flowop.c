@@ -373,19 +373,6 @@ flowop_create_runtime_flowops(threadflow_t *threadflow, flowop_t **ops_list_ptr)
 			}
 		}
 
-		/* check for fo_possetname attribute, and resolve if present */
-		if (flowop->fo_possetname) {
-			name = avd_get_str(flowop->fo_possetname);
-			newflowop->fo_posset = posset_find(name);
-
-			if (newflowop->fo_posset == NULL) {
-				filebench_log(LOG_ERROR,
-				    "flowop %s: posset %s not found",
-				    newflowop->fo_name, name);
-				filebench_shutdown(1);
-			}
-		}
-
 		if (flowop_initflow(newflowop) < 0) {
 			filebench_log(LOG_ERROR, "Flowop init of %s failed",
 			    newflowop->fo_name);

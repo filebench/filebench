@@ -335,8 +335,6 @@ void ipc_init(void)
 
 	(void) pthread_mutex_init(&filebench_shm->shm_fileset_lock,
 	    ipc_mutexattr(IPC_MUTEX_NORMAL));
-	(void) pthread_mutex_init(&filebench_shm->shm_posset_lock,
-	    ipc_mutexattr(IPC_MUTEX_NORMAL));
 	(void) pthread_mutex_init(&filebench_shm->shm_procflow_lock,
 	    ipc_mutexattr(IPC_MUTEX_NORMAL));
 	(void) pthread_mutex_init(&filebench_shm->shm_procs_running_lock,
@@ -444,10 +442,6 @@ preallocated_entries(int obj_type)
 		entries = sizeof(filebench_shm->shm_filesetentry)
 						/ sizeof(filesetentry_t);
 		break;
-	case FILEBENCH_POSSET:
-		entries = sizeof(filebench_shm->shm_posset)
-						/ sizeof(struct posset);
-		break;
 	case FILEBENCH_PROCFLOW:
 		entries = sizeof(filebench_shm->shm_procflow)
 						/ sizeof(procflow_t);
@@ -538,12 +532,6 @@ ipc_malloc(int obj_type)
 		(void) ipc_mutex_unlock(&filebench_shm->shm_malloc_lock);
 		return ((char *)&filebench_shm->shm_fileset[i]);
 
-	case FILEBENCH_POSSET:
-		(void) memset((char *)&filebench_shm->shm_posset[i], 0,
-		    sizeof (struct posset));
-		(void) ipc_mutex_unlock(&filebench_shm->shm_malloc_lock);
-		return ((char *)&filebench_shm->shm_posset[i]);
-
 	case FILEBENCH_FILESETENTRY:
 		(void) memset((char *)&filebench_shm->shm_filesetentry[i], 0,
 		    sizeof (filesetentry_t));
@@ -633,11 +621,6 @@ ipc_free(int type, char *addr)
 	case FILEBENCH_FILESETENTRY:
 		base = (caddr_t)&filebench_shm->shm_filesetentry[0];
 		size = sizeof (filesetentry_t);
-		break;
-
-	case FILEBENCH_POSSET:
-		base = (caddr_t)&filebench_shm->shm_posset[0];
-		size = sizeof (struct posset);
 		break;
 
 	case FILEBENCH_PROCFLOW:

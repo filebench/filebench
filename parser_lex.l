@@ -96,7 +96,6 @@ quit		        { return FSC_QUIT; }
 
 file[s]*       	        { return FSE_FILE; }
 fileset[s]*             { return FSE_FILESET; }
-posset[s]*              { return FSE_POSSET; }
 directory               { return FSE_DIRECTORY; }
 command                 { return FSE_COMMAND; }
 process[es]*	        { return FSE_PROC; }
@@ -148,7 +147,6 @@ opennext                { return FSA_ROTATEFD; }
 paralloc                { return FSA_PARALLOC; }
 parameters              { return FSA_PARAMETERS; }
 path                    { return FSA_PATH; }
-possetname             	{ return FSA_POSSET; }
 prealloc                { return FSA_PREALLOC; }
 procname                { return FSA_PROCESS; }
 random                  { return FSA_RANDOM;}

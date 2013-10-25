@@ -55,12 +55,12 @@ PROGRAMS = $(bin_PROGRAMS)
 am__filebench_SOURCES_DIST = eventgen.c fb_avl.c fb_localfs.c \
 	fb_random.c fileset.c flowop.c flowop_library.c gamma_dist.c \
 	ipc.c misc.c multi_client_sync.c parser_gram.y parser_lex.l \
-	procflow.c stats.c threadflow.c utils.c vars.c posset.c \
-	ioprio.c eventgen.h fb_random.h fileset.h fsplug.h ipc.h \
+	procflow.c stats.c threadflow.c utils.c vars.c ioprio.c \
+	eventgen.h fb_random.h fileset.h fsplug.h ipc.h \
 	multi_client_sync.h parsertypes.h stats.h utils.h config.h \
 	fb_avl.h filebench.h flowop.h gamma_dist.h misc.h procflow.h \
-	threadflow.h vars.h posset.h ioprio.h flag.h fb_cvar.c \
-	fb_cvar.h auto_comp.c auto_comp.h
+	threadflow.h vars.h ioprio.h flag.h fb_cvar.c fb_cvar.h \
+	auto_comp.c auto_comp.h
 @AUTOCOMP_LIBTECLA_TRUE@am__objects_1 = auto_comp.$(OBJEXT)
 am_filebench_OBJECTS = eventgen.$(OBJEXT) fb_avl.$(OBJEXT) \
 	fb_localfs.$(OBJEXT) fb_random.$(OBJEXT) fileset.$(OBJEXT) \
@@ -68,8 +68,8 @@ am_filebench_OBJECTS = eventgen.$(OBJEXT) fb_avl.$(OBJEXT) \
 	ipc.$(OBJEXT) misc.$(OBJEXT) multi_client_sync.$(OBJEXT) \
 	parser_gram.$(OBJEXT) parser_lex.$(OBJEXT) procflow.$(OBJEXT) \
 	stats.$(OBJEXT) threadflow.$(OBJEXT) utils.$(OBJEXT) \
-	vars.$(OBJEXT) posset.$(OBJEXT) ioprio.$(OBJEXT) \
-	fb_cvar.$(OBJEXT) $(am__objects_1)
+	vars.$(OBJEXT) ioprio.$(OBJEXT) fb_cvar.$(OBJEXT) \
+	$(am__objects_1)
 filebench_OBJECTS = $(am_filebench_OBJECTS)
 filebench_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -235,12 +235,11 @@ BUILT_SOURCES = parser_gram.h
 filebench_SOURCES = eventgen.c fb_avl.c fb_localfs.c fb_random.c \
 	fileset.c flowop.c flowop_library.c gamma_dist.c ipc.c misc.c \
 	multi_client_sync.c parser_gram.y parser_lex.l procflow.c \
-	stats.c threadflow.c utils.c vars.c posset.c ioprio.c \
-	eventgen.h fb_random.h fileset.h fsplug.h ipc.h \
-	multi_client_sync.h parsertypes.h stats.h utils.h config.h \
-	fb_avl.h filebench.h flowop.h gamma_dist.h misc.h procflow.h \
-	threadflow.h vars.h posset.h ioprio.h flag.h fb_cvar.c \
-	fb_cvar.h $(am__append_1)
+	stats.c threadflow.c utils.c vars.c ioprio.c eventgen.h \
+	fb_random.h fileset.h fsplug.h ipc.h multi_client_sync.h \
+	parsertypes.h stats.h utils.h config.h fb_avl.h filebench.h \
+	flowop.h gamma_dist.h misc.h procflow.h threadflow.h vars.h \
+	ioprio.h flag.h fb_cvar.c fb_cvar.h $(am__append_1)
 EXTRA_DIST = LICENSE
 AM_YFLAGS = -d
 #AM_LDFLAGS = 
@@ -369,7 +368,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multi_client_sync.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser_gram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser_lex.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/procflow.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stats.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/threadflow.Po@am__quote@

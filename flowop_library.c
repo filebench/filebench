@@ -540,8 +540,6 @@ flowoplib_read(threadflow_t *threadflow, flowop_t *flowop)
 	fbint_t wss;
 	fbint_t iosize;
 	fb_fdesc_t *fdesc;
-	uint32_t pos_idx;
-	struct posset *ps;
 	int ret;
 
 	iosize = avd_get_int(flowop->fo_iosize);
@@ -560,15 +558,8 @@ flowoplib_read(threadflow_t *threadflow, flowop_t *flowop)
 			return (FILEBENCH_ERROR);
 		}
 
-		/* select randomly from a possition set */
-		if (flowop->fo_posset) {
-			ps = flowop->fo_posset;
-			fb_urandom32(&pos_idx,
-				 avd_get_int(ps->ps_entries), 0, NULL);
-			fileoffset = ps->ps_positions[pos_idx];
-		} else {
-			fb_urandom64(&fileoffset, wss, iosize, NULL);
-		}
+		/* select randomly */
+		fb_urandom64(&fileoffset, wss, iosize, NULL);
 
 		(void) flowop_beginop(threadflow, flowop);
 		if ((ret = FB_PREAD(fdesc, iobuf,
@@ -2309,8 +2300,6 @@ flowoplib_write(threadflow_t *threadflow, flowop_t *flowop)
 	fbint_t wss;
 	fbint_t iosize;
 	fb_fdesc_t *fdesc;
-	uint32_t pos_idx;
-	struct posset *ps;
 	int ret;
 
 	iosize = avd_get_int(flowop->fo_iosize);
@@ -2328,15 +2317,8 @@ flowoplib_write(threadflow_t *threadflow, flowop_t *flowop)
 			return (FILEBENCH_ERROR);
 		}
 
-		/* select randomly from a possition set */
-		if (flowop->fo_posset) {
-			ps = flowop->fo_posset;
-			fb_urandom32(&pos_idx,
-				 avd_get_int(ps->ps_entries), 0, NULL);
-			fileoffset = ps->ps_positions[pos_idx];
-		} else {
-			fb_urandom64(&fileoffset, wss, iosize, NULL);
-		}
+		/* select randomly */
+		fb_urandom64(&fileoffset, wss, iosize, NULL);
 
 		flowop_beginop(threadflow, flowop);
 		if (FB_PWRITE(fdesc, iobuf,
