@@ -108,7 +108,7 @@ static void parser_fileset_define(cmd_t *);
 static void parser_posset_define(cmd_t *);
 static void parser_var_assign_randvar(char *, cmd_t *);
 static void parser_composite_flowop_define(cmd_t *);
-static void parser_cvar_define(cmd_t *);
+static void parser_var_assign_cvar(char *, cmd_t *);
 
 /* Create Commands */
 static void parser_proc_create(cmd_t *);
@@ -224,9 +224,9 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> thread echo_command usage_command help_command
 %type <cmd> version_command enable_command multisync_command
 %type <cmd> warmup_command fscheck_command fsflush_command
-%type <cmd> set_variable set_random_variable set_mode
+%type <cmd> set_variable set_random_variable set_custom_variable set_mode
 %type <cmd> osprof_enable_command osprof_disable_command
-%type <cmd> cvar_define_command list_cvar_types_command list_cvar_type_parameters_command;
+%type <cmd> list_cvar_types_command list_cvar_type_parameters_command;
 
 %type <attr> files_attr_op files_attr_ops posset_attr_ops posset_attr_op pt_attr_op pt_attr_ops
 %type <attr> fo_attr_op fo_attr_ops ev_attr_op ev_attr_ops
@@ -318,7 +318,6 @@ command:
 | enable_command
 | multisync_command
 | quit_command
-| cvar_define_command
 | list_cvar_types_command
 | list_cvar_type_parameters_command;
 
@@ -764,7 +763,7 @@ debug_command: FSC_DEBUG FSV_VAL_INT
 		yydebug = 1;
 };
 
-set_command: set_variable | set_mode | set_random_variable;
+set_command: set_variable | set_random_variable | set_custom_variable | set_mode;
 
 set_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_INT
 {
@@ -818,6 +817,18 @@ set_random_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSE_RAND FSK_OPENPAR randva
 
 	parser_var_assign_randvar($2, $$);
 }
+
+set_custom_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSE_CVAR FSK_OPENPAR cvar_attr_ops FSK_CLOSEPAR
+{
+	$$ = alloc_cmd();
+	if (!$$)
+		YYERROR;
+
+	$$->cmd_attr_list = $6;
+	$$->cmd = NULL;
+
+	parser_var_assign_cvar($2, $$);
+};
 
 set_mode: FSC_SET FSE_MODE FSC_QUIT FSA_TIMEOUT
 {
@@ -1601,8 +1612,7 @@ randsrc_name:
 | FSV_RAND48 { $$ = FSV_RAND48;};
 
 cvar_attr_name:
-  FSA_NAME { $$ = FSA_NAME;}
-| FSA_TYPE { $$ = FSA_TYPE;}
+  FSA_TYPE { $$ = FSA_TYPE;}
 | FSA_PARAMETERS { $$ = FSA_PARAMETERS;}
 | FSA_MIN { $$ = FSA_MIN;}
 | FSA_MAX { $$ = FSA_MAX;}
@@ -1727,8 +1737,7 @@ list_cvar_types_command: FSC_LIST FSE_CVAR FSA_TYPES
 	(void) parser_list_cvar_types();
 };
 
-list_cvar_type_parameters_command: FSC_LIST FSE_CVAR FSA_TYPE FSA_PARAMETERS 
-	FSV_STRING
+list_cvar_type_parameters_command: FSC_LIST FSE_CVAR FSA_TYPE FSA_PARAMETERS FSV_STRING
 {
 	attr_t *attr;
 
@@ -1753,14 +1762,6 @@ fo_define_command: FSC_DEFINE FSC_FLOWOP comp_attr_ops FSK_OPENLST flowop_list F
 | fo_define_command comp_attr_ops
 {
 	$1->cmd_attr_list = $2;
-};
-
-cvar_define_command: FSC_DEFINE FSE_CVAR cvar_attr_ops
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = &parser_cvar_define;
-	$$->cmd_attr_list = $3;
 };
 
 /* attribute parsing for custom variables */
@@ -4679,48 +4680,29 @@ alloc_list()
  * TODO: Clean up state when things go wrong.
  */
 static void
-parser_cvar_define(cmd_t *cmd)
+parser_var_assign_cvar(char *name, cmd_t *cmd)
 {
-	var_t	*var;
 	cvar_t	*cvar;
 	attr_t	*attr;
-	char	*name;
 	char	*type;
 	char	*parameters;
 	int 	ret;
 
-	/* Get the name of the custom variable */
-	if ((attr = get_attr(cmd, FSA_NAME))) {
-		name = avd_get_str(attr->attr_avd);
-	} else {
-		filebench_log(LOG_ERROR,
-		    "define cvar: no name specified");
-		return;
-	}
-
-	/* Get the type and parameters of the custom variable and initialize the
-	 * handle. */
-	if ((attr = get_attr(cmd, FSA_TYPE))) {
+	attr = get_attr(cmd, FSA_TYPE);
+	if (attr)
 		type = avd_get_str(attr->attr_avd);
-	} else {
-		filebench_log(LOG_ERROR,
-		    "define cvar: no type specified");
-		return;
-	}
-
-	if ((attr = get_attr(cmd, FSA_PARAMETERS))) {
-		parameters = avd_get_str(attr->attr_avd);
-	} else
-		parameters = NULL;
-
-	if ((var = var_define_cvar(name)) == NULL) {
-		filebench_log(LOG_FATAL, "define cvar: failed for custom variable %s",
-		    name);
+	else {
+		filebench_log(LOG_ERROR, "define cvar: no type specified");
 		filebench_shutdown(1);
 		return;
 	}
 
-	cvar = var->var_val.cvar;
+	cvar = cvar_alloc();
+	if (!cvar) {
+		filebench_log(LOG_ERROR, "Failed to allocate custom variable");
+		filebench_shutdown(1);
+		return;
+	}
 
 	/* Initialize the custom variable mutex. */
 	(void) pthread_mutex_init(&cvar->cvar_lock,
@@ -4742,13 +4724,21 @@ parser_cvar_define(cmd_t *cmd)
 	else
 		cvar->round = 0;
 
+	attr = get_attr(cmd, FSA_PARAMETERS);
+	if (attr)
+		parameters = avd_get_str(attr->attr_avd);
+	else
+		parameters = NULL;
+
 	ret = init_cvar_handle(cvar, type, parameters);
-	if (!ret) {
+	if (ret) {
 		filebench_log(LOG_FATAL, "define cvar: failed for custom variable %s",
 		    name);
 		filebench_shutdown(1);
 		return;
 	}
+
+	var_assign_cvar(name, cvar);
 }
 
 void parser_list_cvar_types(void)

@@ -363,7 +363,7 @@ init_cvar_handle(cvar_t *cvar, const char *type, const char *parameters)
 	cvar_lib = cvar_libraries[cvar->cvar_lib_info->index];
 	cvar->cvar_handle = cvar_lib->cvar_op.cvar_alloc_handle(parameters,
 			ipc_cvar_heapalloc, ipc_cvar_heapfree);
-	if (cvar->cvar_handle)
+	if (!cvar->cvar_handle)
 		goto out;
 
 	ret = 0;

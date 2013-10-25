@@ -45,8 +45,12 @@ typedef enum avd_type {
 	AVD_VARVAL_UNKNOWN,	/* avd points to a variable whose type is not
 				 * known yet */
 
-	AVD_RANDVAR		/* avd points to the randdist_t associated */
-				/* with a random type var_t */
+	AVD_RANDVAR,		/* avd points to the randdist_t associated */
+				/* with a random variable type var_t */
+
+	AVD_CVAR		/* avd points to the cvar_t associated */
+				/* with a custom variable type var_t */
+
 } avd_type_t;
 
 /* Attribute Value Descriptor (AVD) */
@@ -63,6 +67,7 @@ typedef struct avd {
 		char		**strptr;
 		struct var	*varptr;
 		struct randdist *randptr;
+		struct cvar	*cvarptr;
 	} avd_val;
 } *avd_t;
 
@@ -78,6 +83,7 @@ typedef enum var_type {
 	VAR_STR,
 	VAR_DBL,
 	VAR_RANDVAR,
+	VAR_CVAR,
 	VAR_UNKNOWN,
 } var_type_t;
 
@@ -91,8 +97,7 @@ typedef struct var {
 		double		dbl;
 		char		*string;
 		struct randdist *randptr;
-		/* XXX: temporary for easyer merge: */
-		struct cvar 	*cvar;
+		struct cvar 	*cvarptr;
 	} var_val;
 } var_t;
 
@@ -107,6 +112,8 @@ typedef struct var {
 	((vp)->var_type == VAR_STR)
 #define	VAR_HAS_RANDDIST(vp) \
 	((vp)->var_type == VAR_RANDVAR)
+#define	VAR_HAS_CUSTOM(vp) \
+	((vp)->var_type == VAR_CVAR)
 #define	VAR_HAS_UNKNOWN(vp) \
 	((vp)->var_type == VAR_UNKNOWN)
 
@@ -135,6 +142,11 @@ typedef struct var {
 		(vp)->var_val.randptr = (val); \
 		(vp)->var_type = VAR_RANDVAR; \
 	}
+#define	VAR_SET_CUSTOM(vp, val)	\
+	{			\
+		(vp)->var_val.cvarptr = (val); \
+		(vp)->var_type = VAR_CVAR; \
+	}
 #define	VAR_SET_UNKNOWN(vp)	\
 	{			\
 		(vp)->var_type = VAR_UNKNOWN; \
@@ -151,8 +163,7 @@ int var_assign_integer(char *name, uint64_t integer);
 int var_assign_double(char *name, double dbl);
 int var_assign_string(char *name, char *string);
 int var_assign_randvar(char *name, struct randdist *rndp);
-/* XXX: temporary for easyer merge: */
-var_t *var_define_cvar(char *name);
+int var_assign_cvar(char *name, struct cvar *cvar);
 
 boolean_t avd_get_bool(avd_t);
 uint64_t avd_get_int(avd_t);

@@ -93,6 +93,8 @@ avd_get_type_textified(avd_t avd)
 		return "pointer to a string in a variable";
 	case AVD_RANDVAR:
 		return "pointer to a random variable";
+	case AVD_CVAR:
+		return "pointer to a custom variable";
 	case AVD_VARVAL_UNKNOWN:
 		return "pointer to variable of unknown type";
 	default:
@@ -122,6 +124,10 @@ set_avd_type_by_var(avd_t avd, var_t *var, int error_on_unknown) {
 	case VAR_RANDVAR:
 		avd->avd_type = AVD_RANDVAR;
 		avd->avd_val.randptr = var->var_val.randptr;
+		break;
+	case VAR_CVAR:
+		avd->avd_type = AVD_CVAR;
+		avd->avd_val.cvarptr = var->var_val.cvarptr;
 		break;
 	case VAR_UNKNOWN:
 		if (error_on_unknown) {
@@ -186,6 +192,7 @@ uint64_t
 avd_get_int(avd_t avd)
 {
 	randdist_t *rndp;
+	cvar_t *cvar;
 	var_t *var;
 
 	assert(avd);
@@ -205,6 +212,10 @@ avd_get_int(avd_t avd)
 		rndp = avd->avd_val.randptr;
 		assert(rndp);
 		return (uint64_t)rndp->rnd_get(rndp);
+	case AVD_CVAR:
+		cvar = avd->avd_val.cvarptr;
+		assert(cvar);
+		return (uint64_t)get_cvar_value(cvar);
 	case AVD_VARVAL_UNKNOWN:
 		var = avd->avd_val.varptr;
 		set_avd_type_by_var(avd, var, 1);
@@ -221,6 +232,7 @@ double
 avd_get_dbl(avd_t avd)
 {
 	randdist_t *rndp;
+	cvar_t *cvar;
 	var_t *var;
 
 	assert(avd);
@@ -240,6 +252,10 @@ avd_get_dbl(avd_t avd)
 		rndp = avd->avd_val.randptr;
 		assert(rndp);
 		return rndp->rnd_get(rndp);
+	case AVD_CVAR:
+		cvar = avd->avd_val.cvarptr;
+		assert(cvar);
+		return get_cvar_value(cvar);
 	case AVD_VARVAL_UNKNOWN:
 		var = avd->avd_val.varptr;
 		set_avd_type_by_var(avd, var, 1);
@@ -487,10 +503,20 @@ var_assign_randvar(char *name, randdist_t *rndp)
 	return 0;
 }
 
-/* XXX: temporary for easyer merge: */
-var_t *var_define_cvar(char *name)
+int
+var_assign_cvar(char *name, struct cvar *cvar)
 {
-	return NULL;
+	var_t *var;
+
+	var = var_find_alloc(name);
+	if (!var) {
+		filebench_log(LOG_ERROR, "Could not assign variable %s", name);
+		return -1;
+	}
+
+	VAR_SET_CUSTOM(var, cvar);
+
+	return 0;
 }
 
 /*
@@ -539,6 +565,9 @@ __var_to_string(var_t *var)
 			return fb_stralloc("unitialized random var");
 		}
 	}
+
+	if (VAR_HAS_CUSTOM(var))
+			return fb_stralloc("custom variable");
 
 	if (VAR_HAS_STRING(var) && var->var_val.string)
 		return fb_stralloc(var->var_val.string);
