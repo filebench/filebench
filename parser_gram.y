@@ -212,7 +212,6 @@ static void parser_osprof_disable(cmd_t *cmd);
 
 %type <sval> name
 %type <ival> entity
-%type <val>  value
 
 %type <cmd> command inner_commands run_command list_command psrun_command
 %type <cmd> proc_define_command files_define_command
@@ -234,15 +233,15 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <attr> enable_multi_ops enable_multi_op multisync_op
 %type <attr> fscheck_attr_op
 %type <attr> cvar_attr_ops cvar_attr_op
-%type <list> integer_seplist string_seplist string_list var_string_list
+%type <list> integer_seplist string_seplist var_string_list
 %type <list> var_string whitevar_string whitevar_string_list
-%type <ival> attrs_define_file attrs_define_thread attrs_flowop
+%type <ival> attrs_define_thread attrs_define_file attrs_flowop
 %type <ival> attrs_define_fileset attrs_define_proc attrs_eventgen attrs_define_comp
 %type <ival> files_attr_name pt_attr_name fo_attr_name ev_attr_name
-%type <ival> randvar_attr_name FSA_TYPE randtype_name randvar_attr_param
-%type <ival> randsrc_name FSA_RANDSRC randvar_attr_tsp em_attr_name
+%type <ival> randvar_attr_name FSA_TYPE randtype_name
+%type <ival> randsrc_name FSA_RANDSRC em_attr_name
 %type <ival> FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC
-%type <ival> fscheck_attr_name FSA_FSTYPE binary_op
+%type <ival> fscheck_attr_name FSA_FSTYPE
 %type <ival> cvar_attr_name 
 
 %type <rndtb>  probtabentry_list probtabentry
@@ -499,30 +498,6 @@ multisync_command: FSC_DOMULTISYNC multisync_op
 	$$->cmd = parser_domultisync;
 	$$->cmd_attr_list = $2;
 }
-
-string_list: FSV_VARIABLE
-{
-	if (($$ = alloc_list()) == NULL)
-			YYERROR;
-	$$->list_string = avd_str_alloc($1);
-}
-| string_list FSK_SEPLST FSV_VARIABLE
-{
-	list_t *list = NULL;
-	list_t *list_end = NULL;
-
-	if (($$ = alloc_list()) == NULL)
-		YYERROR;
-
-	$$->list_string = avd_str_alloc($3);
-
-	/* Find end of list */
-	for (list = $1; list != NULL;
-	    list = list->list_next)
-		list_end = list;
-	list_end->list_next = $$;
-	$$ = $1;
-};
 
 var_string: FSV_VARIABLE
 {
@@ -1192,10 +1167,6 @@ entity: FSE_PROC {$$ = FSE_PROC;}
 | FSE_FILESET {$$ = FSE_FILESET;}
 | FSE_FILE {$$ = FSE_FILE;};
 
-value: FSV_VAL_INT { $$.i = $1;}
-| FSV_STRING { $$.s = $1;}
-| FSV_VAL_BOOLEAN { $$.b = $1;};
-
 name: FSV_STRING;
 
 /* attribute parsing for define file and define fileset */
@@ -1462,12 +1433,6 @@ fscheck_attr_op: fscheck_attr_name FSK_ASSIGN FSV_STRING
 	$$->attr_name = $1;
 };
 
-binary_op:
-   FSK_PLUS {$$ = FSK_PLUS;}
- | FSK_MINUS {$$ = FSK_MINUS;}
- | FSK_MULTIPLY {$$ = FSK_MULTIPLY;}
- | FSK_DIVIDE {$$ = FSK_DIVIDE;};
-
 files_attr_name: attrs_define_file | attrs_define_fileset;
 
 pt_attr_name: attrs_define_thread
@@ -1517,22 +1482,6 @@ randvar_attr_name:
 | FSA_RANDMEAN { $$ = FSA_RANDMEAN;}
 | FSA_MIN { $$ = FSA_MIN;}
 | FSA_ROUND { $$ = FSA_ROUND;};
-
-randvar_attr_tsp:
-  FSS_TYPE { $$ = FSS_TYPE;}
-| FSS_SRC { $$ = FSS_SRC;}
-| FSS_SEED { $$ = FSS_SEED;}
-| FSS_GAMMA { $$ = FSS_GAMMA;}
-| FSS_MEAN { $$ = FSS_MEAN;}
-| FSS_MIN { $$ = FSS_MIN;}
-| FSS_ROUND { $$ = FSS_ROUND;};
-
-randvar_attr_param:
-  FSS_SEED { $$ = FSS_SEED;}
-| FSS_GAMMA { $$ = FSS_GAMMA;}
-| FSS_MEAN { $$ = FSS_MEAN;}
-| FSS_MIN { $$ = FSS_MIN;}
-| FSS_ROUND { $$ = FSS_ROUND;};
 
 randvar_attr_typop: randtype_name
 {
