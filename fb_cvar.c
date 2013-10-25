@@ -22,6 +22,9 @@ static void *load_library(const char *filename);
 static void free_cvar_library(cvar_library_t *c);
 static int init_cvar_library_ops(cvar_library_t *c);
 
+/* Points to the head of an array of pointers to cvar_library_t. */
+cvar_library_t **cvar_libraries;
+
 /*
  * Allocate space for a new custom variable in the shared memory location.
  */

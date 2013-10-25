@@ -74,7 +74,7 @@ typedef struct cvar_library {
 } cvar_library_t;
 
 /* Points to the head of an array of pointers to cvar_library_t. */
-cvar_library_t **cvar_libraries;
+extern cvar_library_t **cvar_libraries;
 
 cvar_t * cvar_alloc(void);
 int init_cvar_library_info(const char *dirpath);
