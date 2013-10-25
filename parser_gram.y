@@ -991,19 +991,6 @@ files_define_command: FSC_DEFINE FSE_FILE
 	$1->cmd_attr_list = $2;
 };
 
-fo_define_command: FSC_DEFINE FSC_FLOWOP comp_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = &parser_composite_flowop_define;
-	$$->cmd_list = $5;
-	$$->cmd_attr_list = $3;
-}
-| fo_define_command comp_attr_ops
-{
-	$1->cmd_attr_list = $2;
-};
-
 create_command: FSC_CREATE entity
 {
 	if (($$ = alloc_cmd()) == NULL)
