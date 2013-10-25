@@ -106,9 +106,9 @@ static void parser_flowop_define(cmd_t *, threadflow_t *, flowop_t **, int);
 static void parser_file_define(cmd_t *);
 static void parser_fileset_define(cmd_t *);
 static void parser_posset_define(cmd_t *);
-static void parser_var_assign_randvar(char *, cmd_t *);
+static void parser_var_assign_random(char *, cmd_t *);
 static void parser_composite_flowop_define(cmd_t *);
-static void parser_var_assign_cvar(char *, cmd_t *);
+static void parser_var_assign_custom(char *, cmd_t *);
 
 /* Create Commands */
 static void parser_proc_create(cmd_t *);
@@ -815,7 +815,7 @@ set_random_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSE_RAND FSK_OPENPAR randva
 	$$->cmd_attr_list = $6;
 	$$->cmd = NULL;
 
-	parser_var_assign_randvar($2, $$);
+	parser_var_assign_random($2, $$);
 }
 
 set_custom_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSE_CVAR FSK_OPENPAR cvar_attr_ops FSK_CLOSEPAR
@@ -827,7 +827,7 @@ set_custom_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSE_CVAR FSK_OPENPAR cvar_a
 	$$->cmd_attr_list = $6;
 	$$->cmd = NULL;
 
-	parser_var_assign_cvar($2, $$);
+	parser_var_assign_custom($2, $$);
 };
 
 set_mode: FSC_SET FSE_MODE FSC_QUIT FSA_TIMEOUT
@@ -4274,7 +4274,7 @@ parser_abort(int arg)
  * define a random variable and initialize the distribution parameters
  */
 static void
-parser_var_assign_randvar(char *name, cmd_t *cmd)
+parser_var_assign_random(char *name, cmd_t *cmd)
 {
 	randdist_t	*rndp;
 	attr_t		*attr;
@@ -4370,7 +4370,7 @@ parser_var_assign_randvar(char *name, cmd_t *cmd)
 		rndp->rnd_mean = avd_int_alloc(0);
 	}
 
-	var_assign_randvar(name, rndp);
+	var_assign_random(name, rndp);
 
 randdist_init:
 	randdist_init(rndp);
@@ -4676,11 +4676,11 @@ alloc_list()
 }
 
 /*
- * Define a custom variable and validate it's parameters.
+ * Define a custom variable and validate its parameters.
  * TODO: Clean up state when things go wrong.
  */
 static void
-parser_var_assign_cvar(char *name, cmd_t *cmd)
+parser_var_assign_custom(char *name, cmd_t *cmd)
 {
 	cvar_t	*cvar;
 	attr_t	*attr;
@@ -4738,7 +4738,7 @@ parser_var_assign_cvar(char *name, cmd_t *cmd)
 		return;
 	}
 
-	var_assign_cvar(name, cvar);
+	var_assign_custom(name, cvar);
 }
 
 void parser_list_cvar_types(void)

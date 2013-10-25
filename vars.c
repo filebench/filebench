@@ -91,9 +91,9 @@ avd_get_type_textified(avd_t avd)
 		return "string";
 	case AVD_VARVAL_STR:
 		return "pointer to a string in a variable";
-	case AVD_RANDVAR:
+	case AVD_VARVAL_RANDOM:
 		return "pointer to a random variable";
-	case AVD_CVAR:
+	case AVD_VARVAL_CUSTOM:
 		return "pointer to a custom variable";
 	case AVD_VARVAL_UNKNOWN:
 		return "pointer to variable of unknown type";
@@ -121,12 +121,12 @@ set_avd_type_by_var(avd_t avd, var_t *var, int error_on_unknown) {
 		avd->avd_type = AVD_VARVAL_STR;
 		avd->avd_val.strptr = &var->var_val.string;
 		break;
-	case VAR_RANDVAR:
-		avd->avd_type = AVD_RANDVAR;
+	case VAR_RANDOM:
+		avd->avd_type = AVD_VARVAL_RANDOM;
 		avd->avd_val.randptr = var->var_val.randptr;
 		break;
-	case VAR_CVAR:
-		avd->avd_type = AVD_CVAR;
+	case VAR_CUSTOM:
+		avd->avd_type = AVD_VARVAL_CUSTOM;
 		avd->avd_val.cvarptr = var->var_val.cvarptr;
 		break;
 	case VAR_UNKNOWN:
@@ -208,11 +208,11 @@ avd_get_int(avd_t avd)
 	case AVD_VARVAL_DBL:
 		assert(avd->avd_val.dblptr);
 		return (uint64_t)*(avd->avd_val.dblptr);
-	case AVD_RANDVAR:
+	case AVD_VARVAL_RANDOM:
 		rndp = avd->avd_val.randptr;
 		assert(rndp);
 		return (uint64_t)rndp->rnd_get(rndp);
-	case AVD_CVAR:
+	case AVD_VARVAL_CUSTOM:
 		cvar = avd->avd_val.cvarptr;
 		assert(cvar);
 		return (uint64_t)get_cvar_value(cvar);
@@ -248,11 +248,11 @@ avd_get_dbl(avd_t avd)
 	case AVD_VARVAL_INT:
 		assert(avd->avd_val.intptr);
 		return (double)(*(avd->avd_val.intptr));
-	case AVD_RANDVAR:
+	case AVD_VARVAL_RANDOM:
 		rndp = avd->avd_val.randptr;
 		assert(rndp);
 		return rndp->rnd_get(rndp);
-	case AVD_CVAR:
+	case AVD_VARVAL_CUSTOM:
 		cvar = avd->avd_val.cvarptr;
 		assert(cvar);
 		return get_cvar_value(cvar);
@@ -488,7 +488,7 @@ var_assign_string(char *name, char *string)
 }
 
 int
-var_assign_randvar(char *name, randdist_t *rndp)
+var_assign_random(char *name, randdist_t *rndp)
 {
 	var_t *var;
 
@@ -498,13 +498,13 @@ var_assign_randvar(char *name, randdist_t *rndp)
 		return -1;
 	}
 
-	VAR_SET_RAND(var, rndp);
+	VAR_SET_RANDOM(var, rndp);
 
 	return 0;
 }
 
 int
-var_assign_cvar(char *name, struct cvar *cvar)
+var_assign_custom(char *name, struct cvar *cvar)
 {
 	var_t *var;
 
@@ -553,7 +553,7 @@ __var_to_string(var_t *var)
 {
 	char tmp[128];
 
-	if (VAR_HAS_RANDDIST(var)) {
+	if (VAR_HAS_RANDOM(var)) {
 		switch (var->var_val.randptr->rnd_type & RAND_TYPE_MASK) {
 		case RAND_TYPE_UNIFORM:
 			return fb_stralloc("uniform random var");
@@ -617,7 +617,7 @@ var_randvar_to_string(char *name, int param_name)
 	if (!var)
 		return var_to_string(name);
 
-	if (!VAR_HAS_RANDDIST(var))
+	if (!VAR_HAS_RANDOM(var))
 		return var_to_string(name);
 
 	switch (param_name) {
@@ -779,8 +779,8 @@ var_lvar_assign_var(char *name, char *src_name)
 		VAR_SET_STR(dst_var, strptr);
 	} else if (VAR_HAS_DOUBLE(src_var)) {
 		VAR_SET_INT(dst_var, src_var->var_val.dbl);
-	} else if (VAR_HAS_RANDDIST(src_var))
-		VAR_SET_RAND(dst_var, src_var->var_val.randptr);
+	} else if (VAR_HAS_RANDOM(src_var))
+		VAR_SET_RANDOM(dst_var, src_var->var_val.randptr);
 
 	return dst_var;
 }
