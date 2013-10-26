@@ -72,7 +72,6 @@ echo                    { return FSC_ECHO; }
 enable			{ return FSC_ENABLE; }
 eventgen                { return FSC_EVENTGEN; }
 exit		        { return FSC_QUIT; }
-foreach                 { return FSC_FOREACH; }
 flowop		        { return FSC_FLOWOP; }
 fscheck		        { return FSC_FSCHECK; }
 fsflush		        { return FSC_FSFLUSH; }

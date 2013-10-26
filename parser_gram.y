@@ -120,8 +120,6 @@ static void parser_fileset_shutdown(cmd_t *cmd);
 
 /* Other Commands */
 static void parser_echo(cmd_t *cmd);
-static void parser_foreach_integer(cmd_t *cmd);
-static void parser_foreach_string(cmd_t *cmd);
 static void parser_fscheck(cmd_t *cmd);
 static void parser_fsflush(cmd_t *cmd);
 static void parser_log(cmd_t *cmd);
@@ -210,11 +208,11 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <sval> name
 %type <ival> entity
 
-%type <cmd> command inner_commands run_command list_command psrun_command
+%type <cmd> command run_command list_command psrun_command
 %type <cmd> proc_define_command files_define_command
 %type <cmd> fo_define_command debug_command create_command
 %type <cmd> sleep_command stats_command set_command shutdown_command
-%type <cmd> foreach_command log_command system_command flowop_command
+%type <cmd> log_command system_command flowop_command
 %type <cmd> eventgen_command quit_command flowop_list thread_list
 %type <cmd> thread echo_command usage_command help_command
 %type <cmd> version_command enable_command multisync_command
@@ -230,7 +228,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <attr> enable_multi_ops enable_multi_op multisync_op
 %type <attr> fscheck_attr_op
 %type <attr> cvar_attr_ops cvar_attr_op
-%type <list> integer_seplist string_seplist var_string_list
+%type <list> var_string_list
 %type <list> var_string whitevar_string whitevar_string_list
 %type <ival> attrs_define_thread attrs_flowop
 %type <ival> attrs_define_fileset attrs_define_proc attrs_eventgen attrs_define_comp
@@ -259,29 +257,6 @@ commands: commands command
 }
 |;
 
-inner_commands: command
-{
-	filebench_log(LOG_DEBUG_IMPL, "inner_command %zx", $1);
-	$$ = $1;
-}
-| inner_commands command
-{
-	cmd_t *list = NULL;
-	cmd_t *list_end = NULL;
-
-	/* Find end of list */
-	for (list = $1; list != NULL;
-	    list = list->cmd_next)
-		list_end = list;
-
-	list_end->cmd_next = $2;
-
-	filebench_log(LOG_DEBUG_IMPL,
-	    "inner_commands adding cmd %zx to list %zx", $2, $1);
-
-	$$ = $1;
-};
-
 command:
   proc_define_command
 | files_define_command
@@ -291,7 +266,6 @@ command:
 | create_command
 | echo_command
 | usage_command
-| foreach_command
 | fscheck_command
 | fsflush_command
 | help_command
@@ -311,110 +285,6 @@ command:
 | enable_command
 | multisync_command
 | quit_command
-
-foreach_command: FSC_FOREACH
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	filebench_log(LOG_DEBUG_IMPL, "foreach_command %zx", $$);
-}
-| foreach_command FSV_VARIABLE FSK_IN integer_seplist FSK_OPENLST inner_commands FSK_CLOSELST
-{
-	cmd_t *inner_cmd;
-	list_t *list;
-
-	$$ = $1;
-	$$->cmd_list = $6;
-	$$->cmd_tgt1 = $2;
-	$$->cmd_param_list = $4;
-	$$->cmd = parser_foreach_integer;
-
-	for (list = $$->cmd_param_list; list != NULL;
-	    list = list->list_next) {
-		for (inner_cmd = $$->cmd_list;
-		    inner_cmd != NULL;
-		    inner_cmd = inner_cmd->cmd_next) {
-			filebench_log(LOG_DEBUG_IMPL,
-			    "packing foreach: %zx %s=%llu, cmd %zx",
-			    $$, $$->cmd_tgt1,
-			    (u_longlong_t)avd_get_int(list->list_integer),
-			    inner_cmd);
-		}
-	}
-}| foreach_command FSV_VARIABLE FSK_IN string_seplist FSK_OPENLST inner_commands FSK_CLOSELST
-{
-	cmd_t *inner_cmd;
-	list_t *list;
-
-	$$ = $1;
-	$$->cmd_list = $6;
-	$$->cmd_tgt1 = $2;
-	$$->cmd_param_list = $4;
-	$$->cmd = parser_foreach_string;
-
-	for (list = $$->cmd_param_list; list != NULL;
-	    list = list->list_next) {
-		for (inner_cmd = $$->cmd_list;
-		    inner_cmd != NULL;
-		    inner_cmd = inner_cmd->cmd_next) {
-			filebench_log(LOG_DEBUG_IMPL,
-			    "packing foreach: %zx %s=%s, cmd %zx",
-			    $$,
-			    $$->cmd_tgt1,
-			    *list->list_string, inner_cmd);
-		}
-	}
-};
-
-integer_seplist: FSV_VAL_INT
-{
-	if (($$ = alloc_list()) == NULL)
-		YYERROR;
-
-	$$->list_integer = avd_int_alloc($1);
-}
-| integer_seplist FSK_SEPLST FSV_VAL_INT
-{
-	list_t *list = NULL;
-	list_t *list_end = NULL;
-
-	if (($$ = alloc_list()) == NULL)
-		YYERROR;
-
-	$$->list_integer = avd_int_alloc($3);
-
-	/* Find end of list */
-	for (list = $1; list != NULL;
-	    list = list->list_next)
-		list_end = list;
-	list_end->list_next = $$;
-	$$ = $1;
-};
-
-string_seplist: FSK_QUOTE FSV_WHITESTRING FSK_QUOTE
-{
-	if (($$ = alloc_list()) == NULL)
-		YYERROR;
-
-	$$->list_string = avd_str_alloc($2);
-}
-| string_seplist FSK_SEPLST FSK_QUOTE FSV_WHITESTRING FSK_QUOTE
-{
-	list_t *list = NULL;
-	list_t *list_end = NULL;
-
-	if (($$ = alloc_list()) == NULL)
-			YYERROR;
-
-	$$->list_string = avd_str_alloc($4);
-
-	/* Find end of list */
-	for (list = $1; list != NULL;
-	    list = list->list_next)
-		list_end = list;
-	list_end->list_next = $$;
-	$$ = $1;
-};
 
 eventgen_command: FSC_EVENTGEN
 {
@@ -2243,58 +2113,6 @@ parser_eventgen(cmd_t *cmd)
 }
 
 /*
- * Assigns the designated integer variable successive values from the
- * supplied comma seperated integer list. After each successive integer
- * assignment, it executes the bracket enclosed list of commands. For
- * example, repeated runs of a workload with increasing io sizes can
- * be done using the following command line:
- * 	foreach $iosize in 2k, 4k, 8k {run 60}
- */
-static void
-parser_foreach_integer(cmd_t *cmd)
-{
-	list_t *list = cmd->cmd_param_list;
-	cmd_t *inner_cmd;
-
-	for (; list != NULL; list = list->list_next) {
-		fbint_t list_int = avd_get_int(list->list_integer);
-
-		var_assign_integer(cmd->cmd_tgt1, list_int);
-		filebench_log(LOG_VERBOSE, "Iterating %s=%llu",
-		    cmd->cmd_tgt1, (u_longlong_t)list_int);
-		for (inner_cmd = cmd->cmd_list; inner_cmd != NULL;
-		    inner_cmd = inner_cmd->cmd_next) {
-			inner_cmd->cmd(inner_cmd);
-		}
-	}
-}
-
-/*
- * Similar to parser_foreach_integer(), except takes a list of strings after
- * the "in" token. For example, to run twice using a different directory,
- * perhaps using a different filesystem, the following command line
- * could be used:
- * 	foreach $dir in "/ufs_top/fbt", "/zfs_top/fbt" {run 60)
- */
-static void
-parser_foreach_string(cmd_t *cmd)
-{
-	list_t *list = cmd->cmd_param_list;
-
-	for (; list != NULL; list = list->list_next) {
-		cmd_t *inner_cmd;
-		char *lstr = avd_get_str(list->list_string);
-		var_assign_string(cmd->cmd_tgt1, lstr);
-		filebench_log(LOG_VERBOSE, "Iterating %s=%s",
-		    cmd->cmd_tgt1, lstr);
-		for (inner_cmd = cmd->cmd_list; inner_cmd != NULL;
-		    inner_cmd = inner_cmd->cmd_next) {
-			inner_cmd->cmd(inner_cmd);
-		}
-	}
-}
-
-/*
  * Lists the fileset name, path name and average size for all defined
  * filesets.
  */
@@ -2822,7 +2640,6 @@ parser_fileset_define_common(cmd_t *cmd)
 	fileset_t *fileset;
 	avd_t name;
 	attr_t *attr;
-	avd_t pathname;
 
 	/*
 	 * Make sure all plugin flowops are initialized.
