@@ -225,7 +225,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <attr> files_attr_op files_attr_ops p_attr_op t_attr_op p_attr_ops t_attr_ops
 %type <attr> fo_attr_op fo_attr_ops ev_attr_op ev_attr_ops
 %type <attr> randvar_attr_op randvar_attr_ops randvar_attr_typop
-%type <attr> randvar_attr_srcop attr_value attr_list_value
+%type <attr> randvar_attr_srcop attr_value
 %type <attr> comp_lvar_def comp_attr_op comp_attr_ops
 %type <attr> enable_multi_ops enable_multi_op multisync_op
 %type <attr> fscheck_attr_op
@@ -514,75 +514,19 @@ var_string: FSV_VARIABLE
 var_string_list: var_string
 {
 	$$ = $1;
-}| var_string FSV_STRING
+}
+| var_string_list var_string
 {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
-
-	/* Add string */
-	if (($$ = alloc_list()) == NULL)
-		YYERROR;
-
-	$$->list_string = avd_str_alloc($2);
 
 	/* Find end of list */
 	for (list = $1; list != NULL;
 	    list = list->list_next)
 		list_end = list;
-	list_end->list_next = $$;
-	$$ = $1;
 
-}| var_string FSV_VARIABLE
-{
-	list_t *list = NULL;
-	list_t *list_end = NULL;
+	list_end->list_next = $2;
 
-	/* Add variable */
-	if (($$ = alloc_list()) == NULL)
-		YYERROR;
-
-	$$->list_string = avd_str_alloc($2);
-
-	/* Find end of list */
-	for (list = $1; list != NULL;
-	    list = list->list_next)
-		list_end = list;
-	list_end->list_next = $$;
-	$$ = $1;
-} |var_string_list FSV_STRING
-{
-	list_t *list = NULL;
-	list_t *list_end = NULL;
-
-	/* Add string */
-	if (($$ = alloc_list()) == NULL)
-		YYERROR;
-
-	$$->list_string = avd_str_alloc($2);
-
-	/* Find end of list */
-	for (list = $1; list != NULL;
-	    list = list->list_next)
-		list_end = list;
-	list_end->list_next = $$;
-	$$ = $1;
-
-}| var_string_list FSV_VARIABLE
-{
-	list_t *list = NULL;
-	list_t *list_end = NULL;
-
-	/* Add variable */
-	if (($$ = alloc_list()) == NULL)
-		YYERROR;
-
-	$$->list_string = avd_str_alloc($2);
-
-	/* Find end of list */
-	for (list = $1; list != NULL;
-	    list = list->list_next)
-		list_end = list;
-	list_end->list_next = $$;
 	$$ = $1;
 };
 
@@ -1171,7 +1115,7 @@ files_attr_ops: files_attr_op
 	$$ = $1;
 };
 
-files_attr_op: files_attr_name FSK_ASSIGN attr_list_value
+files_attr_op: files_attr_name FSK_ASSIGN attr_value
 {
 	$$ = $3;
 	$$->attr_name = $1;
@@ -1222,7 +1166,7 @@ randvar_attr_ops: randvar_attr_op
 	$$ = $1;
 };
 
-randvar_attr_op: randvar_attr_name FSK_ASSIGN attr_list_value
+randvar_attr_op: randvar_attr_name FSK_ASSIGN attr_value
 {
 	$$ = $3;
 	$$->attr_name = $1;
@@ -1652,7 +1596,7 @@ cvar_attr_ops: cvar_attr_op
 	$$ = $1;
 }
 
-cvar_attr_op: cvar_attr_name FSK_ASSIGN attr_list_value
+cvar_attr_op: cvar_attr_name FSK_ASSIGN attr_value
 {
 	$$ = $3;
 	$$->attr_name = $1;
@@ -1679,20 +1623,6 @@ attr_value: FSV_STRING
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
 	$$->attr_avd = avd_var_alloc($1);
-};
-
-attr_list_value: var_string_list {
-	if (($$ = alloc_attr()) == NULL)
-		YYERROR;
-	$$->attr_param_list = $1;
-} | FSV_VAL_INT {
-	if (($$ = alloc_attr()) == NULL)
-		YYERROR;
-	$$->attr_avd = avd_int_alloc($1);
-} | FSV_VAL_BOOLEAN {
-	if (($$ = alloc_attr()) == NULL)
-		YYERROR;
-	$$->attr_avd = avd_bool_alloc($1);
 };
 
 var_int_val: FSV_VAL_INT
@@ -2175,20 +2105,21 @@ parser_list2string(list_t *list)
 	list_t *l;
 	char *string;
 	char *tmp;
-	if ((string = malloc(MAXPATHLEN)) == NULL) {
+
+	string = malloc(MAXPATHLEN);
+	if (!string) {
 		filebench_log(LOG_ERROR, "Failed to allocate memory");
-		return (NULL);
+		return NULL;
 	}
 
 	*string = 0;
 
-	/*	printf("parser_list2string: called\n"); */
 	/* Format args */
 	for (l = list; l != NULL; l = l->list_next) {
+
 		char *lstr = avd_get_str(l->list_string);
 
-		filebench_log(LOG_DEBUG_SCRIPT,
-		    "converting string '%s'", lstr);
+		filebench_log(LOG_DEBUG_SCRIPT, "converting string '%s'", lstr);
 
 		/* see if it is a random variable */
 		if (l->list_integer) {
@@ -2196,6 +2127,7 @@ parser_list2string(list_t *list)
 
 			tmp = NULL;
 			param_name = avd_get_int(l->list_integer);
+
 			switch (param_name) {
 			case FSS_TYPE:
 				tmp = var_randvar_to_string(lstr,
@@ -2249,7 +2181,8 @@ parser_list2string(list_t *list)
 			}
 		}
 	}
-	return (string);
+
+	return string;
 }
 
 /*
