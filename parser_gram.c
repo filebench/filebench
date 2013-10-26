@@ -5208,20 +5208,21 @@ parser_list2string(list_t *list)
 	list_t *l;
 	char *string;
 	char *tmp;
-	if ((string = malloc(MAXPATHLEN)) == NULL) {
+
+	string = malloc(MAXPATHLEN);
+	if (!string) {
 		filebench_log(LOG_ERROR, "Failed to allocate memory");
-		return (NULL);
+		return NULL;
 	}
 
 	*string = 0;
 
-	/*	printf("parser_list2string: called\n"); */
 	/* Format args */
 	for (l = list; l != NULL; l = l->list_next) {
+
 		char *lstr = avd_get_str(l->list_string);
 
-		filebench_log(LOG_DEBUG_SCRIPT,
-		    "converting string '%s'", lstr);
+		filebench_log(LOG_DEBUG_SCRIPT, "converting string '%s'", lstr);
 
 		/* see if it is a random variable */
 		if (l->list_integer) {
@@ -5229,6 +5230,7 @@ parser_list2string(list_t *list)
 
 			tmp = NULL;
 			param_name = avd_get_int(l->list_integer);
+
 			switch (param_name) {
 			case FSS_TYPE:
 				tmp = var_randvar_to_string(lstr,
@@ -5282,7 +5284,8 @@ parser_list2string(list_t *list)
 			}
 		}
 	}
-	return (string);
+
+	return string;
 }
 
 /*
@@ -5946,20 +5949,12 @@ parser_fileset_define_common(cmd_t *cmd)
 		return (NULL);
 	}
 
-	/* Get the pathname from attribute */
-	if ((attr = get_attr(cmd, FSA_PATH)) == NULL) {
-		filebench_log(LOG_ERROR, "define file: no pathname specified");
-		return (NULL);
-	}
-
-	/* Expand variables in pathname */
-	if ((pathname = parser_list2varstring(attr->attr_param_list))
-	    == NULL) {
+	if ((attr = get_attr(cmd, FSA_PATH)))  {
+		fileset->fs_path = attr->attr_avd;
+	} else {
 		filebench_log(LOG_ERROR, "Cannot interpret path");
 		return (NULL);
 	}
-
-	fileset->fs_path = pathname;
 
 	/* How much should we preallocate? */
 	if ((attr = get_attr_integer(cmd, FSA_PREALLOC)) &&

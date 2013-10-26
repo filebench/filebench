@@ -2846,20 +2846,12 @@ parser_fileset_define_common(cmd_t *cmd)
 		return (NULL);
 	}
 
-	/* Get the pathname from attribute */
-	if ((attr = get_attr(cmd, FSA_PATH)) == NULL) {
-		filebench_log(LOG_ERROR, "define file: no pathname specified");
-		return (NULL);
-	}
-
-	/* Expand variables in pathname */
-	if ((pathname = parser_list2varstring(attr->attr_param_list))
-	    == NULL) {
+	if ((attr = get_attr(cmd, FSA_PATH)))  {
+		fileset->fs_path = attr->attr_avd;
+	} else {
 		filebench_log(LOG_ERROR, "Cannot interpret path");
 		return (NULL);
 	}
-
-	fileset->fs_path = pathname;
 
 	/* How much should we preallocate? */
 	if ((attr = get_attr_integer(cmd, FSA_PREALLOC)) &&
