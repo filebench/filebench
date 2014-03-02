@@ -37,10 +37,10 @@ typedef enum avd_type {
 	AVD_VARVAL_BOOL,	/* avd points to the boolean_t in a var_t */
 	AVD_VAL_INT,		/* avd contains an uint64_t */
 	AVD_VARVAL_INT,		/* avd points to the uint64_t in a var_t */
-	AVD_VAL_STR,		/* avd contains a sting (*char) */
-	AVD_VARVAL_STR,		/* avd points to a string in a var_t */
 	AVD_VAL_DBL,		/* avd contains a double float */
 	AVD_VARVAL_DBL,		/* avd points to the double in a var_t */
+	AVD_VAL_STR,		/* avd contains a sting (*char) */
+	AVD_VARVAL_STR,		/* avd points to a string in a var_t */
 
 	AVD_VARVAL_UNKNOWN,	/* avd points to a variable whose type is not
 				 * known yet */
@@ -84,8 +84,8 @@ typedef enum var_type {
 	VAR_INVALID = 0,
 	VAR_BOOL,
 	VAR_INT,
-	VAR_STR,
 	VAR_DBL,
+	VAR_STR,
 	VAR_RANDOM,
 	VAR_CUSTOM,
 	VAR_UNKNOWN,
