@@ -24,8 +24,8 @@
  * Use is subject to license terms.
  */
 
-#ifndef _FB_VARS_H
-#define	_FB_VARS_H
+#ifndef _VARS_H
+#define	_VARS_H
 
 #include "filebench.h"
 
@@ -189,4 +189,4 @@ var_t *var_lvar_assign_var(char *name, char *src_name);
 char *var_to_string(char *name);
 char *var_randvar_to_string(char *name, int param);
 
-#endif	/* _FB_VARS_H */
+#endif	/* _VARS_H */
