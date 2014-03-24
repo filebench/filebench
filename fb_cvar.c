@@ -70,8 +70,11 @@ init_cvar_library_info(const char *dirpath)
 	filename[dirpath_len + NAME_MAX] = '\0';
 
 	libdir = opendir(dirpath);
-	if (!libdir)
-		return errno;
+	if (!libdir) {
+		filebench_log(LOG_ERROR, "Failed to open cvar directory");
+		ret = 0;
+		goto out;
+	}
 
 	while ((dirent = readdir(libdir)) != NULL) {
 		if (!strcmp(".", dirent->d_name) || !strcmp("..", dirent->d_name))
@@ -82,6 +85,8 @@ init_cvar_library_info(const char *dirpath)
 		if (ret)
 			goto out;
 	}
+
+	ret = 0;
 
 out:
 	if (filename)
