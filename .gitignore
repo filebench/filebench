@@ -8,6 +8,7 @@ stamp-h1
 
 eventgen.o
 fb_avl.o
+fb_cvar.o
 fb_localfs.o
 fb_random.o
 filebench
@@ -27,3 +28,5 @@ stats.o
 threadflow.o
 utils.o
 vars.o
+
+tags
