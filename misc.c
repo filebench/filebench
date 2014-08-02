@@ -125,6 +125,8 @@ parse_cpu_hz(void)
 	}
 	hz = hertz * 1000000;
 
+	fclose(cpuinfo);
+
 	return (hz);
 }
 #else /* USE_RDTSC */
