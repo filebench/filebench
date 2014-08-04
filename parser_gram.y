@@ -3365,18 +3365,18 @@ parser_statscmd(cmd_t *cmd)
 
 	if ((pipe(pipe_fd)) < 0) {
 		filebench_log(LOG_ERROR, "statscmd pipe failed");
-		return;
+		goto out;
 	}
 
 #ifdef HAVE_FORK1
 	if ((pid = fork1()) < 0) {
 		filebench_log(LOG_ERROR, "statscmd fork failed");
-		return;
+		goto out;
 	}
 #elif HAVE_FORK
 	if ((pid = fork()) < 0) {
 		filebench_log(LOG_ERROR, "statscmd fork failed");
-		return;
+		goto out;
 	}
 #else
 	Crash! - Need code to deal with no fork1!
@@ -3419,7 +3419,7 @@ parser_statscmd(cmd_t *cmd)
 		if ((pidlistent = (pidlist_t *)malloc(sizeof (pidlist_t)))
 		    == NULL) {
 			filebench_log(LOG_ERROR, "pidlistent malloc failed");
-			return;
+			goto out;
 		}
 
 		pidlistent->pl_pid = pid;
@@ -3435,6 +3435,9 @@ parser_statscmd(cmd_t *cmd)
 			pidlist = pidlistent;
 		}
 	}
+
+out:
+	free(string);
 }
 
 /*
@@ -3666,8 +3669,10 @@ parser_usage(cmd_t *cmd)
 	if (string == NULL)
 		return;
 
-	if (dofile == DOFILE_TRUE)
+	if (dofile == DOFILE_TRUE) {
+		free(string);
 		return;
+	}
 
 	if (usagestr == NULL) {
 		newusage = malloc(strlen(string) + 2);
@@ -3685,6 +3690,8 @@ parser_usage(cmd_t *cmd)
 	usagestr = newusage;
 
 	filebench_log(LOG_INFO, "%s", string);
+
+	free(string);
 }
 
 /*
