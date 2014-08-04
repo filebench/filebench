@@ -182,6 +182,7 @@ kstats_read_cpu(void)
 	if (fscanf(statfd, "%s %llu %llu %llu", cpu, &user, &nice, &system) != 4) {
 #endif
 		filebench_log(LOG_ERROR, "Cannot read /proc/stat");
+		fclose(statfd);
 		return (-1);
 	}
 	

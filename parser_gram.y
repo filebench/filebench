@@ -1664,6 +1664,8 @@ fb_set_shmmax(void)
 				"/proc/sys/kernel/shmmax file!");
 #undef SOME_LARGE_SHMAX
 
+	fclose(f);
+
 	return;
 }
 #else /* HAVE_PROC_SYS_KERNEL_SHMMAX */
