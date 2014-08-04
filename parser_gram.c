@@ -6624,7 +6624,7 @@ parser_fsflush(cmd_t *cmd)
 		int idx;
 
 		if ((pathname = avd_get_str(fileset->fs_path)) == NULL)
-			return;
+			goto out;
 
 		for (idx = 0; idx < fsidx; idx++) {
 			if (strcmp(pathname, fspathlist[idx]) == 0)
@@ -6645,10 +6645,14 @@ parser_fsflush(cmd_t *cmd)
 				filebench_log(LOG_ERROR,
 				    "exec of fs_flush script failed: %s",
 				    strerror(errno));
+				free(fspathlist);
 				filebench_shutdown(1);
 			}
 		}
 	}
+
+out:
+	free(fspathlist);
 }
 
 /*
