@@ -39,6 +39,7 @@ AC_CHECK_HEADERS([sys/param.h])
 AC_CHECK_HEADERS([sys/socket.h])
 AC_CHECK_HEADERS([sys/statvfs.h])
 AC_CHECK_HEADERS([sys/time.h]) 
+AC_CHECK_HEADERS([sys/personality.h]) 
 # We use HAVE_PROC_PID_LWP to use /proc/<PID>/lwp/ for per-thread time accounting
 # XXX: Seems that it works only on Solaris, check it later. Also, the
 # name and the method for configuring this is not the best.

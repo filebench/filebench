@@ -38,7 +38,7 @@ subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	TODO depcomp install-sh missing parser_gram.c parser_gram.h \
+	depcomp install-sh missing parser_gram.c parser_gram.h \
 	parser_lex.c ylwrap
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -59,8 +59,8 @@ am__filebench_SOURCES_DIST = eventgen.c fb_avl.c fb_localfs.c \
 	eventgen.h fb_random.h fileset.h fsplug.h ipc.h \
 	multi_client_sync.h parsertypes.h stats.h utils.h config.h \
 	fb_avl.h filebench.h flowop.h gamma_dist.h misc.h procflow.h \
-	threadflow.h vars.h ioprio.h flag.h fb_cvar.c fb_cvar.h \
-	auto_comp.c auto_comp.h
+	threadflow.h vars.h ioprio.h flag.h fb_cvar.c fb_cvar.h aslr.c \
+	aslr.h auto_comp.c auto_comp.h
 @AUTOCOMP_LIBTECLA_TRUE@am__objects_1 = auto_comp.$(OBJEXT)
 am_filebench_OBJECTS = eventgen.$(OBJEXT) fb_avl.$(OBJEXT) \
 	fb_localfs.$(OBJEXT) fb_random.$(OBJEXT) fileset.$(OBJEXT) \
@@ -69,7 +69,7 @@ am_filebench_OBJECTS = eventgen.$(OBJEXT) fb_avl.$(OBJEXT) \
 	parser_gram.$(OBJEXT) parser_lex.$(OBJEXT) procflow.$(OBJEXT) \
 	stats.$(OBJEXT) threadflow.$(OBJEXT) utils.$(OBJEXT) \
 	vars.$(OBJEXT) ioprio.$(OBJEXT) fb_cvar.$(OBJEXT) \
-	$(am__objects_1)
+	aslr.$(OBJEXT) $(am__objects_1)
 filebench_OBJECTS = $(am_filebench_OBJECTS)
 filebench_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -239,7 +239,8 @@ filebench_SOURCES = eventgen.c fb_avl.c fb_localfs.c fb_random.c \
 	fb_random.h fileset.h fsplug.h ipc.h multi_client_sync.h \
 	parsertypes.h stats.h utils.h config.h fb_avl.h filebench.h \
 	flowop.h gamma_dist.h misc.h procflow.h threadflow.h vars.h \
-	ioprio.h flag.h fb_cvar.c fb_cvar.h $(am__append_1)
+	ioprio.h flag.h fb_cvar.c fb_cvar.h aslr.c aslr.h \
+	$(am__append_1)
 EXTRA_DIST = LICENSE
 AM_YFLAGS = -d
 #AM_LDFLAGS = 
@@ -352,6 +353,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aslr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/auto_comp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eventgen.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fb_avl.Po@am__quote@

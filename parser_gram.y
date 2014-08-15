@@ -54,6 +54,7 @@
 #include "stats.h"
 #include "vars.h"
 #include "eventgen.h"
+#include "aslr.h"
 #ifdef HAVE_LIBTECLA
 #include "auto_comp.h"
 #endif
@@ -1577,62 +1578,6 @@ usage(int help)
 	exit(1);
 }
 
-/*
- * mmap() call with MAP_FIXED argument does not guarantee
- * that the allocated memory region is not overlapped with
- * the previously existant mappings. According to POSIX, old mappings
- * are just disregarded. There is no generic way to detect
- * overlap. If overlap occurs strange runtime errors might happen,
- * because we might overlap stack, libraries, anything else.
- *
- * Since we always fork+exec same binary (filebench), theoretically
- * all the mappings should be the same, so no overlap should happen.
- * However, if virtual address space randomization is enabled on the target
- * machine - overlap is very likely (especially if workload defines a lot of
- * processes).  We observed numerous segmentation faults on CentOS because of
- * that.
- *
- * The function below checks if virtual address space randomization is
- * enabled on Linux. In case it is enabled, we print a warning and continue
- * execution.
- */
-static void
-check_va_randomization()
-{
-	char buf[4];
-	int val;
-	int ret;
-	int fd;
-
-	fd = open("/proc/sys/kernel/randomize_va_space", O_RDONLY);
-	if (fd == -1) {
-		/*
-		 * probably this file just doesn't exist, so we conclude that the
-		 * system does not support virtual address space randomization
-		 * and silently return.
-		 */
-		return;
-	}
-
-	ret = read(fd, buf, sizeof(buf));
-	if (ret == -1) {
-		filebench_log(LOG_FATAL, "Coud not read from "
-			"/proc/sys/kernel/randomize_va_space file!");
-		return;
-	}
-
-	sscanf(buf, "%d", &val);
-	if (val != 0) {
-		filebench_log(LOG_FATAL, "IMPORTANT: Virtual address space "
-			"randomization is enabled on this machine!\n"
-			"It is highly recommended to disable randomization "
-			"to provide stable Filebench runs.\n"
-			"Echo 0 to /proc/sys/kernel/randomize_va_space file "
-			"to disable the randomization.");
-
-	}
-}
-
 #ifdef HAVE_PROC_SYS_KERNEL_SHMMAX
 /*
  * Increase the maximum shared memory segment size till some large value.  We do
@@ -1854,7 +1799,7 @@ main(int argc, char *argv[])
 	 * Master process
 	 */
 	printf("Filebench Version %s\n", FILEBENCH_VERSION);
-	check_va_randomization();
+	disable_aslr();
 
 	/* saving executable name to exec it later as worker processes */
 	execname = argv[0];

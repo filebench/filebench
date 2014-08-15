@@ -97,6 +97,7 @@
 #include "stats.h"
 #include "vars.h"
 #include "eventgen.h"
+#include "aslr.h"
 #ifdef HAVE_LIBTECLA
 #include "auto_comp.h"
 #endif
@@ -194,7 +195,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 
 
 /* Line 189 of yacc.c  */
-#line 198 "parser_gram.c"
+#line 199 "parser_gram.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -479,7 +480,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 153 "parser_gram.y"
+#line 154 "parser_gram.y"
 
 	int64_t		 ival;
 	unsigned char	 bval;
@@ -494,7 +495,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 498 "parser_gram.c"
+#line 499 "parser_gram.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -506,7 +507,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 510 "parser_gram.c"
+#line 511 "parser_gram.c"
 
 #ifdef short
 # undef short
@@ -890,31 +891,31 @@ static const yytype_int16 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   246,   246,   253,   258,   261,   262,   263,   264,   265,
-     266,   267,   268,   269,   270,   271,   272,   273,   274,   275,
-     276,   277,   278,   279,   280,   281,   282,   283,   284,   285,
-     286,   287,   289,   295,   300,   309,   318,   325,   332,   339,
-     348,   355,   360,   369,   376,   384,   388,   403,   410,   418,
-     436,   453,   471,   488,   491,   496,   502,   507,   515,   520,
-     529,   537,   547,   547,   547,   547,   549,   560,   570,   579,
-     590,   602,   614,   624,   634,   644,   656,   664,   671,   679,
-     687,   694,   701,   710,   717,   720,   738,   750,   753,   771,
-     780,   785,   792,   800,   805,   824,   843,   850,   858,   865,
-     872,   880,   887,   894,   902,   910,   919,   928,   936,   945,
-     952,   958,   963,   964,   965,   966,   968,   971,   975,   988,
-     993,  1003,  1007,  1020,  1039,  1044,  1050,  1055,  1061,  1071,
-    1075,  1090,  1094,  1108,  1113,  1121,  1125,  1139,  1144,  1152,
-    1156,  1169,  1183,  1188,  1196,  1200,  1214,  1219,  1227,  1231,
-    1245,  1251,  1257,  1265,  1267,  1269,  1272,  1273,  1274,  1277,
-    1278,  1279,  1280,  1281,  1282,  1283,  1284,  1285,  1286,  1287,
-    1288,  1289,  1290,  1291,  1294,  1295,  1296,  1297,  1298,  1299,
-    1301,  1309,  1310,  1311,  1313,  1321,  1322,  1325,  1326,  1327,
-    1328,  1329,  1332,  1333,  1334,  1335,  1336,  1337,  1340,  1341,
-    1342,  1343,  1344,  1345,  1346,  1347,  1348,  1349,  1350,  1351,
-    1352,  1353,  1354,  1355,  1356,  1359,  1362,  1363,  1366,  1367,
-    1369,  1373,  1386,  1400,  1406,  1411,  1416,  1421,  1426,  1431,
-    1437,  1445,  1451,  1455,  1469,  1476,  1477,  1479,  1484,  1488,
-    1492,  1498,  1501
+       0,   247,   247,   254,   259,   262,   263,   264,   265,   266,
+     267,   268,   269,   270,   271,   272,   273,   274,   275,   276,
+     277,   278,   279,   280,   281,   282,   283,   284,   285,   286,
+     287,   288,   290,   296,   301,   310,   319,   326,   333,   340,
+     349,   356,   361,   370,   377,   385,   389,   404,   411,   419,
+     437,   454,   472,   489,   492,   497,   503,   508,   516,   521,
+     530,   538,   548,   548,   548,   548,   550,   561,   571,   580,
+     591,   603,   615,   625,   635,   645,   657,   665,   672,   680,
+     688,   695,   702,   711,   718,   721,   739,   751,   754,   772,
+     781,   786,   793,   801,   806,   825,   844,   851,   859,   866,
+     873,   881,   888,   895,   903,   911,   920,   929,   937,   946,
+     953,   959,   964,   965,   966,   967,   969,   972,   976,   989,
+     994,  1004,  1008,  1021,  1040,  1045,  1051,  1056,  1062,  1072,
+    1076,  1091,  1095,  1109,  1114,  1122,  1126,  1140,  1145,  1153,
+    1157,  1170,  1184,  1189,  1197,  1201,  1215,  1220,  1228,  1232,
+    1246,  1252,  1258,  1266,  1268,  1270,  1273,  1274,  1275,  1278,
+    1279,  1280,  1281,  1282,  1283,  1284,  1285,  1286,  1287,  1288,
+    1289,  1290,  1291,  1292,  1295,  1296,  1297,  1298,  1299,  1300,
+    1302,  1310,  1311,  1312,  1314,  1322,  1323,  1326,  1327,  1328,
+    1329,  1330,  1333,  1334,  1335,  1336,  1337,  1338,  1341,  1342,
+    1343,  1344,  1345,  1346,  1347,  1348,  1349,  1350,  1351,  1352,
+    1353,  1354,  1355,  1356,  1357,  1360,  1363,  1364,  1367,  1368,
+    1370,  1374,  1387,  1401,  1407,  1412,  1417,  1422,  1427,  1432,
+    1438,  1446,  1452,  1456,  1470,  1477,  1478,  1480,  1485,  1489,
+    1493,  1499,  1502
 };
 #endif
 
@@ -2089,7 +2090,7 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 247 "parser_gram.y"
+#line 248 "parser_gram.y"
     {
 	if ((yyvsp[(2) - (2)].cmd)->cmd)
 		(yyvsp[(2) - (2)].cmd)->cmd((yyvsp[(2) - (2)].cmd));
@@ -2101,7 +2102,7 @@ yyreduce:
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 254 "parser_gram.y"
+#line 255 "parser_gram.y"
     {
 	if (dofile == DOFILE_TRUE)
 		YYABORT;
@@ -2111,7 +2112,7 @@ yyreduce:
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 290 "parser_gram.y"
+#line 291 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2122,7 +2123,7 @@ yyreduce:
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 296 "parser_gram.y"
+#line 297 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
@@ -2131,7 +2132,7 @@ yyreduce:
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 301 "parser_gram.y"
+#line 302 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2144,7 +2145,7 @@ yyreduce:
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 310 "parser_gram.y"
+#line 311 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2157,7 +2158,7 @@ yyreduce:
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 319 "parser_gram.y"
+#line 320 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2168,7 +2169,7 @@ yyreduce:
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 326 "parser_gram.y"
+#line 327 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2179,7 +2180,7 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 333 "parser_gram.y"
+#line 334 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2190,7 +2191,7 @@ yyreduce:
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 340 "parser_gram.y"
+#line 341 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2203,7 +2204,7 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 349 "parser_gram.y"
+#line 350 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2215,7 +2216,7 @@ yyreduce:
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 356 "parser_gram.y"
+#line 357 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
@@ -2224,7 +2225,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 361 "parser_gram.y"
+#line 362 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2237,7 +2238,7 @@ yyreduce:
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 370 "parser_gram.y"
+#line 371 "parser_gram.y"
     {
 	if (((yyval.list) = alloc_list()) == NULL)
 			YYERROR;
@@ -2249,7 +2250,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 377 "parser_gram.y"
+#line 378 "parser_gram.y"
     {
 	if (((yyval.list) = alloc_list()) == NULL)
 			YYERROR;
@@ -2261,7 +2262,7 @@ yyreduce:
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 385 "parser_gram.y"
+#line 386 "parser_gram.y"
     {
 	(yyval.list) = (yyvsp[(1) - (1)].list);
 }
@@ -2270,7 +2271,7 @@ yyreduce:
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 389 "parser_gram.y"
+#line 390 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2289,7 +2290,7 @@ yyreduce:
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 404 "parser_gram.y"
+#line 405 "parser_gram.y"
     {
 	if (((yyval.list) = alloc_list()) == NULL)
 			YYERROR;
@@ -2301,7 +2302,7 @@ yyreduce:
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 411 "parser_gram.y"
+#line 412 "parser_gram.y"
     {
 	if (((yyval.list) = alloc_list()) == NULL)
 			YYERROR;
@@ -2313,7 +2314,7 @@ yyreduce:
   case 49:
 
 /* Line 1455 of yacc.c  */
-#line 419 "parser_gram.y"
+#line 420 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2337,7 +2338,7 @@ yyreduce:
   case 50:
 
 /* Line 1455 of yacc.c  */
-#line 437 "parser_gram.y"
+#line 438 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2360,7 +2361,7 @@ yyreduce:
   case 51:
 
 /* Line 1455 of yacc.c  */
-#line 454 "parser_gram.y"
+#line 455 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2384,7 +2385,7 @@ yyreduce:
   case 52:
 
 /* Line 1455 of yacc.c  */
-#line 472 "parser_gram.y"
+#line 473 "parser_gram.y"
     {
 	list_t *list = NULL;
 	list_t *list_end = NULL;
@@ -2407,7 +2408,7 @@ yyreduce:
   case 53:
 
 /* Line 1455 of yacc.c  */
-#line 489 "parser_gram.y"
+#line 490 "parser_gram.y"
     {
 	(yyval.list) = (yyvsp[(1) - (2)].list);
 }
@@ -2416,7 +2417,7 @@ yyreduce:
   case 54:
 
 /* Line 1455 of yacc.c  */
-#line 492 "parser_gram.y"
+#line 493 "parser_gram.y"
     {
 	(yyval.list) = (yyvsp[(1) - (2)].list);
 }
@@ -2425,7 +2426,7 @@ yyreduce:
   case 55:
 
 /* Line 1455 of yacc.c  */
-#line 497 "parser_gram.y"
+#line 498 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2436,7 +2437,7 @@ yyreduce:
   case 56:
 
 /* Line 1455 of yacc.c  */
-#line 503 "parser_gram.y"
+#line 504 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd = &parser_flowop_list;
 }
@@ -2445,7 +2446,7 @@ yyreduce:
   case 57:
 
 /* Line 1455 of yacc.c  */
-#line 508 "parser_gram.y"
+#line 509 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2458,7 +2459,7 @@ yyreduce:
   case 58:
 
 /* Line 1455 of yacc.c  */
-#line 516 "parser_gram.y"
+#line 517 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list->attr_next = (yyvsp[(2) - (2)].attr);
 }
@@ -2467,7 +2468,7 @@ yyreduce:
   case 59:
 
 /* Line 1455 of yacc.c  */
-#line 521 "parser_gram.y"
+#line 522 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2480,7 +2481,7 @@ yyreduce:
   case 60:
 
 /* Line 1455 of yacc.c  */
-#line 530 "parser_gram.y"
+#line 531 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2492,7 +2493,7 @@ yyreduce:
   case 61:
 
 /* Line 1455 of yacc.c  */
-#line 538 "parser_gram.y"
+#line 539 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2506,7 +2507,7 @@ yyreduce:
   case 66:
 
 /* Line 1455 of yacc.c  */
-#line 550 "parser_gram.y"
+#line 551 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2521,7 +2522,7 @@ yyreduce:
   case 67:
 
 /* Line 1455 of yacc.c  */
-#line 561 "parser_gram.y"
+#line 562 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2536,7 +2537,7 @@ yyreduce:
   case 68:
 
 /* Line 1455 of yacc.c  */
-#line 571 "parser_gram.y"
+#line 572 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2550,7 +2551,7 @@ yyreduce:
   case 69:
 
 /* Line 1455 of yacc.c  */
-#line 580 "parser_gram.y"
+#line 581 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2565,7 +2566,7 @@ yyreduce:
   case 70:
 
 /* Line 1455 of yacc.c  */
-#line 591 "parser_gram.y"
+#line 592 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2581,7 +2582,7 @@ yyreduce:
   case 71:
 
 /* Line 1455 of yacc.c  */
-#line 603 "parser_gram.y"
+#line 604 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2597,7 +2598,7 @@ yyreduce:
   case 72:
 
 /* Line 1455 of yacc.c  */
-#line 615 "parser_gram.y"
+#line 616 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2612,7 +2613,7 @@ yyreduce:
   case 73:
 
 /* Line 1455 of yacc.c  */
-#line 625 "parser_gram.y"
+#line 626 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2627,7 +2628,7 @@ yyreduce:
   case 74:
 
 /* Line 1455 of yacc.c  */
-#line 635 "parser_gram.y"
+#line 636 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2642,7 +2643,7 @@ yyreduce:
   case 75:
 
 /* Line 1455 of yacc.c  */
-#line 645 "parser_gram.y"
+#line 646 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2658,7 +2659,7 @@ yyreduce:
   case 76:
 
 /* Line 1455 of yacc.c  */
-#line 657 "parser_gram.y"
+#line 658 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2671,7 +2672,7 @@ yyreduce:
   case 77:
 
 /* Line 1455 of yacc.c  */
-#line 665 "parser_gram.y"
+#line 666 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2683,7 +2684,7 @@ yyreduce:
   case 78:
 
 /* Line 1455 of yacc.c  */
-#line 672 "parser_gram.y"
+#line 673 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2696,7 +2697,7 @@ yyreduce:
   case 79:
 
 /* Line 1455 of yacc.c  */
-#line 680 "parser_gram.y"
+#line 681 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2710,7 +2711,7 @@ yyreduce:
   case 80:
 
 /* Line 1455 of yacc.c  */
-#line 688 "parser_gram.y"
+#line 689 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2723,7 +2724,7 @@ yyreduce:
   case 81:
 
 /* Line 1455 of yacc.c  */
-#line 695 "parser_gram.y"
+#line 696 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2736,7 +2737,7 @@ yyreduce:
   case 82:
 
 /* Line 1455 of yacc.c  */
-#line 702 "parser_gram.y"
+#line 703 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2749,7 +2750,7 @@ yyreduce:
   case 83:
 
 /* Line 1455 of yacc.c  */
-#line 711 "parser_gram.y"
+#line 712 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2760,7 +2761,7 @@ yyreduce:
   case 84:
 
 /* Line 1455 of yacc.c  */
-#line 718 "parser_gram.y"
+#line 719 "parser_gram.y"
     {
 	(yyval.cmd) = (yyvsp[(1) - (1)].cmd);
 }
@@ -2769,7 +2770,7 @@ yyreduce:
   case 85:
 
 /* Line 1455 of yacc.c  */
-#line 721 "parser_gram.y"
+#line 722 "parser_gram.y"
     {
 	cmd_t *list = NULL;
 	cmd_t *list_end = NULL;
@@ -2791,7 +2792,7 @@ yyreduce:
   case 86:
 
 /* Line 1455 of yacc.c  */
-#line 739 "parser_gram.y"
+#line 740 "parser_gram.y"
     {
 	/*
 	 * Allocate a cmd node per thread, with a
@@ -2807,7 +2808,7 @@ yyreduce:
   case 87:
 
 /* Line 1455 of yacc.c  */
-#line 751 "parser_gram.y"
+#line 752 "parser_gram.y"
     {
 	(yyval.cmd) = (yyvsp[(1) - (1)].cmd);
 }
@@ -2816,7 +2817,7 @@ yyreduce:
   case 88:
 
 /* Line 1455 of yacc.c  */
-#line 754 "parser_gram.y"
+#line 755 "parser_gram.y"
     {
 	cmd_t *list = NULL;
 	cmd_t *list_end = NULL;
@@ -2838,7 +2839,7 @@ yyreduce:
   case 89:
 
 /* Line 1455 of yacc.c  */
-#line 772 "parser_gram.y"
+#line 773 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2852,7 +2853,7 @@ yyreduce:
   case 90:
 
 /* Line 1455 of yacc.c  */
-#line 781 "parser_gram.y"
+#line 782 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
@@ -2861,7 +2862,7 @@ yyreduce:
   case 91:
 
 /* Line 1455 of yacc.c  */
-#line 786 "parser_gram.y"
+#line 787 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2874,7 +2875,7 @@ yyreduce:
   case 92:
 
 /* Line 1455 of yacc.c  */
-#line 793 "parser_gram.y"
+#line 794 "parser_gram.y"
     {
 	(yyval.cmd) = alloc_cmd();
 	if (!(yyval.cmd))
@@ -2887,7 +2888,7 @@ yyreduce:
   case 93:
 
 /* Line 1455 of yacc.c  */
-#line 801 "parser_gram.y"
+#line 802 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
@@ -2896,7 +2897,7 @@ yyreduce:
   case 94:
 
 /* Line 1455 of yacc.c  */
-#line 806 "parser_gram.y"
+#line 807 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2919,7 +2920,7 @@ yyreduce:
   case 95:
 
 /* Line 1455 of yacc.c  */
-#line 825 "parser_gram.y"
+#line 826 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2942,7 +2943,7 @@ yyreduce:
   case 96:
 
 /* Line 1455 of yacc.c  */
-#line 844 "parser_gram.y"
+#line 845 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2954,7 +2955,7 @@ yyreduce:
   case 97:
 
 /* Line 1455 of yacc.c  */
-#line 851 "parser_gram.y"
+#line 852 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2966,7 +2967,7 @@ yyreduce:
   case 98:
 
 /* Line 1455 of yacc.c  */
-#line 859 "parser_gram.y"
+#line 860 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2978,7 +2979,7 @@ yyreduce:
   case 99:
 
 /* Line 1455 of yacc.c  */
-#line 866 "parser_gram.y"
+#line 867 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -2990,7 +2991,7 @@ yyreduce:
   case 100:
 
 /* Line 1455 of yacc.c  */
-#line 873 "parser_gram.y"
+#line 874 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3002,7 +3003,7 @@ yyreduce:
   case 101:
 
 /* Line 1455 of yacc.c  */
-#line 881 "parser_gram.y"
+#line 882 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3014,7 +3015,7 @@ yyreduce:
   case 102:
 
 /* Line 1455 of yacc.c  */
-#line 888 "parser_gram.y"
+#line 889 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3026,7 +3027,7 @@ yyreduce:
   case 103:
 
 /* Line 1455 of yacc.c  */
-#line 895 "parser_gram.y"
+#line 896 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3038,7 +3039,7 @@ yyreduce:
   case 104:
 
 /* Line 1455 of yacc.c  */
-#line 903 "parser_gram.y"
+#line 904 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3051,7 +3052,7 @@ yyreduce:
   case 105:
 
 /* Line 1455 of yacc.c  */
-#line 911 "parser_gram.y"
+#line 912 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3065,7 +3066,7 @@ yyreduce:
   case 106:
 
 /* Line 1455 of yacc.c  */
-#line 920 "parser_gram.y"
+#line 921 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3079,7 +3080,7 @@ yyreduce:
   case 107:
 
 /* Line 1455 of yacc.c  */
-#line 929 "parser_gram.y"
+#line 930 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3092,7 +3093,7 @@ yyreduce:
   case 108:
 
 /* Line 1455 of yacc.c  */
-#line 937 "parser_gram.y"
+#line 938 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3105,7 +3106,7 @@ yyreduce:
   case 109:
 
 /* Line 1455 of yacc.c  */
-#line 946 "parser_gram.y"
+#line 947 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3116,7 +3117,7 @@ yyreduce:
   case 110:
 
 /* Line 1455 of yacc.c  */
-#line 953 "parser_gram.y"
+#line 954 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -3127,7 +3128,7 @@ yyreduce:
   case 111:
 
 /* Line 1455 of yacc.c  */
-#line 959 "parser_gram.y"
+#line 960 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
@@ -3136,35 +3137,35 @@ yyreduce:
   case 112:
 
 /* Line 1455 of yacc.c  */
-#line 963 "parser_gram.y"
+#line 964 "parser_gram.y"
     {(yyval.ival) = FSE_PROC;}
     break;
 
   case 113:
 
 /* Line 1455 of yacc.c  */
-#line 964 "parser_gram.y"
+#line 965 "parser_gram.y"
     {(yyval.ival) = FSE_THREAD;}
     break;
 
   case 114:
 
 /* Line 1455 of yacc.c  */
-#line 965 "parser_gram.y"
+#line 966 "parser_gram.y"
     {(yyval.ival) = FSE_FILESET;}
     break;
 
   case 115:
 
 /* Line 1455 of yacc.c  */
-#line 966 "parser_gram.y"
+#line 967 "parser_gram.y"
     {(yyval.ival) = FSE_FILE;}
     break;
 
   case 117:
 
 /* Line 1455 of yacc.c  */
-#line 972 "parser_gram.y"
+#line 973 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
@@ -3173,7 +3174,7 @@ yyreduce:
   case 118:
 
 /* Line 1455 of yacc.c  */
-#line 976 "parser_gram.y"
+#line 977 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3190,7 +3191,7 @@ yyreduce:
   case 119:
 
 /* Line 1455 of yacc.c  */
-#line 989 "parser_gram.y"
+#line 990 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
@@ -3200,7 +3201,7 @@ yyreduce:
   case 120:
 
 /* Line 1455 of yacc.c  */
-#line 994 "parser_gram.y"
+#line 995 "parser_gram.y"
     {
 	(yyval.attr) = alloc_attr();
 	if (!(yyval.attr))
@@ -3213,7 +3214,7 @@ yyreduce:
   case 121:
 
 /* Line 1455 of yacc.c  */
-#line 1004 "parser_gram.y"
+#line 1005 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
@@ -3222,7 +3223,7 @@ yyreduce:
   case 122:
 
 /* Line 1455 of yacc.c  */
-#line 1008 "parser_gram.y"
+#line 1009 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3240,7 +3241,7 @@ yyreduce:
   case 123:
 
 /* Line 1455 of yacc.c  */
-#line 1021 "parser_gram.y"
+#line 1022 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3263,7 +3264,7 @@ yyreduce:
   case 124:
 
 /* Line 1455 of yacc.c  */
-#line 1040 "parser_gram.y"
+#line 1041 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
@@ -3273,7 +3274,7 @@ yyreduce:
   case 125:
 
 /* Line 1455 of yacc.c  */
-#line 1045 "parser_gram.y"
+#line 1046 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -3284,7 +3285,7 @@ yyreduce:
   case 126:
 
 /* Line 1455 of yacc.c  */
-#line 1051 "parser_gram.y"
+#line 1052 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = FSA_TYPE;
@@ -3294,7 +3295,7 @@ yyreduce:
   case 127:
 
 /* Line 1455 of yacc.c  */
-#line 1056 "parser_gram.y"
+#line 1057 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = FSA_RANDSRC;
@@ -3304,7 +3305,7 @@ yyreduce:
   case 128:
 
 /* Line 1455 of yacc.c  */
-#line 1062 "parser_gram.y"
+#line 1063 "parser_gram.y"
     {
 	if (((yyval.rndtb) = alloc_probtabent()) == NULL)
 		YYERROR;
@@ -3317,7 +3318,7 @@ yyreduce:
   case 129:
 
 /* Line 1455 of yacc.c  */
-#line 1072 "parser_gram.y"
+#line 1073 "parser_gram.y"
     {
 	(yyval.rndtb) = (yyvsp[(1) - (1)].rndtb);
 }
@@ -3326,7 +3327,7 @@ yyreduce:
   case 130:
 
 /* Line 1455 of yacc.c  */
-#line 1076 "parser_gram.y"
+#line 1077 "parser_gram.y"
     {
 	probtabent_t *pte = NULL;
 	probtabent_t *ptelist_end = NULL;
@@ -3344,7 +3345,7 @@ yyreduce:
   case 131:
 
 /* Line 1455 of yacc.c  */
-#line 1091 "parser_gram.y"
+#line 1092 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
@@ -3353,7 +3354,7 @@ yyreduce:
   case 132:
 
 /* Line 1455 of yacc.c  */
-#line 1095 "parser_gram.y"
+#line 1096 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3371,7 +3372,7 @@ yyreduce:
   case 133:
 
 /* Line 1455 of yacc.c  */
-#line 1109 "parser_gram.y"
+#line 1110 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
@@ -3381,7 +3382,7 @@ yyreduce:
   case 134:
 
 /* Line 1455 of yacc.c  */
-#line 1114 "parser_gram.y"
+#line 1115 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -3392,7 +3393,7 @@ yyreduce:
   case 135:
 
 /* Line 1455 of yacc.c  */
-#line 1122 "parser_gram.y"
+#line 1123 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
@@ -3401,7 +3402,7 @@ yyreduce:
   case 136:
 
 /* Line 1455 of yacc.c  */
-#line 1126 "parser_gram.y"
+#line 1127 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3419,7 +3420,7 @@ yyreduce:
   case 137:
 
 /* Line 1455 of yacc.c  */
-#line 1140 "parser_gram.y"
+#line 1141 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
@@ -3429,7 +3430,7 @@ yyreduce:
   case 138:
 
 /* Line 1455 of yacc.c  */
-#line 1145 "parser_gram.y"
+#line 1146 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -3440,7 +3441,7 @@ yyreduce:
   case 139:
 
 /* Line 1455 of yacc.c  */
-#line 1153 "parser_gram.y"
+#line 1154 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
@@ -3449,7 +3450,7 @@ yyreduce:
   case 140:
 
 /* Line 1455 of yacc.c  */
-#line 1157 "parser_gram.y"
+#line 1158 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3467,7 +3468,7 @@ yyreduce:
   case 141:
 
 /* Line 1455 of yacc.c  */
-#line 1170 "parser_gram.y"
+#line 1171 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3485,7 +3486,7 @@ yyreduce:
   case 142:
 
 /* Line 1455 of yacc.c  */
-#line 1184 "parser_gram.y"
+#line 1185 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
@@ -3495,7 +3496,7 @@ yyreduce:
   case 143:
 
 /* Line 1455 of yacc.c  */
-#line 1189 "parser_gram.y"
+#line 1190 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -3506,7 +3507,7 @@ yyreduce:
   case 144:
 
 /* Line 1455 of yacc.c  */
-#line 1197 "parser_gram.y"
+#line 1198 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
@@ -3515,7 +3516,7 @@ yyreduce:
   case 145:
 
 /* Line 1455 of yacc.c  */
-#line 1201 "parser_gram.y"
+#line 1202 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3533,7 +3534,7 @@ yyreduce:
   case 146:
 
 /* Line 1455 of yacc.c  */
-#line 1215 "parser_gram.y"
+#line 1216 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
@@ -3543,7 +3544,7 @@ yyreduce:
   case 147:
 
 /* Line 1455 of yacc.c  */
-#line 1220 "parser_gram.y"
+#line 1221 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -3554,7 +3555,7 @@ yyreduce:
   case 148:
 
 /* Line 1455 of yacc.c  */
-#line 1228 "parser_gram.y"
+#line 1229 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
@@ -3563,7 +3564,7 @@ yyreduce:
   case 149:
 
 /* Line 1455 of yacc.c  */
-#line 1232 "parser_gram.y"
+#line 1233 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -3581,7 +3582,7 @@ yyreduce:
   case 150:
 
 /* Line 1455 of yacc.c  */
-#line 1246 "parser_gram.y"
+#line 1247 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
@@ -3591,7 +3592,7 @@ yyreduce:
   case 151:
 
 /* Line 1455 of yacc.c  */
-#line 1252 "parser_gram.y"
+#line 1253 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = FSA_VALUE;
@@ -3601,7 +3602,7 @@ yyreduce:
   case 152:
 
 /* Line 1455 of yacc.c  */
-#line 1258 "parser_gram.y"
+#line 1259 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -3613,175 +3614,175 @@ yyreduce:
   case 156:
 
 /* Line 1455 of yacc.c  */
-#line 1272 "parser_gram.y"
+#line 1273 "parser_gram.y"
     { (yyval.ival) = FSA_NICE;}
     break;
 
   case 157:
 
 /* Line 1455 of yacc.c  */
-#line 1273 "parser_gram.y"
+#line 1274 "parser_gram.y"
     { (yyval.ival) = FSA_NAME;}
     break;
 
   case 158:
 
 /* Line 1455 of yacc.c  */
-#line 1274 "parser_gram.y"
+#line 1275 "parser_gram.y"
     { (yyval.ival) = FSA_INSTANCES;}
     break;
 
   case 159:
 
 /* Line 1455 of yacc.c  */
-#line 1277 "parser_gram.y"
+#line 1278 "parser_gram.y"
     { (yyval.ival) = FSA_NAME;}
     break;
 
   case 160:
 
 /* Line 1455 of yacc.c  */
-#line 1278 "parser_gram.y"
+#line 1279 "parser_gram.y"
     { (yyval.ival) = FSA_PATH;}
     break;
 
   case 161:
 
 /* Line 1455 of yacc.c  */
-#line 1279 "parser_gram.y"
+#line 1280 "parser_gram.y"
     { (yyval.ival) = FSA_ENTRIES;}
     break;
 
   case 162:
 
 /* Line 1455 of yacc.c  */
-#line 1280 "parser_gram.y"
+#line 1281 "parser_gram.y"
     { (yyval.ival) = FSA_SIZE;}
     break;
 
   case 163:
 
 /* Line 1455 of yacc.c  */
-#line 1281 "parser_gram.y"
+#line 1282 "parser_gram.y"
     { (yyval.ival) = FSA_DIRWIDTH;}
     break;
 
   case 164:
 
 /* Line 1455 of yacc.c  */
-#line 1282 "parser_gram.y"
+#line 1283 "parser_gram.y"
     { (yyval.ival) = FSA_DIRDEPTHRV;}
     break;
 
   case 165:
 
 /* Line 1455 of yacc.c  */
-#line 1283 "parser_gram.y"
+#line 1284 "parser_gram.y"
     { (yyval.ival) = FSA_PREALLOC;}
     break;
 
   case 166:
 
 /* Line 1455 of yacc.c  */
-#line 1284 "parser_gram.y"
+#line 1285 "parser_gram.y"
     { (yyval.ival) = FSA_PARALLOC;}
     break;
 
   case 167:
 
 /* Line 1455 of yacc.c  */
-#line 1285 "parser_gram.y"
+#line 1286 "parser_gram.y"
     { (yyval.ival) = FSA_REUSE;}
     break;
 
   case 168:
 
 /* Line 1455 of yacc.c  */
-#line 1286 "parser_gram.y"
+#line 1287 "parser_gram.y"
     { (yyval.ival) = FSA_READONLY;}
     break;
 
   case 169:
 
 /* Line 1455 of yacc.c  */
-#line 1287 "parser_gram.y"
+#line 1288 "parser_gram.y"
     { (yyval.ival) = FSA_TRUSTTREE;}
     break;
 
   case 170:
 
 /* Line 1455 of yacc.c  */
-#line 1288 "parser_gram.y"
+#line 1289 "parser_gram.y"
     { (yyval.ival) = FSA_DIRGAMMA;}
     break;
 
   case 171:
 
 /* Line 1455 of yacc.c  */
-#line 1289 "parser_gram.y"
+#line 1290 "parser_gram.y"
     { (yyval.ival) = FSA_CACHED;}
     break;
 
   case 172:
 
 /* Line 1455 of yacc.c  */
-#line 1290 "parser_gram.y"
+#line 1291 "parser_gram.y"
     { (yyval.ival) = FSA_LEAFDIRS;}
     break;
 
   case 173:
 
 /* Line 1455 of yacc.c  */
-#line 1291 "parser_gram.y"
+#line 1292 "parser_gram.y"
     { (yyval.ival) = FSA_WRITEONLY;}
     break;
 
   case 174:
 
 /* Line 1455 of yacc.c  */
-#line 1294 "parser_gram.y"
+#line 1295 "parser_gram.y"
     { (yyval.ival) = FSA_NAME;}
     break;
 
   case 175:
 
 /* Line 1455 of yacc.c  */
-#line 1295 "parser_gram.y"
+#line 1296 "parser_gram.y"
     { (yyval.ival) = FSA_RANDSEED;}
     break;
 
   case 176:
 
 /* Line 1455 of yacc.c  */
-#line 1296 "parser_gram.y"
+#line 1297 "parser_gram.y"
     { (yyval.ival) = FSA_RANDGAMMA;}
     break;
 
   case 177:
 
 /* Line 1455 of yacc.c  */
-#line 1297 "parser_gram.y"
+#line 1298 "parser_gram.y"
     { (yyval.ival) = FSA_RANDMEAN;}
     break;
 
   case 178:
 
 /* Line 1455 of yacc.c  */
-#line 1298 "parser_gram.y"
+#line 1299 "parser_gram.y"
     { (yyval.ival) = FSA_MIN;}
     break;
 
   case 179:
 
 /* Line 1455 of yacc.c  */
-#line 1299 "parser_gram.y"
+#line 1300 "parser_gram.y"
     { (yyval.ival) = FSA_ROUND;}
     break;
 
   case 180:
 
 /* Line 1455 of yacc.c  */
-#line 1302 "parser_gram.y"
+#line 1303 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -3792,28 +3793,28 @@ yyreduce:
   case 181:
 
 /* Line 1455 of yacc.c  */
-#line 1309 "parser_gram.y"
+#line 1310 "parser_gram.y"
     { (yyval.ival) = FSV_RANDUNI;}
     break;
 
   case 182:
 
 /* Line 1455 of yacc.c  */
-#line 1310 "parser_gram.y"
+#line 1311 "parser_gram.y"
     { (yyval.ival) = FSV_RANDTAB;}
     break;
 
   case 183:
 
 /* Line 1455 of yacc.c  */
-#line 1311 "parser_gram.y"
+#line 1312 "parser_gram.y"
     { (yyval.ival) = FSA_RANDGAMMA;}
     break;
 
   case 184:
 
 /* Line 1455 of yacc.c  */
-#line 1314 "parser_gram.y"
+#line 1315 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -3824,252 +3825,252 @@ yyreduce:
   case 185:
 
 /* Line 1455 of yacc.c  */
-#line 1321 "parser_gram.y"
+#line 1322 "parser_gram.y"
     { (yyval.ival) = FSV_URAND;}
     break;
 
   case 186:
 
 /* Line 1455 of yacc.c  */
-#line 1322 "parser_gram.y"
+#line 1323 "parser_gram.y"
     { (yyval.ival) = FSV_RAND48;}
     break;
 
   case 187:
 
 /* Line 1455 of yacc.c  */
-#line 1325 "parser_gram.y"
+#line 1326 "parser_gram.y"
     { (yyval.ival) = FSA_TYPE;}
     break;
 
   case 188:
 
 /* Line 1455 of yacc.c  */
-#line 1326 "parser_gram.y"
+#line 1327 "parser_gram.y"
     { (yyval.ival) = FSA_PARAMETERS;}
     break;
 
   case 189:
 
 /* Line 1455 of yacc.c  */
-#line 1327 "parser_gram.y"
+#line 1328 "parser_gram.y"
     { (yyval.ival) = FSA_MIN;}
     break;
 
   case 190:
 
 /* Line 1455 of yacc.c  */
-#line 1328 "parser_gram.y"
+#line 1329 "parser_gram.y"
     { (yyval.ival) = FSA_MAX;}
     break;
 
   case 191:
 
 /* Line 1455 of yacc.c  */
-#line 1329 "parser_gram.y"
+#line 1330 "parser_gram.y"
     { (yyval.ival) = FSA_ROUND;}
     break;
 
   case 192:
 
 /* Line 1455 of yacc.c  */
-#line 1332 "parser_gram.y"
+#line 1333 "parser_gram.y"
     { (yyval.ival) = FSA_PROCESS;}
     break;
 
   case 193:
 
 /* Line 1455 of yacc.c  */
-#line 1333 "parser_gram.y"
+#line 1334 "parser_gram.y"
     { (yyval.ival) = FSA_NAME;}
     break;
 
   case 194:
 
 /* Line 1455 of yacc.c  */
-#line 1334 "parser_gram.y"
+#line 1335 "parser_gram.y"
     { (yyval.ival) = FSA_MEMSIZE;}
     break;
 
   case 195:
 
 /* Line 1455 of yacc.c  */
-#line 1335 "parser_gram.y"
+#line 1336 "parser_gram.y"
     { (yyval.ival) = FSA_USEISM;}
     break;
 
   case 196:
 
 /* Line 1455 of yacc.c  */
-#line 1336 "parser_gram.y"
+#line 1337 "parser_gram.y"
     { (yyval.ival) = FSA_INSTANCES;}
     break;
 
   case 197:
 
 /* Line 1455 of yacc.c  */
-#line 1337 "parser_gram.y"
+#line 1338 "parser_gram.y"
     { (yyval.ival) = FSA_IOPRIO;}
     break;
 
   case 198:
 
 /* Line 1455 of yacc.c  */
-#line 1340 "parser_gram.y"
+#line 1341 "parser_gram.y"
     { (yyval.ival) = FSA_WSS;}
     break;
 
   case 199:
 
 /* Line 1455 of yacc.c  */
-#line 1341 "parser_gram.y"
+#line 1342 "parser_gram.y"
     { (yyval.ival) = FSA_FILE;}
     break;
 
   case 200:
 
 /* Line 1455 of yacc.c  */
-#line 1342 "parser_gram.y"
+#line 1343 "parser_gram.y"
     { (yyval.ival) = FSA_NAME;}
     break;
 
   case 201:
 
 /* Line 1455 of yacc.c  */
-#line 1343 "parser_gram.y"
+#line 1344 "parser_gram.y"
     { (yyval.ival) = FSA_RANDOM;}
     break;
 
   case 202:
 
 /* Line 1455 of yacc.c  */
-#line 1344 "parser_gram.y"
+#line 1345 "parser_gram.y"
     { (yyval.ival) = FSA_FD;}
     break;
 
   case 203:
 
 /* Line 1455 of yacc.c  */
-#line 1345 "parser_gram.y"
+#line 1346 "parser_gram.y"
     { (yyval.ival) = FSA_SRCFD;}
     break;
 
   case 204:
 
 /* Line 1455 of yacc.c  */
-#line 1346 "parser_gram.y"
+#line 1347 "parser_gram.y"
     { (yyval.ival) = FSA_ROTATEFD;}
     break;
 
   case 205:
 
 /* Line 1455 of yacc.c  */
-#line 1347 "parser_gram.y"
+#line 1348 "parser_gram.y"
     { (yyval.ival) = FSA_DSYNC;}
     break;
 
   case 206:
 
 /* Line 1455 of yacc.c  */
-#line 1348 "parser_gram.y"
+#line 1349 "parser_gram.y"
     { (yyval.ival) = FSA_DIRECTIO;}
     break;
 
   case 207:
 
 /* Line 1455 of yacc.c  */
-#line 1349 "parser_gram.y"
+#line 1350 "parser_gram.y"
     { (yyval.ival) = FSA_INDEXED;}
     break;
 
   case 208:
 
 /* Line 1455 of yacc.c  */
-#line 1350 "parser_gram.y"
+#line 1351 "parser_gram.y"
     { (yyval.ival) = FSA_TARGET;}
     break;
 
   case 209:
 
 /* Line 1455 of yacc.c  */
-#line 1351 "parser_gram.y"
+#line 1352 "parser_gram.y"
     { (yyval.ival) = FSA_ITERS;}
     break;
 
   case 210:
 
 /* Line 1455 of yacc.c  */
-#line 1352 "parser_gram.y"
+#line 1353 "parser_gram.y"
     { (yyval.ival) = FSA_VALUE;}
     break;
 
   case 211:
 
 /* Line 1455 of yacc.c  */
-#line 1353 "parser_gram.y"
+#line 1354 "parser_gram.y"
     { (yyval.ival) = FSA_BLOCKING;}
     break;
 
   case 212:
 
 /* Line 1455 of yacc.c  */
-#line 1354 "parser_gram.y"
+#line 1355 "parser_gram.y"
     { (yyval.ival) = FSA_HIGHWATER;}
     break;
 
   case 213:
 
 /* Line 1455 of yacc.c  */
-#line 1355 "parser_gram.y"
+#line 1356 "parser_gram.y"
     { (yyval.ival) = FSA_IOSIZE;}
     break;
 
   case 214:
 
 /* Line 1455 of yacc.c  */
-#line 1356 "parser_gram.y"
+#line 1357 "parser_gram.y"
     { (yyval.ival) = FSA_NOREADAHEAD;}
     break;
 
   case 215:
 
 /* Line 1455 of yacc.c  */
-#line 1359 "parser_gram.y"
+#line 1360 "parser_gram.y"
     { (yyval.ival) = FSA_RATE;}
     break;
 
   case 216:
 
 /* Line 1455 of yacc.c  */
-#line 1362 "parser_gram.y"
+#line 1363 "parser_gram.y"
     { (yyval.ival) = FSA_MASTER;}
     break;
 
   case 217:
 
 /* Line 1455 of yacc.c  */
-#line 1363 "parser_gram.y"
+#line 1364 "parser_gram.y"
     { (yyval.ival) = FSA_CLIENT;}
     break;
 
   case 218:
 
 /* Line 1455 of yacc.c  */
-#line 1366 "parser_gram.y"
+#line 1367 "parser_gram.y"
     { (yyval.ival) = FSA_PATH;}
     break;
 
   case 219:
 
 /* Line 1455 of yacc.c  */
-#line 1367 "parser_gram.y"
+#line 1368 "parser_gram.y"
     { (yyval.ival) = FSA_FSTYPE;}
     break;
 
   case 220:
 
 /* Line 1455 of yacc.c  */
-#line 1370 "parser_gram.y"
+#line 1371 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
@@ -4078,7 +4079,7 @@ yyreduce:
   case 221:
 
 /* Line 1455 of yacc.c  */
-#line 1374 "parser_gram.y"
+#line 1375 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -4096,7 +4097,7 @@ yyreduce:
   case 222:
 
 /* Line 1455 of yacc.c  */
-#line 1387 "parser_gram.y"
+#line 1388 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -4114,7 +4115,7 @@ yyreduce:
   case 223:
 
 /* Line 1455 of yacc.c  */
-#line 1401 "parser_gram.y"
+#line 1402 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
@@ -4124,7 +4125,7 @@ yyreduce:
   case 224:
 
 /* Line 1455 of yacc.c  */
-#line 1407 "parser_gram.y"
+#line 1408 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_assign_boolean((yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].bval)))) == NULL)
 		YYERROR;
@@ -4134,7 +4135,7 @@ yyreduce:
   case 225:
 
 /* Line 1455 of yacc.c  */
-#line 1412 "parser_gram.y"
+#line 1413 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_assign_integer((yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].ival)))) == NULL)
 		YYERROR;
@@ -4144,7 +4145,7 @@ yyreduce:
   case 226:
 
 /* Line 1455 of yacc.c  */
-#line 1417 "parser_gram.y"
+#line 1418 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_assign_string((yyvsp[(1) - (5)].sval), (yyvsp[(4) - (5)].sval)))) == NULL)
 		YYERROR;
@@ -4154,7 +4155,7 @@ yyreduce:
   case 227:
 
 /* Line 1455 of yacc.c  */
-#line 1422 "parser_gram.y"
+#line 1423 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_assign_string((yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)))) == NULL)
 		YYERROR;
@@ -4164,7 +4165,7 @@ yyreduce:
   case 228:
 
 /* Line 1455 of yacc.c  */
-#line 1427 "parser_gram.y"
+#line 1428 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_assign_var((yyvsp[(1) - (3)].sval), (yyvsp[(3) - (3)].sval)))) == NULL)
 		YYERROR;
@@ -4174,7 +4175,7 @@ yyreduce:
   case 229:
 
 /* Line 1455 of yacc.c  */
-#line 1432 "parser_gram.y"
+#line 1433 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_lvar_attr(var_lvar_alloc_local((yyvsp[(1) - (1)].sval)))) == NULL)
 		YYERROR;
@@ -4184,7 +4185,7 @@ yyreduce:
   case 230:
 
 /* Line 1455 of yacc.c  */
-#line 1438 "parser_gram.y"
+#line 1439 "parser_gram.y"
     {
 	if (((yyval.cmd) = alloc_cmd()) == NULL)
 		YYERROR;
@@ -4197,7 +4198,7 @@ yyreduce:
   case 231:
 
 /* Line 1455 of yacc.c  */
-#line 1446 "parser_gram.y"
+#line 1447 "parser_gram.y"
     {
 	(yyvsp[(1) - (2)].cmd)->cmd_attr_list = (yyvsp[(2) - (2)].attr);
 }
@@ -4206,7 +4207,7 @@ yyreduce:
   case 232:
 
 /* Line 1455 of yacc.c  */
-#line 1452 "parser_gram.y"
+#line 1453 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(1) - (1)].attr);
 }
@@ -4215,7 +4216,7 @@ yyreduce:
   case 233:
 
 /* Line 1455 of yacc.c  */
-#line 1456 "parser_gram.y"
+#line 1457 "parser_gram.y"
     {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -4233,7 +4234,7 @@ yyreduce:
   case 234:
 
 /* Line 1455 of yacc.c  */
-#line 1470 "parser_gram.y"
+#line 1471 "parser_gram.y"
     {
 	(yyval.attr) = (yyvsp[(3) - (3)].attr);
 	(yyval.attr)->attr_name = (yyvsp[(1) - (3)].ival);
@@ -4243,21 +4244,21 @@ yyreduce:
   case 235:
 
 /* Line 1455 of yacc.c  */
-#line 1476 "parser_gram.y"
+#line 1477 "parser_gram.y"
     { (yyval.ival) = FSA_NAME;}
     break;
 
   case 236:
 
 /* Line 1455 of yacc.c  */
-#line 1477 "parser_gram.y"
+#line 1478 "parser_gram.y"
     { (yyval.ival) = FSA_ITERS;}
     break;
 
   case 237:
 
 /* Line 1455 of yacc.c  */
-#line 1480 "parser_gram.y"
+#line 1481 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4268,7 +4269,7 @@ yyreduce:
   case 238:
 
 /* Line 1455 of yacc.c  */
-#line 1484 "parser_gram.y"
+#line 1485 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4279,7 +4280,7 @@ yyreduce:
   case 239:
 
 /* Line 1455 of yacc.c  */
-#line 1488 "parser_gram.y"
+#line 1489 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4290,7 +4291,7 @@ yyreduce:
   case 240:
 
 /* Line 1455 of yacc.c  */
-#line 1492 "parser_gram.y"
+#line 1493 "parser_gram.y"
     {
 	if (((yyval.attr) = alloc_attr()) == NULL)
 		YYERROR;
@@ -4301,7 +4302,7 @@ yyreduce:
   case 241:
 
 /* Line 1455 of yacc.c  */
-#line 1499 "parser_gram.y"
+#line 1500 "parser_gram.y"
     {
 	(yyval.avd) = avd_int_alloc((yyvsp[(1) - (1)].ival));
 }
@@ -4310,7 +4311,7 @@ yyreduce:
   case 242:
 
 /* Line 1455 of yacc.c  */
-#line 1502 "parser_gram.y"
+#line 1503 "parser_gram.y"
     {
 	(yyval.avd) = avd_var_alloc((yyvsp[(1) - (1)].sval));
 }
@@ -4319,7 +4320,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 4323 "parser_gram.c"
+#line 4324 "parser_gram.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -4531,7 +4532,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 1506 "parser_gram.y"
+#line 1507 "parser_gram.y"
 
 
 /*
@@ -4604,62 +4605,6 @@ usage(int help)
 	}
 
 	exit(1);
-}
-
-/*
- * mmap() call with MAP_FIXED argument does not guarantee
- * that the allocated memory region is not overlapped with
- * the previously existant mappings. According to POSIX, old mappings
- * are just disregarded. There is no generic way to detect
- * overlap. If overlap occurs strange runtime errors might happen,
- * because we might overlap stack, libraries, anything else.
- *
- * Since we always fork+exec same binary (filebench), theoretically
- * all the mappings should be the same, so no overlap should happen.
- * However, if virtual address space randomization is enabled on the target
- * machine - overlap is very likely (especially if workload defines a lot of
- * processes).  We observed numerous segmentation faults on CentOS because of
- * that.
- *
- * The function below checks if virtual address space randomization is
- * enabled on Linux. In case it is enabled, we print a warning and continue
- * execution.
- */
-static void
-check_va_randomization()
-{
-	char buf[4];
-	int val;
-	int ret;
-	int fd;
-
-	fd = open("/proc/sys/kernel/randomize_va_space", O_RDONLY);
-	if (fd == -1) {
-		/*
-		 * probably this file just doesn't exist, so we conclude that the
-		 * system does not support virtual address space randomization
-		 * and silently return.
-		 */
-		return;
-	}
-
-	ret = read(fd, buf, sizeof(buf));
-	if (ret == -1) {
-		filebench_log(LOG_FATAL, "Coud not read from "
-			"/proc/sys/kernel/randomize_va_space file!");
-		return;
-	}
-
-	sscanf(buf, "%d", &val);
-	if (val != 0) {
-		filebench_log(LOG_FATAL, "IMPORTANT: Virtual address space "
-			"randomization is enabled on this machine!\n"
-			"It is highly recommended to disable randomization "
-			"to provide stable Filebench runs.\n"
-			"Echo 0 to /proc/sys/kernel/randomize_va_space file "
-			"to disable the randomization.");
-
-	}
 }
 
 #ifdef HAVE_PROC_SYS_KERNEL_SHMMAX
@@ -4883,7 +4828,7 @@ main(int argc, char *argv[])
 	 * Master process
 	 */
 	printf("Filebench Version %s\n", FILEBENCH_VERSION);
-	check_va_randomization();
+	disable_aslr();
 
 	/* saving executable name to exec it later as worker processes */
 	execname = argv[0];
