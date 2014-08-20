@@ -962,7 +962,7 @@ fileset_unbusy(filesetentry_t *entry, int update_exist,
 
 		case FSE_TYPE_DIR:
 			fileset->fs_idle_dirs++;
-			if (fileset->fs_idle_dirs == 1) {
+			if (fileset->fs_idle_dirs >= 1) {
 				(void) pthread_cond_signal(
 				    &fileset->fs_idle_dirs_cv);
 			}
@@ -970,7 +970,7 @@ fileset_unbusy(filesetentry_t *entry, int update_exist,
 
 		case FSE_TYPE_LEAFDIR:
 			fileset->fs_idle_leafdirs++;
-			if (fileset->fs_idle_leafdirs == 1) {
+			if (fileset->fs_idle_leafdirs >= 1) {
 				(void) pthread_cond_signal(
 				    &fileset->fs_idle_leafdirs_cv);
 			}
