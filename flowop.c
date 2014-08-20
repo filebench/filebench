@@ -200,10 +200,11 @@ static int controlstats_zeroed = 0;
 static void
 flowop_populate_distribution(flowop_t *flowop,  unsigned long long ll_delay)
 {
-	unsigned int i, iii;
+	unsigned int i;
+	unsigned long long iii;
 
 	iii = 1;
-	for (i = 0; i < 32; i++) {
+	for (i = 0; i < OSPROF_BUCKET_NUMBER; i++) {
 		if (ll_delay < iii)
 			break;
 		iii <<= 1;
