@@ -954,7 +954,7 @@ fileset_unbusy(filesetentry_t *entry, int update_exist,
 		switch (entry->fse_flags & FSE_TYPE_MASK) {
 		case FSE_TYPE_FILE:
 			fileset->fs_idle_files++;
-			if (fileset->fs_idle_files == 1) {
+			if (fileset->fs_idle_files >= 1) {
 				(void) pthread_cond_signal(
 				    &fileset->fs_idle_files_cv);
 			}
