@@ -487,20 +487,6 @@ flowop_start(threadflow_t *threadflow)
 	/* Set to the start of the new flowop list */
 	flowop = threadflow->tf_thrd_fops;
 
-	memsize = (size_t)threadflow->tf_constmemsize;
-
-	/* If we are going to use ISM, allocate later */
-	if (threadflow->tf_attrs & THREADFLOW_USEISM) {
-		threadflow->tf_mem =
-		    ipc_ismmalloc(memsize);
-	} else {
-		threadflow->tf_mem =
-		    malloc(memsize);
-	}
-
-	(void) memset(threadflow->tf_mem, 0, memsize);
-	filebench_log(LOG_DEBUG_SCRIPT, "Thread allocated %d bytes", memsize);
-
 #ifdef HAVE_LWPS
 	filebench_log(LOG_DEBUG_SCRIPT, "Thread %zx (%d) started",
 	    threadflow,
@@ -529,6 +515,23 @@ flowop_start(threadflow_t *threadflow)
 	 */
 	(void) pthread_rwlock_wrlock(&filebench_shm->shm_run_lock);
 	(void) pthread_rwlock_unlock(&filebench_shm->shm_run_lock);
+
+	memsize = (size_t)threadflow->tf_constmemsize;
+
+	/*
+	 * Alloc from ISM, which should have been created before the main process
+	 * wakes up the current process by releasing shm_run_lock.
+	 */
+	if (threadflow->tf_attrs & THREADFLOW_USEISM) {
+		threadflow->tf_mem =
+		    ipc_ismmalloc(memsize);
+	} else {
+		threadflow->tf_mem =
+		    malloc(memsize);
+	}
+
+	(void) memset(threadflow->tf_mem, 0, memsize);
+	filebench_log(LOG_DEBUG_SCRIPT, "Thread allocated %d bytes", memsize);
 
 	/* Main filebench worker loop */
 	while (ret == FILEBENCH_OK) {

@@ -2808,14 +2808,18 @@ parser_proc_create(cmd_t *cmd)
 		return;
 	}
 
-	/* Release the read lock, allowing threads to start */
-	(void) pthread_rwlock_unlock(&filebench_shm->shm_run_lock);
-
+	/*
+	 * Make sure we create the shared memory before we wake up worker
+	 * processes, which will alloc memory from this shm.
+	 */
 	if (filebench_shm->shm_required &&
 	    (ipc_ismcreate(filebench_shm->shm_required) < 0)) {
 		filebench_log(LOG_ERROR, "Could not allocate shared memory");
 		return;
 	}
+
+	/* Release the read lock, allowing threads to start */
+	(void) pthread_rwlock_unlock(&filebench_shm->shm_run_lock);
 
 	filebench_shm->shm_starttime = gethrtime();
 	eventgen_reset();
