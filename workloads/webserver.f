@@ -31,7 +31,7 @@ set $nthreads=100
 set $iosize=1m
 set $meanappendsize=16k
 
-define fileset name=bigfileset,path=$dir,size=$meanfilesize,entries=$nfiles,dirwidth=$meandirwidth,prealloc=100
+define fileset name=bigfileset,path=$dir,size=$meanfilesize,entries=$nfiles,dirwidth=$meandirwidth,prealloc=100,readonly
 define fileset name=logfiles,path=$dir,size=$meanfilesize,entries=1,dirwidth=$meandirwidth,prealloc
 
 define process name=filereader,instances=1
@@ -72,7 +72,7 @@ define process name=filereader,instances=1
   }
 }
 
-echo  "Web-server Version 3.0 personality successfully loaded"
+echo  "Web-server Version 3.1 personality successfully loaded"
 usage "Usage: set \$dir=<dir>"
 usage "       set \$meanfilesize=<size>   defaults to $meanfilesize"
 usage "       set \$nfiles=<value>    defaults to $nfiles"
