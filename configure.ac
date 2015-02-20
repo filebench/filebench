@@ -439,6 +439,23 @@ AC_TRY_COMPILE([
 )
 
 #
+# Sometimes personality() function exists but ADDR_NO_RANDOMIZE is not defined
+# (e.g, in CentOS 5.11)
+#
+AC_MSG_CHECKING(for ADDR_NO_RANDOMIZE)
+AC_TRY_COMPILE([
+	#include <sys/personality.h>
+	],
+	[
+		int ret;
+		ret = personality(0xffffffff | ADDR_NO_RANDOMIZE);
+	],[
+	    AC_DEFINE(HAVE_ADDR_NO_RANDOMIZE, 1, [ Define if you have ADDR_NO_RANDOMIZE. ])
+	    AC_MSG_RESULT(yes)
+	  ], AC_MSG_RESULT(no)
+)
+
+#
 # Configuring direct I/O. There are 3 main options:
 # 1) O_DIRECT open flag is supported (Linux and FreeBSD)
 # 2) directio() call is supported (Solaris)

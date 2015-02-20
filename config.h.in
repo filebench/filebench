@@ -11,6 +11,9 @@
 /* Define to 1 if using `alloca.c'. */
 #undef C_ALLOCA
 
+/* Define if you have ADDR_NO_RANDOMIZE. */
+#undef HAVE_ADDR_NO_RANDOMIZE
+
 /* Define if you have librt with aio_write support */
 #undef HAVE_AIO
 
