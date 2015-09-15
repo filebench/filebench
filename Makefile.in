@@ -33,7 +33,6 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = filebench$(EXEEXT)
-@AUTOCOMP_LIBTECLA_TRUE@am__append_1 = auto_comp.c auto_comp.h
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -52,16 +51,6 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__filebench_SOURCES_DIST = eventgen.c fb_avl.c fb_localfs.c \
-	fb_random.c fileset.c flowop.c flowop_library.c gamma_dist.c \
-	ipc.c misc.c multi_client_sync.c parser_gram.y parser_lex.l \
-	procflow.c stats.c threadflow.c utils.c vars.c ioprio.c \
-	eventgen.h fb_random.h fileset.h fsplug.h ipc.h \
-	multi_client_sync.h parsertypes.h stats.h utils.h config.h \
-	fb_avl.h filebench.h flowop.h gamma_dist.h misc.h procflow.h \
-	threadflow.h vars.h ioprio.h flag.h fb_cvar.c fb_cvar.h aslr.c \
-	aslr.h auto_comp.c auto_comp.h
-@AUTOCOMP_LIBTECLA_TRUE@am__objects_1 = auto_comp.$(OBJEXT)
 am_filebench_OBJECTS = eventgen.$(OBJEXT) fb_avl.$(OBJEXT) \
 	fb_localfs.$(OBJEXT) fb_random.$(OBJEXT) fileset.$(OBJEXT) \
 	flowop.$(OBJEXT) flowop_library.$(OBJEXT) gamma_dist.$(OBJEXT) \
@@ -69,7 +58,7 @@ am_filebench_OBJECTS = eventgen.$(OBJEXT) fb_avl.$(OBJEXT) \
 	parser_gram.$(OBJEXT) parser_lex.$(OBJEXT) procflow.$(OBJEXT) \
 	stats.$(OBJEXT) threadflow.$(OBJEXT) utils.$(OBJEXT) \
 	vars.$(OBJEXT) ioprio.$(OBJEXT) fb_cvar.$(OBJEXT) \
-	aslr.$(OBJEXT) $(am__objects_1)
+	aslr.$(OBJEXT)
 filebench_OBJECTS = $(am_filebench_OBJECTS)
 filebench_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -84,7 +73,7 @@ LEXCOMPILE = $(LEX) $(LFLAGS) $(AM_LFLAGS)
 YLWRAP = $(top_srcdir)/ylwrap
 YACCCOMPILE = $(YACC) $(YFLAGS) $(AM_YFLAGS)
 SOURCES = $(filebench_SOURCES)
-DIST_SOURCES = $(am__filebench_SOURCES_DIST)
+DIST_SOURCES = $(filebench_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -232,15 +221,17 @@ SUBDIRS = workloads
 
 # we depend on this lex & yacc generated file
 BUILT_SOURCES = parser_gram.h
-filebench_SOURCES = eventgen.c fb_avl.c fb_localfs.c fb_random.c \
-	fileset.c flowop.c flowop_library.c gamma_dist.c ipc.c misc.c \
-	multi_client_sync.c parser_gram.y parser_lex.l procflow.c \
-	stats.c threadflow.c utils.c vars.c ioprio.c eventgen.h \
-	fb_random.h fileset.h fsplug.h ipc.h multi_client_sync.h \
-	parsertypes.h stats.h utils.h config.h fb_avl.h filebench.h \
-	flowop.h gamma_dist.h misc.h procflow.h threadflow.h vars.h \
-	ioprio.h flag.h fb_cvar.c fb_cvar.h aslr.c aslr.h \
-	$(am__append_1)
+filebench_SOURCES = eventgen.c fb_avl.c fb_localfs.c \
+		    fb_random.c fileset.c flowop.c flowop_library.c \
+		    gamma_dist.c ipc.c misc.c multi_client_sync.c \
+		    parser_gram.y parser_lex.l procflow.c stats.c \
+		    threadflow.c utils.c vars.c ioprio.c \
+		    eventgen.h  fb_random.h  fileset.h  fsplug.h \
+		    ipc.h   multi_client_sync.h  parsertypes.h  stats.h \
+		    utils.h config.h fb_avl.h filebench.h flowop.h gamma_dist.h \
+		    misc.h procflow.h threadflow.h vars.h ioprio.h flag.h \
+		    fb_cvar.c fb_cvar.h aslr.c aslr.h
+
 EXTRA_DIST = LICENSE
 AM_YFLAGS = -d
 #AM_LDFLAGS = 
@@ -354,7 +345,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aslr.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/auto_comp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eventgen.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fb_avl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fb_cvar.Po@am__quote@

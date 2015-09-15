@@ -637,8 +637,6 @@ ac_includes_default="\
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
-AUTOCOMP_LIBTECLA_FALSE
-AUTOCOMP_LIBTECLA_TRUE
 POW_LIB
 LIBOBJS
 ALLOCA
@@ -13778,91 +13776,6 @@ _ACEOF
 
 fi
 
-# Use libtecla for autocompletion if it is available. If it
-# is, then conditionally compile auto_comp.c (see Makefile.am)
-
-{ $as_echo "$as_me:$LINENO: checking for cpl_add_completion in -ltecla" >&5
-$as_echo_n "checking for cpl_add_completion in -ltecla... " >&6; }
-if test "${ac_cv_lib_tecla_cpl_add_completion+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-ltecla  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char cpl_add_completion ();
-int
-main ()
-{
-return cpl_add_completion ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
-$as_echo "$ac_try_echo") >&5
-  (eval "$ac_link") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest$ac_exeext && {
-	 test "$cross_compiling" = yes ||
-	 $as_test_x conftest$ac_exeext
-       }; then
-  ac_cv_lib_tecla_cpl_add_completion=yes
-else
-  $as_echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_lib_tecla_cpl_add_completion=no
-fi
-
-rm -rf conftest.dSYM
-rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
-      conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_tecla_cpl_add_completion" >&5
-$as_echo "$ac_cv_lib_tecla_cpl_add_completion" >&6; }
-if test "x$ac_cv_lib_tecla_cpl_add_completion" = x""yes; then
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBTECLA 1
-_ACEOF
-
-  LIBS="-ltecla $LIBS"
-
-fi
-
- if test "$ac_cv_lib_tecla_cpl_add_completion" = yes; then
-  AUTOCOMP_LIBTECLA_TRUE=
-  AUTOCOMP_LIBTECLA_FALSE='#'
-else
-  AUTOCOMP_LIBTECLA_TRUE='#'
-  AUTOCOMP_LIBTECLA_FALSE=
-fi
-
 # Check that librt is installed and supports async IO. First line
 # allows to add librt to the linkers path, second one checks
 # if aio_wait() is in it, third one checks if aio_waitn() is there (usually
@@ -17370,13 +17283,6 @@ if test -z "${GCC_USED_TRUE}" && test -z "${GCC_USED_FALSE}"; then
   { { $as_echo "$as_me:$LINENO: error: conditional \"GCC_USED\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 $as_echo "$as_me: error: conditional \"GCC_USED\" was never defined.
-Usually this means the macro was only invoked conditionally." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-if test -z "${AUTOCOMP_LIBTECLA_TRUE}" && test -z "${AUTOCOMP_LIBTECLA_FALSE}"; then
-  { { $as_echo "$as_me:$LINENO: error: conditional \"AUTOCOMP_LIBTECLA\" was never defined.
-Usually this means the macro was only invoked conditionally." >&5
-$as_echo "$as_me: error: conditional \"AUTOCOMP_LIBTECLA\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi

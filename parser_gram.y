@@ -45,9 +45,6 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
-#ifdef HAVE_LIBTECLA
-#include <libtecla.h>
-#endif
 #include "parsertypes.h"
 #include "filebench.h"
 #include "utils.h"
@@ -55,9 +52,6 @@
 #include "vars.h"
 #include "eventgen.h"
 #include "aslr.h"
-#ifdef HAVE_LIBTECLA
-#include "auto_comp.h"
-#endif
 #include "multi_client_sync.h"
 
 /* yacc and lex externals */
@@ -65,11 +59,6 @@ extern FILE *yyin;
 extern int yydebug;
 extern void yyerror(char *s);
 extern int yylex(void);
-
-/* GetLine resource object */
-#ifdef HAVE_LIBTECLA
-static GetLine *gl;
-#endif
 
 /* executable name to execute worker processes later */
 char *execname;
@@ -1681,11 +1670,6 @@ main(int argc, char *argv[])
 	void *shmaddr;
 	char *cwdret;
 	char *fscriptname = NULL;
-#ifdef HAVE_LIBTECLA
-	char *line;
-#else /* HAVE_LIBTECLA */
-	char line[1024];
-#endif
 	int ret;
 	int ls_cvars = 0;
 	char *cvar_type = NULL;
@@ -1844,42 +1828,6 @@ main(int argc, char *argv[])
 
 	if (dofile == DOFILE_TRUE)
 		yyparse();
-	else {
-#ifdef HAVE_LIBTECLA
-		if ((gl = new_GetLine(MAX_LINE_LEN, MAX_CMD_HIST)) == NULL) {
-			filebench_log(LOG_ERROR,
-			    "Failed to create GetLine object");
-			filebench_shutdown(1);
-		}
-
-		if (gl_customize_completion(gl, NULL, command_complete)) {
-			filebench_log(LOG_ERROR,
-			    "Failed to register auto-completion function");
-			filebench_shutdown(1);
-		}
-
-		while ((line = gl_get_line(gl, FILEBENCH_PROMPT, NULL, -1))) {
-			arg_parse(line);
-			yyparse();
-		}
-
-		del_GetLine(gl);
-#else
-		while (!feof(stdin)) {
-			printf(FILEBENCH_PROMPT);
-			fflush(stdout);
-			if (fgets(line, sizeof (line), stdin) == NULL) {
-				if (errno == EINTR)
-					continue;
-				else
-					break;
-			}
-			arg_parse(line);
-			yyparse();
-		}
-		printf("\n");
-#endif	/* HAVE_LIBTECLA */
-	}
 
 	parser_filebench_shutdown((cmd_t *)0);
 

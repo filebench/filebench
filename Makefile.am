@@ -17,10 +17,6 @@ filebench_SOURCES = eventgen.c fb_avl.c fb_localfs.c \
 
 EXTRA_DIST = LICENSE
 
-if AUTOCOMP_LIBTECLA
-filebench_SOURCES += auto_comp.c auto_comp.h
-endif
-
 AM_YFLAGS = -d
 #AM_LDFLAGS = 
 if GCC_USED

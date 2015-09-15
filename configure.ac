@@ -163,10 +163,6 @@ fi
 # Notice, that libkstat or /proc/stat are not used for obtaining per-flowop
 # statistics or for getting the total execution time.
 AC_CHECK_LIB([kstat], [kstat_open])
-# Use libtecla for autocompletion if it is available. If it
-# is, then conditionally compile auto_comp.c (see Makefile.am)
-AC_CHECK_LIB([tecla], [cpl_add_completion])
-AM_CONDITIONAL(AUTOCOMP_LIBTECLA, test "$ac_cv_lib_tecla_cpl_add_completion" = yes)
 # Check that librt is installed and supports async IO. First line
 # allows to add librt to the linkers path, second one checks
 # if aio_wait() is in it, third one checks if aio_waitn() is there (usually
