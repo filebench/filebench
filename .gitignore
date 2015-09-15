@@ -29,6 +29,11 @@ threadflow.o
 utils.o
 vars.o
 aslr.o
+cvars/*.o
+cvars/*.lo
+cvars/*.la
+
+cvars/.libs
 
 parser_gram.c
 parser_gram.h
