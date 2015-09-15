@@ -28,5 +28,6 @@ stats.o
 threadflow.o
 utils.o
 vars.o
+aslr.o
 
 tags
