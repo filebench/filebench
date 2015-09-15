@@ -48,16 +48,6 @@
 #include "ipc.h"
 
 /*
- * Prints "how to use" information for the eventgen module
- */
-void
-eventgen_usage(void)
-{
-	(void) fprintf(stderr, "eventgen rate=<rate>\n");
-	(void) fprintf(stderr, "\n");
-}
-
-/*
  * The producer side of the event system.
  * Once eventgen_hz has been set by eventgen_setrate(),
  * the routine sends eventgen_hz events per second until

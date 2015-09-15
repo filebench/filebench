@@ -155,7 +155,6 @@ fileset_t *fileset_find(char *name);
 filesetentry_t *fileset_pick(fileset_t *fileset, int flags, int tid,
     int index);
 char *fileset_resolvepath(filesetentry_t *entry);
-void fileset_usage(void);
 int fileset_iter(int (*cmd)(fileset_t *fileset, int first));
 int fileset_print(fileset_t *fileset, int first);
 void fileset_unbusy(filesetentry_t *entry, int update_exist,

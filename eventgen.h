@@ -32,7 +32,6 @@
 void eventgen_init(void);
 void eventgen_setrate(avd_t rate);
 var_t *eventgen_ratevar(var_t *var);
-void eventgen_usage(void);
 void eventgen_reset(void);
 
 #define	EVENTGEN_VAR "rate"

@@ -48,7 +48,6 @@ procflow_t *procflow_define(char *name, procflow_t *inherit, avd_t instances);
 int	procflow_init(void);
 void	procflow_shutdown(void);
 int	procflow_exec(char *name, int instance);
-void	procflow_usage(void);
 int	procflow_allstarted(void);
 
 #endif	/* _FB_PROCFLOW_H */

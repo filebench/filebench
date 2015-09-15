@@ -58,24 +58,6 @@ static void procflow_sleep(procflow_t *procflow, int wait_cnt);
  * filebench process or is specifically deleted.
  */
 
-
-/*
- * Prints a summary of the syntax for setting procflow parameters.
- */
-void
-procflow_usage(void)
-{
-	(void) fprintf(stderr,
-	    "define process name=<name>[,instances=<count>]\n");
-	(void) fprintf(stderr, "{\n");
-	(void) fprintf(stderr, "  thread ...\n");
-	(void) fprintf(stderr, "  thread ...\n");
-	(void) fprintf(stderr, "  thread ...\n");
-	(void) fprintf(stderr, "}\n");
-	(void) fprintf(stderr, "\n");
-	(void) fprintf(stderr, "\n");
-}
-
 /*
  * This routine forks a child process and uses either system() or exec() to
  * start up a new instance of filebench, passing it the procflow name, instance

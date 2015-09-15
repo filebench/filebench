@@ -104,33 +104,6 @@ trunc_dirname(char *dir)
 }
 
 /*
- * Prints a list of allowed options and how to specify them.
- */
-void
-fileset_usage(void)
-{
-	(void) fprintf(stderr,
-	    "define [file name=<name> | fileset name=<name>],path=<pathname>,"
-	    ",entries=<number>\n");
-	(void) fprintf(stderr,
-	    "		        [,filesize=[size]]\n");
-	(void) fprintf(stderr,
-	    "		        [,dirwidth=[width]]\n");
-	(void) fprintf(stderr,
-	    "		        [,dirdepthrv=$random_variable_name]\n");
-	(void) fprintf(stderr,
-	    "		        [,dirgamma=[100-10000]] "
-	    "(Gamma * 1000)\n");
-	(void) fprintf(stderr,
-	    "		        [,sizegamma=[100-10000]] (Gamma * 1000)\n");
-	(void) fprintf(stderr,
-	    "		        [,prealloc=[percent]]\n");
-	(void) fprintf(stderr, "		        [,paralloc]\n");
-	(void) fprintf(stderr, "		        [,reuse]\n");
-	(void) fprintf(stderr, "\n");
-}
-
-/*
  * Creates a path string from the filesetentry_t "*entry"
  * and all of its parent's path names. The resulting path
  * is a concatination of all the individual parent paths.

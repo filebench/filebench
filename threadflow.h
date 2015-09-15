@@ -84,7 +84,6 @@ threadflow_t *threadflow_define(procflow_t *, char *name,
 threadflow_t *threadflow_find(threadflow_t *, char *);
 int threadflow_init(procflow_t *);
 void flowop_start(threadflow_t *threadflow);
-void threadflow_usage(void);
 void threadflow_allstarted(pid_t pid, threadflow_t *threadflow);
 void threadflow_delete_all(threadflow_t **threadlist);
 

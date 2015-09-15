@@ -52,23 +52,6 @@ static threadflow_t *threadflow_define_common(procflow_t *procflow,
  * deleted.
  */
 
-
-/*
- * Prints information about threadflow syntax.
- */
-void
-threadflow_usage(void)
-{
-	(void) fprintf(stderr, "  thread  name=<name>[,instances=<count>]\n");
-	(void) fprintf(stderr, "\n");
-	(void) fprintf(stderr, "  {\n");
-	(void) fprintf(stderr, "    flowop ...\n");
-	(void) fprintf(stderr, "    flowop ...\n");
-	(void) fprintf(stderr, "    flowop ...\n");
-	(void) fprintf(stderr, "  }\n");
-	(void) fprintf(stderr, "\n");
-}
-
 /*
  * Creates a thread for the supplied threadflow. If interprocess
  * shared memory is desired, then increments the amount of shared

@@ -1501,69 +1501,22 @@ var_int_val: FSV_VAL_INT
  * program.
  */
 
-#define	USAGE1	\
+#define	USAGE \
 "Usage: " \
 "filebench {-f <wmlscript> | -h | -c [cvartype]}\n" \
 "Interprets WML script and generates appropriate workload.\n" \
+"Visit http://filebench.sourceforge.net/ for WML definition and tutorials.\n" \
 "Options:\n" \
 "   -f <wmlscript> generate workload from the specified file\n" \
 "   -h             display this help message\n" \
 "   -c             display supported cvar types\n" \
 "   -c [cvartype]  display options of the specific cvar type\n"
 
-#define	PARSER_CMDS \
-"create [files|filesets|processes]\n" \
-"stats [clear|snap]\n" \
-"stats command \"shell command $var1,$var2...\"\n" \
-"stats directory <directory>\n" \
-"sleep <sleep-value>\n" \
-"quit\n\n" \
-"Variables:\n" \
-"set $var = value\n" \
-"    $var   - regular variables\n" \
-"    ${var} - internal special variables\n" \
-"    $(var) - environment variables\n\n"
-
-#define	PARSER_EXAMPLE \
-"Example:\n\n" \
-"#!" FILEBENCHDIR "/bin/filebench -f\n" \
-"\n" \
-"define file name=bigfile,path=bigfile,size=1g,prealloc,reuse\n" \
-"define process name=randomizer\n" \
-"{\n" \
-"  thread random-thread procname=randomizer\n"	\
-"  {\n" \
-"    flowop read name=random-read,filename=bigfile,iosize=16k,random\n" \
-"  }\n" \
-"}\n" \
-"create files\n" \
-"create processes\n" \
-"stats clear\n" \
-"sleep 30\n" \
-"stats snap\n"
-
-/*
- * Displays brief or verbose help for Filebench.
- */
 static void
-usage(int help)
+usage_exit(int ret)
 {
-	if (help >= 1)
-		(void) fprintf(stderr, USAGE1);
-
-	if (help >= 2) {
-		(void) fprintf(stderr,
-		    "\n'f' language definition:\n\n");
-		fileset_usage();
-		procflow_usage();
-		threadflow_usage();
-		flowoplib_usage();
-		eventgen_usage();
-		(void) fprintf(stderr, PARSER_CMDS);
-		(void) fprintf(stderr, PARSER_EXAMPLE);
-	}
-
-	exit(1);
+	(void)fprintf(stderr, USAGE);
+	exit(ret);
 }
 
 #ifdef HAVE_PROC_SYS_KERNEL_SHMMAX
@@ -1687,7 +1640,7 @@ main(int argc, char *argv[])
 		switch (opt) {
 		/* public parameters */
 		case 'h':
-			usage(2);
+			usage_exit(0);
 			break;
 		case 'c':	/* list cvar types or their parameters */
 			cvar_type = optarg;
@@ -1695,7 +1648,7 @@ main(int argc, char *argv[])
 			break;
 		case 'f':
 			if (!optarg)
-				usage(1);
+				usage_exit(1);
 
 			yyin = fopen(optarg, "r");
 			if (!yyin) {
@@ -1708,23 +1661,23 @@ main(int argc, char *argv[])
 		/* private parameters: when filebench calls itself */
 		case 'a':
 			if (!optarg)
-				usage(1);
+				usage_exit(1);
 
 			procname = optarg;
 			break;
 		case 's':
 			if (!optarg)
-				usage(1);
+				usage_exit(1);
 			sscanf(optarg, "%p", &shmaddr);
 			break;
 		case 'm':
 			if (!optarg)
-				usage(1);
+				usage_exit(1);
 			sscanf(optarg, "%s", shmpath);
 			break;
 		case 'i':
 			if (!optarg)
-				usage(1);
+				usage_exit(1);
 			sscanf(optarg, "%d", &instance);
 			break;
 		case '?':
@@ -1733,7 +1686,7 @@ main(int argc, char *argv[])
 				break;
 			}
 		default:
-			usage(1);
+			usage_exit(1);
 			break;
 		}
 	}
@@ -1745,7 +1698,7 @@ main(int argc, char *argv[])
 		(-h)
 	   must be specified */
 	if (!procname && !fscriptname)
-		usage(1);
+		usage_exit(1);
 
 	/*
 	 * Init things common to all processes: master and workers
