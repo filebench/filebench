@@ -1697,7 +1697,7 @@ main(int argc, char *argv[])
 		(-c) or
 		(-h)
 	   must be specified */
-	if (!procname && !fscriptname)
+	if (!procname && !fscriptname && !ls_cvars)
 		usage_exit(1);
 
 	/*
