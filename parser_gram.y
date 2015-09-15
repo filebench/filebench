@@ -63,8 +63,6 @@ extern int yylex(void);
 /* executable name to execute worker processes later */
 char *execname;
 
-static int dofile = DOFILE_FALSE;
-
 static char *fbbasepath = FILEBENCHDIR;
 static char cwd[MAXPATHLEN];
 static pidlist_t *pidlist;
@@ -132,7 +130,6 @@ static void parser_sleep_variable(cmd_t *cmd);
 static void parser_warmup(cmd_t *cmd);
 static void parser_warmup_variable(cmd_t *cmd);
 static void parser_help(cmd_t *cmd);
-static void arg_parse(const char *command);
 static void parser_abort(int arg);
 static void parser_version(cmd_t *cmd);
 static void parser_osprof_enable(cmd_t *cmd);
@@ -242,8 +239,7 @@ commands: commands command
 }
 | commands error
 {
-	if (dofile == DOFILE_TRUE)
-		YYABORT;
+	YYABORT;
 }
 |;
 
@@ -1506,11 +1502,14 @@ var_int_val: FSV_VAL_INT
  */
 
 #define	USAGE1	\
-"Usage:\n" \
-"filebench: interprets WML script and generates apporpriate workload\n" \
+"Usage: " \
+"filebench {-f <wmlscript> | -h | -c [cvartype]}\n" \
+"Interprets WML script and generates appropriate workload.\n" \
 "Options:\n" \
-"   [-h] Display verbose help\n" \
-"   [-f <filename>] use specified file as an input instead of stdin\n"
+"   -f <wmlscript> generate workload from the specified file\n" \
+"   -h             display this help message\n" \
+"   -c             display supported cvar types\n" \
+"   -c [cvartype]  display options of the specific cvar type\n"
 
 #define	PARSER_CMDS \
 "create [files|filesets|processes]\n" \
@@ -1704,8 +1703,6 @@ main(int argc, char *argv[])
 				    "Cannot open file %s!", optarg);
 				exit(1);
 			}
-
-			dofile = DOFILE_TRUE;
 			fscriptname = optarg;
 			break;
 		/* private parameters: when filebench calls itself */
@@ -1740,6 +1737,15 @@ main(int argc, char *argv[])
 			break;
 		}
 	}
+
+	/* Either
+		(-f) or
+		(-a and -s and -m and -i) or
+		(-c) or
+		(-h)
+	   must be specified */
+	if (!procname && !fscriptname)
+		usage(1);
 
 	/*
 	 * Init things common to all processes: master and workers
@@ -1826,37 +1832,11 @@ main(int argc, char *argv[])
 
 	signal(SIGINT, parser_abort);
 
-	if (dofile == DOFILE_TRUE)
-		yyparse();
+	yyparse();
 
 	parser_filebench_shutdown((cmd_t *)0);
 
 	return 0;
-}
-
-/*
- * arg_parse() puts the parser into command parsing mode. Create a tmpfile
- * and instruct the parser to read instructions from this location by setting
- * yyin to the value returned by tmpfile. Write the command into the file.
- * Then seek back to to the start of the file so that the parser can read
- * the instructions.
- */
-static void
-arg_parse(const char *command)
-{
-	if ((yyin = tmpfile()) == NULL) {
-		filebench_log(LOG_FATAL,
-		    "Exiting: Cannot create tmpfile: %s", strerror(errno));
-		exit(1);
-	}
-
-	if (fwrite(command, strlen(command), 1, yyin) != 1)
-		filebench_log(LOG_FATAL,
-		    "Cannot write tmpfile: %s", strerror(errno));
-
-	if (fseek(yyin, 0, SEEK_SET) != 0)
-		filebench_log(LOG_FATAL,
-		    "Cannot seek tmpfile: %s", strerror(errno));
 }
 
 /*
@@ -3570,10 +3550,9 @@ parser_usage(cmd_t *cmd)
 	if (string == NULL)
 		return;
 
-	if (dofile == DOFILE_TRUE) {
-		free(string);
-		return;
-	}
+	/* XXX: usage will be redone */
+	free(string);
+	return;
 
 	if (usagestr == NULL) {
 		newusage = malloc(strlen(string) + 2);
