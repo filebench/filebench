@@ -57,6 +57,7 @@ init_cvar_library_info(const char *dirpath)
 	char *filename = NULL;
 	int ret = -1;
 	int dirpath_len = strlen(dirpath);
+	int direntlen;
 
 	filename = (char *) malloc(dirpath_len + 1 + NAME_MAX + 1);
 	if (!filename) {
@@ -78,6 +79,10 @@ init_cvar_library_info(const char *dirpath)
 
 	while ((dirent = readdir(libdir)) != NULL) {
 		if (!strcmp(".", dirent->d_name) || !strcmp("..", dirent->d_name))
+			continue;
+
+		direntlen = strlen(dirent->d_name);
+		if (strcmp(".so", dirent->d_name + direntlen - 3))
 			continue;
 
 		strncpy(filename + dirpath_len + 1, dirent->d_name, NAME_MAX);

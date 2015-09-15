@@ -1,4 +1,4 @@
-SUBDIRS = workloads
+SUBDIRS = workloads cvars
 
 # we depend on this lex & yacc generated file
 BUILT_SOURCES = parser_gram.h
@@ -23,4 +23,4 @@ if GCC_USED
 AM_CFLAGS = -Wall -Wno-unknown-pragmas
 endif
 
-DEFS = -D_REENTRANT -DYYDEBUG -DYY_NO_INPUT -DFILEBENCHDIR=\"$(datadir)/filebench\" -D_LARGEFILE64_SOURCE -D_GNU_SOURCE
+DEFS = -D_REENTRANT -DYYDEBUG -DYY_NO_INPUT -DFBDATADIR=\"$(datadir)/filebench\" -D_LARGEFILE64_SOURCE -D_GNU_SOURCE

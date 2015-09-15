@@ -10,6 +10,7 @@ AM_INIT_AUTOMAKE
 ####
 AC_PROG_CC
 AM_CONDITIONAL(GCC_USED, test "$CC" = gcc)
+AC_PROG_LIBTOOL
 #if test "$CC" = "gcc"; then
 #	AC_DEFINE(GCC_USED,1,[ Defined if gcc was detected. ])
 #fi
@@ -498,4 +499,4 @@ AC_C_CONST
 ####
 #### Final steps
 ####
-AC_OUTPUT([Makefile] [workloads/Makefile])
+AC_OUTPUT([Makefile] [workloads/Makefile] [cvars/Makefile])

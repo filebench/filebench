@@ -63,7 +63,6 @@ extern int yylex(void);
 /* executable name to execute worker processes later */
 char *execname;
 
-static char *fbbasepath = FILEBENCHDIR;
 static char cwd[MAXPATHLEN];
 static pidlist_t *pidlist;
 static int filecreate_done;
@@ -1767,7 +1766,7 @@ main(int argc, char *argv[])
 	eventgen_init();
 	
 	/* Initialize custom variables. */
-	ret = init_cvar_library_info(FILEBENCHDIR "/cvars");
+	ret = init_cvar_library_info(FBDATADIR "/cvars");
 	if (ret)
 		filebench_shutdown(1);
 
@@ -2966,7 +2965,7 @@ parser_help(cmd_t *cmd)
 	} else {
 		filebench_log(LOG_INFO,
 		    "load <personality> (ls "
-		    "%s/workloads for list)", fbbasepath);
+		    "%s/workloads for list)", FBDATADIR);
 	}
 }
 
@@ -3439,7 +3438,7 @@ parser_fsflush(cmd_t *cmd)
 
 			/* now flush it */
 			snprintf(string, MAXPATHLEN,
-			    "%s/scripts/fs_flush %s %s", fbbasepath,
+			    "%s/scripts/fs_flush %s %s", FBDATADIR,
 			    filesys, pathname);
 
 			if (system(string) < 0) {

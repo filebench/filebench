@@ -30,4 +30,8 @@ utils.o
 vars.o
 aslr.o
 
+parser_gram.c
+parser_gram.h
+parser_lex.c
+
 tags
