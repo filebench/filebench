@@ -64,7 +64,7 @@ static inline void cvar_tracebuf(const void *buff, unsigned int len)
 
 #else
 
-#define cvar_trace(fmt)
+#define cvar_trace(fmt, ...)
 
 static inline void cvar_tracebuf(const void *buff, unsigned int len)
 {
