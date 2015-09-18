@@ -223,7 +223,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <ival> randsrc_name FSA_RANDSRC em_attr_name
 %type <ival> FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC
 %type <ival> fscheck_attr_name FSA_FSTYPE
-%type <ival> cvar_attr_name 
+%type <ival> cvar_attr_name
 
 %type <rndtb>  probtabentry_list probtabentry
 %type <avd> var_int_val
@@ -1011,7 +1011,7 @@ randvar_attr_ops: randvar_attr_op
 	    attr = attr->attr_next)
 		list_end = attr; /* Find end of list */
 
-	
+
 	if ((attr = alloc_attr()) == NULL)
 		YYERROR;
 
@@ -1540,13 +1540,13 @@ fb_set_shmmax(void)
 				"as a root. Filebench will not increase shared\n"
 				"region limits in this case, which can lead "
 				"to the failures on certain workloads.");
-		return; 
+		return;
 	}
 
 	/* writing new value */
 #define SOME_LARGE_SHMAX "268435456" /* 256 MB */
 	ret = fwrite(SOME_LARGE_SHMAX, sizeof(SOME_LARGE_SHMAX), 1, f);
-	if (ret != 1) 
+	if (ret != 1)
 		filebench_log(LOG_ERROR, "Coud not write to "
 				"/proc/sys/kernel/shmmax file!");
 #undef SOME_LARGE_SHMAX
@@ -1717,7 +1717,7 @@ parse_options(int argc, char *argv[], struct fbparams *fbparams)
 			!fbparams->shmaddr ||
 			!fbparams->shmpath ||
 			fbparams->instance == -1)
-			usage_exit(1);	
+			usage_exit(1);
 	}
 
 	return mode;
@@ -1733,10 +1733,10 @@ void worker_mode(struct fbparams *fbparams)
 		    fbparams->procname);
 		exit(1);
 	}
-		
+
 	/* get correct function pointer for each working process */
 	filebench_plugin_funcvecinit();
-		
+
 	/* Load custom variable libraries and re-validate handles. */
 	ret = init_cvar_libraries();
 	if (ret)
@@ -1792,7 +1792,7 @@ void master_and_cvars_mode(int mode, struct fbparams *fbparams) {
 	flowop_init();
 	stats_init();
 	eventgen_init();
-	
+
 	/* Initialize custom variables. */
 	ret = init_cvar_library_info(FBDATADIR "/cvars");
 	if (ret)
@@ -2370,7 +2370,7 @@ parser_inner_flowop_define(threadflow_t *thread, flowop_t *comp0_flow,
 					    comp_mstr_flow->fo_lvar_list);
 				}
 			}
-		  
+
 			parser_inner_flowop_define(thread,
 			    inner_flowtype,
 			    inner_flowop);
@@ -2934,7 +2934,7 @@ parser_psrun(cmd_t *cmd)
 	 */
 	if (cmd->cmd_qty1 < 0) {
 		period = -cmd->cmd_qty1;
-		reset_stats = 1;	
+		reset_stats = 1;
 	} else if (cmd->cmd_qty1 > 0) {
 		period = cmd->cmd_qty1;
 		reset_stats = 0;
@@ -4092,7 +4092,7 @@ add_lvar_to_list(var_t *newlvar, var_t **lvar_list)
  * variables. The attribute list is created by the parser from the list of
  * attributes supplied with certain commands, such as the define and flowop
  * commands. Places all found local vars onto the flowop's local variable
- * list. 
+ * list.
  */
 static void
 get_attr_lvars(cmd_t *cmd, flowop_t *flowop)
@@ -4239,20 +4239,20 @@ void parser_list_cvar_type_parameters(char *type)
 
 	if (cvar_libraries[t->index]->cvar_op.cvar_version)
 		version = cvar_libraries[t->index]->cvar_op.cvar_version();
-	
+
 	if (cvar_libraries[t->index]->cvar_op.cvar_usage)
 		usage = cvar_libraries[t->index]->cvar_op.cvar_usage();
 
-	
+
 	if (version)
 		printf("Version: %s\n", version);
 	else
 		printf("Oops. No version information provided.\n");
-	
+
 	if (usage)
 		printf("Usage:\n%s\n", usage);
 	else
 		printf("Oops. No usage information provided.\n");
-	
+
 	return;
 }
