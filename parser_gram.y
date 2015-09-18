@@ -1503,7 +1503,7 @@ var_int_val: FSV_VAL_INT
 #define	USAGE \
 "Usage: " \
 "filebench {-f <wmlscript> | -h | -c [cvartype]}\n" \
-"Interprets WML script and generates appropriate workload.\n" \
+"Filebench interprets WML script and generates appropriate workload.\n" \
 "Visit http://filebench.sourceforge.net/ for WML definition and tutorials.\n" \
 "Options:\n" \
 "   -f <wmlscript> generate workload from the specified file\n" \
@@ -1514,6 +1514,8 @@ var_int_val: FSV_VAL_INT
 static void
 usage_exit(int ret)
 {
+	if (ret)
+		(void)fprintf(stderr, "Wrong usage!\n");
 	(void)fprintf(stderr, USAGE);
 	exit(ret);
 }
@@ -1597,6 +1599,234 @@ fb_set_rlimit(void)
 }
 #endif /* HAVE_SETRLIMIT */
 
+struct fbparams {
+	char *execname;
+	char *fscriptname;
+	char *procname;
+	char *shmaddr;
+	char *shmpath;
+	int instance;
+	char *cvartype;
+};
+
+void
+init_fbparams(struct fbparams *fbparams)
+{
+	memset(fbparams, 0, sizeof(*fbparams));
+	fbparams->instance = -1;
+}
+
+#define FB_MODE_NONE		0
+#define FB_MODE_HELP		1
+#define FB_MODE_MASTER		2
+#define FB_MODE_WORKER		3
+#define FB_MODE_CVARS		4
+
+int
+parse_options(int argc, char *argv[], struct fbparams *fbparams)
+{
+	const char cmd_options[] = "m:s:a:i:hf:c:";
+	int mode = FB_MODE_NONE;
+	int opt;
+
+	init_fbparams(fbparams);
+	fbparams->execname = argv[0];
+
+ 	/*
+	 * We don't want getopt() to print error messages because
+	 * sometimes what it percieves as an error is actually not
+	 * an error.  For example, "-c" option might have or might
+	 * not have an argument.  If opterr is non-zero, getopt()
+	 * prints an error message when "-c"'s argument is missing.
+	 */
+	opterr = 0;
+
+	/* Either
+		(-f <wmlscript>) or
+		(-a and -s and -m and -i) or
+		(-c [cvartype]) or
+		(-h)
+	   must be specified */
+	while ((opt = getopt(argc, argv, cmd_options)) > 0) {
+		switch (opt) {
+		/* public parameters */
+		case 'h':
+			if (mode != FB_MODE_NONE)
+				usage_exit(1);
+			mode = FB_MODE_HELP;
+			break;
+		case 'c':
+			if (mode != FB_MODE_NONE)
+				usage_exit(1);
+			mode = FB_MODE_CVARS;
+			fbparams->cvartype = optarg;
+			break;
+		case 'f':
+			if (mode != FB_MODE_NONE)
+				usage_exit(1);
+			mode = FB_MODE_MASTER;
+			fbparams->fscriptname = optarg;
+			break;
+		/* private parameters: when filebench calls itself */
+		case 'a':
+			if (mode != FB_MODE_NONE &&
+				(mode != FB_MODE_WORKER || fbparams->procname))
+					usage_exit(1);
+			mode = FB_MODE_WORKER;
+			fbparams->procname = optarg;
+			break;
+		case 's':
+			if (mode != FB_MODE_NONE &&
+				(mode != FB_MODE_WORKER || fbparams->shmaddr))
+					usage_exit(1);
+			mode = FB_MODE_WORKER;
+			sscanf(optarg, "%p", &fbparams->shmaddr);
+			break;
+		case 'm':
+			if (mode != FB_MODE_NONE &&
+				(mode != FB_MODE_WORKER || fbparams->shmpath))
+					usage_exit(1);
+			mode = FB_MODE_WORKER;
+			fbparams->shmpath = optarg;
+			break;
+		case 'i':
+			if (mode != FB_MODE_NONE &&
+				(mode != FB_MODE_WORKER || fbparams->instance != -1))
+					usage_exit(1);
+			mode = FB_MODE_WORKER;
+			sscanf(optarg, "%d", &fbparams->instance);
+			break;
+		case '?':
+			if (optopt == 'c') {
+				if (mode != FB_MODE_NONE)
+					usage_exit(1);
+				mode = FB_MODE_CVARS;
+				break;
+			}
+		default:
+			usage_exit(1);
+			break;
+		}
+	}
+
+	if (mode == FB_MODE_NONE)
+		usage_exit(1);
+
+	if (mode == FB_MODE_WORKER) {
+		if (!fbparams->procname ||
+			!fbparams->shmaddr ||
+			!fbparams->shmpath ||
+			fbparams->instance == -1)
+			usage_exit(1);	
+	}
+
+	return mode;
+}
+
+void worker_mode(struct fbparams *fbparams)
+{
+	int ret;
+
+	/* A child Filebench instance */
+	if (ipc_attach(fbparams->shmaddr, fbparams->shmpath) < 0) {
+		filebench_log(LOG_FATAL, "Cannot attach shm for %s",
+		    fbparams->procname);
+		exit(1);
+	}
+		
+	/* get correct function pointer for each working process */
+	filebench_plugin_funcvecinit();
+		
+	/* Load custom variable libraries and re-validate handles. */
+	ret = init_cvar_libraries();
+	if (ret)
+		exit(1);
+
+	ret = revalidate_cvar_handles();
+	if (ret)
+		exit(1);
+
+	/* execute corresponding procflow */
+	if (procflow_exec(fbparams->procname, fbparams->instance) < 0) {
+		filebench_log(LOG_FATAL, "Cannot startup process %s",
+		    fbparams->procname);
+		exit(1);
+	}
+
+	exit(0);
+}
+
+void master_and_cvars_mode(int mode, struct fbparams *fbparams) {
+	char *cwdret;
+	int ret;
+
+	if (mode == FB_MODE_MASTER) {
+		yyin = fopen(fbparams->fscriptname, "r");
+		if (!yyin) {
+			filebench_log(LOG_FATAL,
+				"Cannot open file %s!", fbparams->fscriptname);
+			exit(1);
+		}
+	}
+
+	printf("Filebench Version %s\n", FILEBENCH_VERSION);
+
+	/* saving executable name to exec it later as worker processes */
+	execname = fbparams->execname;
+
+	/* saving current working directory */
+	cwdret = getcwd(cwd, MAXPATHLEN);
+	if (cwdret != cwd) {
+		filebench_log(LOG_FATAL, "Cannot save current "
+					 "working directory!");
+		exit(1);
+	}
+
+	fb_set_shmmax();
+	ipc_init();
+
+	if (fbparams->fscriptname)
+		(void)strcpy(filebench_shm->shm_fscriptname,
+				fbparams->fscriptname);
+
+	flowop_init();
+	stats_init();
+	eventgen_init();
+	
+	/* Initialize custom variables. */
+	ret = init_cvar_library_info(FBDATADIR "/cvars");
+	if (ret)
+		filebench_shutdown(1);
+
+	ret = init_cvar_libraries();
+	if (ret)
+		filebench_shutdown(1);
+
+	if (mode == FB_MODE_CVARS) {
+		if (fbparams->cvartype)
+			parser_list_cvar_type_parameters(fbparams->cvartype);
+		else
+			parser_list_cvar_types();
+		exit(0);
+	}
+
+	signal(SIGINT, parser_abort);
+
+	yyparse();
+
+	parser_filebench_shutdown((cmd_t *)0);
+}
+
+void init_common()
+{
+	disable_aslr();
+	my_pid = getpid();
+	fb_set_rlimit();
+	fb_urandom_init();
+	clock_init();
+}
+
+
 /*
  * Entry point for Filebench. Processes command line arguments. The -f option
  * will read in a workload file (the full name and extension must must be
@@ -1614,180 +1844,24 @@ fb_set_rlimit(void)
 int
 main(int argc, char *argv[])
 {
-	const char cmd_options[] = "m:s:a:i:hf:c:";
-	int opt;
-	char *procname = NULL;
-	int instance;
-	void *shmaddr;
-	char *cwdret;
-	char *fscriptname = NULL;
-	int ret;
-	int ls_cvars = 0;
-	char *cvar_type = NULL;
+	struct fbparams fbparams;
+	int mode;
 
- 	/*
-	 * We don't want getopt() to print error messages because
-	 * sometimes what it percieves as an error is actually not
-	 * an error.  For example, "-c" option might have or might
-	 * not have an argument.  If opterr is non-zero, getopt()
-	 * prints an error message when "-c"'s argument is missing.
-	 */
-	opterr = 0;
+	/* parse_options() exits if detects wrong usage */
+	mode = parse_options(argc, argv, &fbparams);
 
-	 /* parsing the parameters */
-	while ((opt = getopt(argc, argv, cmd_options)) > 0) {
-		switch (opt) {
-		/* public parameters */
-		case 'h':
-			usage_exit(0);
-			break;
-		case 'c':	/* list cvar types or their parameters */
-			cvar_type = optarg;
-			ls_cvars = 1;
-			break;
-		case 'f':
-			if (!optarg)
-				usage_exit(1);
+	if (mode == FB_MODE_HELP)
+		usage_exit(0);
 
-			yyin = fopen(optarg, "r");
-			if (!yyin) {
-				filebench_log(LOG_FATAL,
-				    "Cannot open file %s!", optarg);
-				exit(1);
-			}
-			fscriptname = optarg;
-			break;
-		/* private parameters: when filebench calls itself */
-		case 'a':
-			if (!optarg)
-				usage_exit(1);
+	init_common();
 
-			procname = optarg;
-			break;
-		case 's':
-			if (!optarg)
-				usage_exit(1);
-			sscanf(optarg, "%p", &shmaddr);
-			break;
-		case 'm':
-			if (!optarg)
-				usage_exit(1);
-			sscanf(optarg, "%s", shmpath);
-			break;
-		case 'i':
-			if (!optarg)
-				usage_exit(1);
-			sscanf(optarg, "%d", &instance);
-			break;
-		case '?':
-			if (optopt == 'c') {
-				ls_cvars = 1;
-				break;
-			}
-		default:
-			usage_exit(1);
-			break;
-		}
-	}
+	if (mode == FB_MODE_MASTER || mode == FB_MODE_CVARS)
+		master_and_cvars_mode(mode, &fbparams);
 
-	/* Either
-		(-f) or
-		(-a and -s and -m and -i) or
-		(-c) or
-		(-h)
-	   must be specified */
-	if (!procname && !fscriptname && !ls_cvars)
-		usage_exit(1);
+	if (mode == FB_MODE_WORKER)
+		worker_mode(&fbparams);
 
-	/*
-	 * Init things common to all processes: master and workers
-	 */
-	my_pid = getpid();
-	fb_set_rlimit();
-	fb_urandom_init();
-	clock_init();
-
-	if (procname) {
-		/* A child Filebench instance */
-		if (ipc_attach(shmaddr) < 0) {
-			filebench_log(LOG_FATAL, "Cannot attach shm for %s",
-			    procname);
-			exit(1);
-		}
-		
-		/* get correct function pointer for each working process */
-		filebench_plugin_funcvecinit();
-		
-		/* Load custom variable libraries and re-validate handles. */
-		ret = init_cvar_libraries();
-		if (ret)
-			exit(1);
-
-		ret = revalidate_cvar_handles();
-		if (ret)
-			exit(1);
-
-		/* execute corresponding procflow */
-		if (procflow_exec(procname, instance) < 0) {
-			filebench_log(LOG_FATAL, "Cannot startup process %s",
-			    procname);
-			exit(1);
-		}
-
-		exit(0);
-	}
-
-	/*
-	 * Master process
-	 */
-	printf("Filebench Version %s\n", FILEBENCH_VERSION);
-	disable_aslr();
-
-	/* saving executable name to exec it later as worker processes */
-	execname = argv[0];
-
-	/* saving current working directory */
-	cwdret = getcwd(cwd, MAXPATHLEN);
-	if (cwdret != cwd) {
-		filebench_log(LOG_FATAL, "Cannot save current "
-					 "working directory!");
-		exit(1);
-	}
-
-	fb_set_shmmax();
-
-	ipc_init();
-
-	if (fscriptname)
-		(void)strcpy(filebench_shm->shm_fscriptname, fscriptname);
-
-	flowop_init();
-	stats_init();
-	eventgen_init();
-	
-	/* Initialize custom variables. */
-	ret = init_cvar_library_info(FBDATADIR "/cvars");
-	if (ret)
-		filebench_shutdown(1);
-
-	ret = init_cvar_libraries();
-	if (ret)
-		filebench_shutdown(1);
-
-	if (ls_cvars) {
-		if (cvar_type)
-			parser_list_cvar_type_parameters(cvar_type);
-		else
-			parser_list_cvar_types();
-		exit(1);
-	}
-
-	signal(SIGINT, parser_abort);
-
-	yyparse();
-
-	parser_filebench_shutdown((cmd_t *)0);
-
+	/* We should never reach this point */
 	return 0;
 }
 
@@ -4156,7 +4230,7 @@ void parser_list_cvar_type_parameters(char *type)
 	}
 
 	if (!t) {
-		printf("Unknown custom variable type %s.", type);
+		printf("Unknown custom variable type %s.\n", type);
 		return;
 	}
 

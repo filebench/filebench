@@ -397,7 +397,7 @@ ipc_fini(void)
  * returns 0. Otherwise it returns -1.
  */
 int
-ipc_attach(void *shmaddr)
+ipc_attach(void *shmaddr, char *shmpath)
 {
 	int shmfd;
 
