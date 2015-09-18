@@ -187,7 +187,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <sval> FSV_VARIABLE
 %type <sval> FSK_ASSIGN
 
-%type <ival> FSC_LIST FSC_DEFINE FSC_SET FSC_RUN FSC_ENABLE FSC_PSRUN
+%type <ival> FSC_DEFINE FSC_SET FSC_RUN FSC_ENABLE FSC_PSRUN
 %type <ival> FSC_DOMULTISYNC
 %type <ival> FSE_FILE FSE_PROC FSE_THREAD FSE_CLEAR FSC_HELP FSC_VERSION
 
@@ -478,15 +478,17 @@ whitevar_string_list: whitevar_string FSV_WHITESTRING
 	$$ = $1;
 };
 
-list_command: FSC_LIST
+list_command: FSC_LIST FSE_FILESET
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
 	$$->cmd = &parser_list;
 }
-| list_command FSC_FLOWOP
+| FSC_LIST FSC_FLOWOP
 {
-	$1->cmd = &parser_flowop_list;
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+	$$->cmd = &parser_flowop_list;
 };
 
 fscheck_command: FSC_FSCHECK fscheck_attr_op
