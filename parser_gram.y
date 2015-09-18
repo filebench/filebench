@@ -1504,6 +1504,7 @@ var_int_val: FSV_VAL_INT
 "Usage: " \
 "filebench {-f <wmlscript> | -h | -c [cvartype]}\n" \
 "Filebench interprets WML script and generates appropriate workload.\n" \
+"Version " FILEBENCH_VERSION "\n" \
 "Visit http://filebench.sourceforge.net/ for WML definition and tutorials.\n" \
 "Options:\n" \
 "   -f <wmlscript> generate workload from the specified file\n" \
@@ -1609,7 +1610,7 @@ struct fbparams {
 	char *cvartype;
 };
 
-void
+static void
 init_fbparams(struct fbparams *fbparams)
 {
 	memset(fbparams, 0, sizeof(*fbparams));
@@ -1622,7 +1623,7 @@ init_fbparams(struct fbparams *fbparams)
 #define FB_MODE_WORKER		3
 #define FB_MODE_CVARS		4
 
-int
+static int
 parse_options(int argc, char *argv[], struct fbparams *fbparams)
 {
 	const char cmd_options[] = "m:s:a:i:hf:c:";
@@ -1723,12 +1724,13 @@ parse_options(int argc, char *argv[], struct fbparams *fbparams)
 	return mode;
 }
 
-void worker_mode(struct fbparams *fbparams)
+static void
+worker_mode(struct fbparams *fbparams)
 {
 	int ret;
 
-	/* A child Filebench instance */
-	if (ipc_attach(fbparams->shmaddr, fbparams->shmpath) < 0) {
+	ret = ipc_attach(fbparams->shmaddr, fbparams->shmpath);
+	if (ret < 0) {
 		filebench_log(LOG_FATAL, "Cannot attach shm for %s",
 		    fbparams->procname);
 		exit(1);
@@ -1737,7 +1739,7 @@ void worker_mode(struct fbparams *fbparams)
 	/* get correct function pointer for each working process */
 	filebench_plugin_funcvecinit();
 
-	/* Load custom variable libraries and re-validate handles. */
+	/* load custom variable libraries and revalidate handles */
 	ret = init_cvar_libraries();
 	if (ret)
 		exit(1);
@@ -1747,7 +1749,8 @@ void worker_mode(struct fbparams *fbparams)
 		exit(1);
 
 	/* execute corresponding procflow */
-	if (procflow_exec(fbparams->procname, fbparams->instance) < 0) {
+	ret = procflow_exec(fbparams->procname, fbparams->instance);
+	if (ret < 0) {
 		filebench_log(LOG_FATAL, "Cannot startup process %s",
 		    fbparams->procname);
 		exit(1);
@@ -1756,41 +1759,63 @@ void worker_mode(struct fbparams *fbparams)
 	exit(0);
 }
 
-void master_and_cvars_mode(int mode, struct fbparams *fbparams) {
+static void
+cvars_mode(struct fbparams *fbparams)
+{
+	int ret;
+
+	ipc_init();
+
+	ret = init_cvar_library_info(FBDATADIR "/cvars");
+	if (ret)
+		filebench_shutdown(1);
+
+	ret = init_cvar_libraries();
+	if (ret)
+		filebench_shutdown(1);
+
+	if (fbparams->cvartype)
+		parser_list_cvar_type_parameters(fbparams->cvartype);
+	else
+		parser_list_cvar_types();
+
+	ipc_fini();
+
+	exit(0);
+}
+
+static void
+master_mode(struct fbparams *fbparams) {
 	char *cwdret;
 	int ret;
 
-	if (mode == FB_MODE_MASTER) {
-		yyin = fopen(fbparams->fscriptname, "r");
-		if (!yyin) {
-			filebench_log(LOG_FATAL,
-				"Cannot open file %s!", fbparams->fscriptname);
-			exit(1);
-		}
-	}
-
 	printf("Filebench Version %s\n", FILEBENCH_VERSION);
 
-	/* saving executable name to exec it later as worker processes */
-	execname = fbparams->execname;
-
-	/* saving current working directory */
-	cwdret = getcwd(cwd, MAXPATHLEN);
-	if (cwdret != cwd) {
-		filebench_log(LOG_FATAL, "Cannot save current "
-					 "working directory!");
+	yyin = fopen(fbparams->fscriptname, "r");
+	if (!yyin) {
+		filebench_log(LOG_FATAL,
+			"Cannot open file %s!", fbparams->fscriptname);
 		exit(1);
 	}
 
+	execname = fbparams->execname;
 	fb_set_shmmax();
+	stats_init();
+
+	cwdret = getcwd(cwd, MAXPATHLEN);
+	if (cwdret != cwd) {
+		filebench_log(LOG_FATAL, "Cannot save current "
+				 "working directory!");
+		exit(1);
+	}
+
 	ipc_init();
 
-	if (fbparams->fscriptname)
-		(void)strcpy(filebench_shm->shm_fscriptname,
+	/* Below we initialize things that depend on IPC */
+	(void)strcpy(filebench_shm->shm_fscriptname,
 				fbparams->fscriptname);
 
 	flowop_init();
-	stats_init();
 	eventgen_init();
 
 	/* Initialize custom variables. */
@@ -1802,22 +1827,20 @@ void master_and_cvars_mode(int mode, struct fbparams *fbparams) {
 	if (ret)
 		filebench_shutdown(1);
 
-	if (mode == FB_MODE_CVARS) {
-		if (fbparams->cvartype)
-			parser_list_cvar_type_parameters(fbparams->cvartype);
-		else
-			parser_list_cvar_types();
-		exit(0);
-	}
-
 	signal(SIGINT, parser_abort);
 
+	/* yyparse() after it parsed complete grammar */
 	yyparse();
 
+	/* We only get here if there was no
+	   run (or similar) command in the
+	   end of the WML script. */
+	printf("Warning: no run command in the WML script!\n");
 	parser_filebench_shutdown((cmd_t *)0);
 }
 
-void init_common()
+static void
+init_common()
 {
 	disable_aslr();
 	my_pid = getpid();
@@ -1825,7 +1848,6 @@ void init_common()
 	fb_urandom_init();
 	clock_init();
 }
-
 
 /*
  * Entry point for Filebench. Processes command line arguments. The -f option
@@ -1853,10 +1875,13 @@ main(int argc, char *argv[])
 	if (mode == FB_MODE_HELP)
 		usage_exit(0);
 
+	if (mode == FB_MODE_CVARS)
+		cvars_mode(&fbparams);
+
 	init_common();
 
-	if (mode == FB_MODE_MASTER || mode == FB_MODE_CVARS)
-		master_and_cvars_mode(mode, &fbparams);
+	if (mode == FB_MODE_MASTER)
+		master_mode(&fbparams);
 
 	if (mode == FB_MODE_WORKER)
 		worker_mode(&fbparams);
