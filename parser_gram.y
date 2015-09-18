@@ -1492,12 +1492,11 @@ var_int_val: FSV_VAL_INT
 
 /*
  * The following C routines implement the various commands defined in the above
- * yacc parser code. The yacc portion checks the syntax of the commands found in
- * a workload file (or typed interactively) and parses the commands' parameters
- * into lists. The lists are then passed in a cmd_t struct for each command to
- * its related routine in the following section for actual execution.  This
- * section also includes a few utility routines and the main entry point for the
- * program.
+ * yacc parser code. The yacc portion checks the syntax of the commands found
+ * in a workload file and parses the commands' parameters into lists. The lists
+ * are then passed in a cmd_t struct for each command to its related routine in
+ * the following section for actual execution.  This section also includes a
+ * few utility routines and the main entry point for the program.
  */
 
 #define	USAGE \
@@ -1515,9 +1514,11 @@ var_int_val: FSV_VAL_INT
 static void
 usage_exit(int ret)
 {
-	if (ret)
+	if (ret) {
 		(void)fprintf(stderr, "Wrong usage!\n");
-	(void)fprintf(stderr, USAGE);
+		(void)fprintf(stderr, USAGE);
+	} else
+		printf(USAGE);
 	exit(ret);
 }
 
