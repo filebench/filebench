@@ -42,4 +42,8 @@ extern size_t fb_strlcat(char *dst, const char *src, size_t dstsize);
 extern size_t fb_strlcpy(char *dst, const char *src, size_t dstsize);
 #endif /* HAVE_STRLCPY */
 
+extern void fb_set_shmmax(void);
+void fb_set_rlimit(void);
+
+
 #endif	/* _FB_UTILS_H */

@@ -126,3 +126,83 @@ fb_strlcat(char *dst, const char *src, size_t dstsize)
 	return (i);
 }
 #endif /* HAVE_STRLCAT */
+
+
+#ifdef HAVE_PROC_SYS_KERNEL_SHMMAX
+/*
+ * Increase the maximum shared memory segment size till some large value.  We do
+ * not restore it to the old value when the Filebench run is over. If we could
+ * not change the value - we continue execution.
+ */
+void
+fb_set_shmmax(void)
+{
+	FILE *f;
+	int ret;
+
+	f = fopen("/proc/sys/kernel/shmmax", "r+");
+	if (!f) {
+		filebench_log(LOG_FATAL, "WARNING: Could not open "
+				"/proc/sys/kernel/shmmax file!\n"
+				"It means that you probably ran Filebench not "
+				"as a root. Filebench will not increase shared\n"
+				"region limits in this case, which can lead "
+				"to the failures on certain workloads.");
+		return;
+	}
+
+	/* writing new value */
+#define SOME_LARGE_SHMAX "268435456" /* 256 MB */
+	ret = fwrite(SOME_LARGE_SHMAX, sizeof(SOME_LARGE_SHMAX), 1, f);
+	if (ret != 1)
+		filebench_log(LOG_ERROR, "Coud not write to "
+				"/proc/sys/kernel/shmmax file!");
+#undef SOME_LARGE_SHMAX
+
+	fclose(f);
+
+	return;
+}
+#else /* HAVE_PROC_SYS_KERNEL_SHMMAX */
+void
+fb_set_shmmax(void)
+{
+	return;
+}
+#endif /* HAVE_PROC_SYS_KERNEL_SHMMAX */
+
+#ifdef HAVE_SETRLIMIT
+/*
+ * Increase the limit of opened files.
+ *
+ * We first set the limit to the hardlimit reported by the kernel; this call
+ * will always succeed.  Then we try to set the limit to some large number of
+ * files (unfortunately we can't set this ulimit to infinity), this will only
+ * succeed if the process is ran by root.  Therefore, we always set the maximum
+ * possible value for the limit for this given process (well, only if hardlimit
+ * is greater then the large number of files defined by us, it is not true).
+ *
+ * Increasing this limit is especially important when we use thread model,
+ * because opened files are accounted per-process, not per-thread.
+ */
+void
+fb_set_rlimit(void)
+{
+	struct rlimit rlp;
+
+	(void)getrlimit(RLIMIT_NOFILE, &rlp);
+	rlp.rlim_cur = rlp.rlim_max;
+	(void)setrlimit(RLIMIT_NOFILE, &rlp);
+#define SOME_LARGE_NUMBER_OF_FILES 50000
+	rlp.rlim_cur = rlp.rlim_max = SOME_LARGE_NUMBER_OF_FILES;
+#undef SOME_LARGE_NUMBER_OF_FILES
+	(void)setrlimit(RLIMIT_NOFILE, &rlp);
+	return;
+}
+#else /* HAVE_SETRLIMIT */
+void
+fb_set_rlimit(void)
+{
+	return;
+}
+#endif /* HAVE_SETRLIMIT */
