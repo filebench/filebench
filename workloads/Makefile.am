@@ -3,6 +3,7 @@ workloadsdir=$(datadir)/filebench/workloads
 workloads_DATA = compflow_demo.f \
 	copyfiles.f \
 	createfiles.f \
+	cvar_example.f \
 	filemicro_create.f \
 	filemicro_createfiles.f \
 	filemicro_createrand.f \
