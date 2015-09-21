@@ -527,6 +527,11 @@ debug_command: FSC_DEBUG FSV_VAL_INT
 		YYERROR;
 	$$->cmd = NULL;
 	filebench_shm->shm_debug_level = $2;
+	if (filebench_shm->shm_debug_level > 10) {
+		filebench_log(LOG_ERROR, "Debug level set out of range."
+					"  Adjusting to 10.");
+			filebench_shm->shm_debug_level = 10;
+		}
 	if (filebench_shm->shm_debug_level > 9)
 		yydebug = 1;
 };

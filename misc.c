@@ -263,7 +263,7 @@ __V((int level, const char *fmt, ...))
 		level = LOG_ERROR;
 	}
 
-	/* Only log greater than debug setting */
+	/* Only log greater or equal than debug setting */
 	if ((level != LOG_DUMP) && (level != LOG_LOG) &&
 	    (level > filebench_shm->shm_debug_level))
 		return;

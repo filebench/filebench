@@ -314,7 +314,7 @@ void ipc_init(void)
 	 * function to work correctly with the log levels other than LOG_FATAL
 	 */
 	filebench_shm->shm_epoch = gethrtime();
-	filebench_shm->shm_debug_level = LOG_VERBOSE;
+	filebench_shm->shm_debug_level = LOG_INFO;
 
 	/* Setup mutexes for object lists */
 	ipc_mutexattr_init(IPC_MUTEX_NORMAL);

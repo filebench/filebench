@@ -123,7 +123,7 @@ flowop_printall(void)
 	flowop_t *flowop = filebench_shm->shm_flowoplist;
 
 	while (flowop) {
-		filebench_log(LOG_VERBOSE, "flowop-list %s-%d",
+		filebench_log(LOG_INFO, "flowop-list %s-%d",
 		    flowop->fo_name, flowop->fo_instance);
 		flowop = flowop->fo_next;
 	}
