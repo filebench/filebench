@@ -32,6 +32,4 @@ void eventgen_init(void);
 void eventgen_setrate(avd_t rate);
 void eventgen_reset(void);
 
-#define	EVENTGEN_VAR "rate"
-
 #endif	/* _FB_EVENTGEN_H */
