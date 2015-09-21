@@ -28,10 +28,8 @@
 
 #include "filebench.h"
 
-#define	FB_SEC2NSEC	1000000000UL
 void eventgen_init(void);
 void eventgen_setrate(avd_t rate);
-var_t *eventgen_ratevar(var_t *var);
 void eventgen_reset(void);
 
 #define	EVENTGEN_VAR "rate"

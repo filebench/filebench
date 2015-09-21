@@ -18,6 +18,7 @@
  *
  * CDDL HEADER END
  */
+
 /*
  * Copyright 2009 Sun Microsystems, Inc.  All rights reserved.
  * Use is subject to license terms.
@@ -26,17 +27,16 @@
  */
 
 /*
- * The event generator in this module is the producer half of a
- * metering system which blocks flows using consumer routines in the
- * flowop_library.c module. Four routines in that module can limit rates
- * by event rate (flowoplib_eventlimit), by I/O operations rate
- * (flowoplib_iopslimit()), by operations rate (flowoplib_opslimit),
- * or by I/O bandwidth limit (flowoplib_bwlimit). By setting appropriate
- * event generation rates, required calls per second, I/O ops per second,
- * file system ops per second, or I/O bandwidth per second limits can
- * be set. Note, the generated events are shared with all consumer
- * flowops, of which their will be one for each process / thread
- * instance which has a consumer flowop defined in it.
+ * The event generator in this module is the producer half of a metering system
+ * which blocks flowops using consumer routines in the flowop_library.c module.
+ * Four routines in that module can limit rates by event rate
+ * (flowoplib_eventlimit), by I/O operations rate (flowoplib_iopslimit()), by
+ * operations rate (flowoplib_opslimit), or by I/O bandwidth limit
+ * (flowoplib_bwlimit). By setting appropriate event generation rates, required
+ * calls per second, I/O ops per second, file system ops per second, or I/O
+ * bandwidth per second limits can be set. Note, the generated events are
+ * shared with all consumer flowops, of which their will be one for each
+ * process / thread instance which has a consumer flowop defined in it.
  */
 
 #include <sys/time.h>
@@ -47,20 +47,19 @@
 #include "flowop.h"
 #include "ipc.h"
 
+#define	FB_SEC2NSEC	1000000000UL
+
 /*
- * The producer side of the event system.
- * Once eventgen_hz has been set by eventgen_setrate(),
- * the routine sends eventgen_hz events per second until
+ * The producer side of the event system.  Once eventgen_hz has been set by
+ * eventgen_setrate(), the routine sends eventgen_hz events per second until
  * the program terminates. Events are posted by incrementing
- * filebench_shm->shm_eventgen_q by the number of generated
- * events then signalling the condition variable
- * filebench_shm->shm_eventgen_cv to indicate to event consumers
- * that more events are available.
+ * filebench_shm->shm_eventgen_q by the number of generated events then
+ * signalling the condition variable filebench_shm->shm_eventgen_cv to indicate
+ * to event consumers that more events are available.
  *
- * Eventgen_thread attempts to sleep for 10 event periods,
- * then, once awakened, determines how many periods actually
- * passed since sleeping, and issues a set of events equal
- * to the number of periods that it slept, thus keeping the
+ * Eventgen_thread attempts to sleep for 10 event periods, then, once awakened,
+ * determines how many periods actually passed since sleeping, and issues a set
+ * of events equal to the number of periods that it slept, thus keeping the
  * average rate at the requested rate.
  */
 static void
@@ -71,7 +70,6 @@ eventgen_thread(void)
 	last = gethrtime();
 	filebench_shm->shm_eventgen_enabled = FALSE;
 
-	/* CONSTCOND */
 	while (1) {
 		struct timespec sleeptime;
 		hrtime_t delta;
@@ -88,7 +86,7 @@ eventgen_thread(void)
 				continue;
 		}
 
-		/* Sleep for 10xperiod */
+		/* Sleep for [10 x period] */
 		sleeptime.tv_sec = 0;
 		sleeptime.tv_nsec = FB_SEC2NSEC / rate;
 
@@ -100,24 +98,32 @@ eventgen_thread(void)
 		if (sleeptime.tv_sec > 0)
 			sleeptime.tv_nsec -= (sleeptime.tv_sec * FB_SEC2NSEC);
 
-		(void) nanosleep(&sleeptime, NULL);
+		(void)nanosleep(&sleeptime, NULL);
+
 		delta = gethrtime() - last;
 		last = gethrtime();
+
 		count = (rate * delta) / FB_SEC2NSEC;
 
-		filebench_log(LOG_DEBUG_SCRIPT,
-		    "delta %llums count %d",
-		    (u_longlong_t)(delta / 1000000), count);
+		filebench_log(LOG_DEBUG_SCRIPT, "delta %lluns count %d",
+		    		(u_longlong_t)delta, count);
 
 		/* Send 'count' events */
-		(void) ipc_mutex_lock(&filebench_shm->shm_eventgen_lock);
-		/* Keep the producer with a max of 5 second depth */
+		(void)ipc_mutex_lock(&filebench_shm->shm_eventgen_lock);
+
+		/*
+  		 * Keep the producer with a max of 5 second depth.
+  		 * Events accumulate in shm_eventgen_cv even before
+  		 * worker threads are created. But eventgen_reset()
+  		 * drops shm_eventgen_q to zero after the worker threads
+  		 * are created.
+ 		 */
 		if (filebench_shm->shm_eventgen_q < (5 * rate))
 			filebench_shm->shm_eventgen_q += count;
 
-		(void) pthread_cond_signal(&filebench_shm->shm_eventgen_cv);
+		(void)pthread_cond_signal(&filebench_shm->shm_eventgen_cv);
 
-		(void) ipc_mutex_unlock(&filebench_shm->shm_eventgen_lock);
+		(void)ipc_mutex_unlock(&filebench_shm->shm_eventgen_lock);
 	}
 }
 
@@ -135,17 +141,6 @@ eventgen_init(void)
 		    strerror(errno));
 		exit(1);
 	}
-}
-
-/*
- * Puts the current event rate in the integer portion of the
- * supplied var_t. Returns a pointer to the var_t.
- */
-var_t *
-eventgen_ratevar(var_t *var)
-{
-	VAR_SET_INT(var, avd_get_int(filebench_shm->shm_eventgen_hz));
-	return var;
 }
 
 /*
