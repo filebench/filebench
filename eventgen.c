@@ -82,11 +82,10 @@ eventgen_thread(void)
 			continue;
 		} else {
 			rate = avd_get_int(filebench_shm->shm_eventgen_hz);
-			if (rate > 0) {
+			if (rate > 0)
 				filebench_shm->shm_eventgen_enabled = TRUE;
-			} else {
+			else
 				continue;
-			}
 		}
 
 		/* Sleep for 10xperiod */
@@ -131,7 +130,7 @@ eventgen_init(void)
 	pthread_t tid;
 
 	if (pthread_create(&tid, NULL,
-	    (void *(*)(void*))eventgen_thread, 0) != 0) {
+	    (void *(*)(void *))eventgen_thread, 0) != 0) {
 		filebench_log(LOG_ERROR, "create timer thread failed: %s",
 		    strerror(errno));
 		exit(1);
@@ -146,7 +145,7 @@ var_t *
 eventgen_ratevar(var_t *var)
 {
 	VAR_SET_INT(var, avd_get_int(filebench_shm->shm_eventgen_hz));
-	return (var);
+	return var;
 }
 
 /*
