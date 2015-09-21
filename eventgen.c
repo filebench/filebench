@@ -106,18 +106,18 @@ eventgen_thread(void)
 		count = (rate * delta) / FB_SEC2NSEC;
 
 		filebench_log(LOG_DEBUG_SCRIPT, "delta %lluns count %d",
-		    		(u_longlong_t)delta, count);
+			(u_longlong_t)delta, count);
 
 		/* Send 'count' events */
 		(void)ipc_mutex_lock(&filebench_shm->shm_eventgen_lock);
 
 		/*
-  		 * Keep the producer with a max of 5 second depth.
-  		 * Events accumulate in shm_eventgen_cv even before
-  		 * worker threads are created. But eventgen_reset()
-  		 * drops shm_eventgen_q to zero after the worker threads
-  		 * are created.
- 		 */
+		 * Keep the producer with a max of 5 second depth.
+		 * Events accumulate in shm_eventgen_cv even before
+		 * worker threads are created. But eventgen_reset()
+		 * drops shm_eventgen_q to zero after the worker threads
+		 * are created.
+		 */
 		if (filebench_shm->shm_eventgen_q < (5 * rate))
 			filebench_shm->shm_eventgen_q += count;
 
