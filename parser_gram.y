@@ -122,8 +122,6 @@ static void parser_run_variable(cmd_t *cmd);
 static void parser_psrun(cmd_t *cmd);
 static void parser_sleep(cmd_t *cmd);
 static void parser_sleep_variable(cmd_t *cmd);
-static void parser_warmup(cmd_t *cmd);
-static void parser_warmup_variable(cmd_t *cmd);
 static void parser_abort(int arg);
 static void parser_version(cmd_t *cmd);
 static void parser_osprof_enable(cmd_t *cmd);
@@ -197,7 +195,6 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> eventgen_command quit_command flowop_list thread_list
 %type <cmd> thread echo_command
 %type <cmd> version_command enable_command multisync_command
-%type <cmd> warmup_command
 %type <cmd> set_variable set_random_variable set_custom_variable set_mode
 %type <cmd> osprof_enable_command osprof_disable_command
 
@@ -216,7 +213,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <ival> randvar_attr_name FSA_TYPE randtype_name
 %type <ival> randsrc_name FSA_RANDSRC em_attr_name
 %type <ival> FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC
-%type <ival> fscheck_attr_name FSA_FSTYPE
+%type <ival> FSA_FSTYPE
 %type <ival> cvar_attr_name
 
 %type <rndtb>  probtabentry_list probtabentry
@@ -250,7 +247,6 @@ command:
 | set_command
 | shutdown_command
 | sleep_command
-| warmup_command
 | stats_command
 | system_command
 | version_command
@@ -782,21 +778,6 @@ shutdown_command: FSC_SHUTDOWN entity
 
 };
 
-warmup_command: FSC_WARMUP FSV_VAL_INT
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = parser_warmup;
-	$$->cmd_qty = $2;
-}
-| FSC_WARMUP FSV_VARIABLE
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = parser_warmup_variable;
-	$$->cmd_tgt1 = fb_stralloc($2);
-};
-
 sleep_command: FSC_SLEEP FSV_VAL_INT
 {
 	if (($$ = alloc_cmd()) == NULL)
@@ -1281,10 +1262,6 @@ attrs_eventgen:
 em_attr_name:
   FSA_MASTER { $$ = FSA_MASTER;}
 | FSA_CLIENT { $$ = FSA_CLIENT;};
-
-fscheck_attr_name:
-  FSA_PATH { $$ = FSA_PATH;}
-| FSA_FSTYPE { $$ = FSA_FSTYPE;};
 
 comp_attr_ops: comp_attr_op
 {
@@ -2951,51 +2928,6 @@ parser_domultisync(cmd_t *cmd)
 		value = 1;
 
 	mc_sync_synchronize((int)value);
-}
-
-/*
- * Sleeps for cmd->cmd_qty seconds, one second at a time.
- */
-static void
-parser_warmup(cmd_t *cmd)
-{
-	int sleeptime;
-
-	/* check for startup errors */
-	if (filebench_shm->shm_f_abort)
-		return;
-
-	sleeptime = cmd->cmd_qty;
-	filebench_log(LOG_INFO, "Warming up...");
-
-	(void) parser_pause(sleeptime);
-}
-
-/*
- * Same as parser_sleep, except the sleep time is obtained from a variable
- * whose name is passed to it as an argument on the command line.
- */
-static void
-parser_warmup_variable(cmd_t *cmd)
-{
-	avd_t integer = avd_var_alloc(cmd->cmd_tgt1);
-	int sleeptime;
-
-	if (integer == NULL) {
-		filebench_log(LOG_ERROR, "Unknown variable %s",
-		cmd->cmd_tgt1);
-		return;
-	}
-
-	sleeptime = avd_get_int(integer);
-
-	/* check for startup errors */
-	if (filebench_shm->shm_f_abort)
-		return;
-
-	filebench_log(LOG_INFO, "Warming up...");
-
-	(void) parser_pause(sleeptime);
 }
 
 /*
