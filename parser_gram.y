@@ -811,13 +811,6 @@ sleep_command: FSC_SLEEP FSV_VAL_INT
 	$$->cmd = parser_sleep_variable;
 	$$->cmd_tgt1 = fb_stralloc($2);
 }
-| FSC_SLEEP
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = parser_sleep;
-	$$->cmd_qty = 0;
-}
 
 run_command: FSC_RUN FSV_VAL_INT
 {
@@ -3019,11 +3012,11 @@ parser_sleep(cmd_t *cmd)
 		return;
 
 	sleeptime = cmd->cmd_qty;
-	filebench_log(LOG_INFO, "Running...");
+	filebench_log(LOG_INFO, "Sleeping...");
 
 	timeslept = parser_pause(sleeptime);
 
-	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
+	filebench_log(LOG_INFO, "Slept for %d seconds...", timeslept);
 }
 
 /*
