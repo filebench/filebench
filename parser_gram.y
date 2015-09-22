@@ -108,7 +108,6 @@ static void parser_fileset_shutdown(cmd_t *cmd);
 /* Other Commands */
 static void parser_echo(cmd_t *cmd);
 static void parser_system(cmd_t *cmd);
-static void parser_statssnap(cmd_t *cmd);
 static void parser_eventgen(cmd_t *cmd);
 static void parser_enable_mc(cmd_t *cmd);
 static void parser_domultisync(cmd_t *cmd);
@@ -2676,7 +2675,7 @@ parser_run(cmd_t *cmd)
 	timeslept = parser_pause(runtime);
 
 	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
-	parser_statssnap(cmd);
+	stats_snap();
 	parser_proc_shutdown(cmd);
 	parser_filebench_shutdown((cmd_t *)0);
 }
@@ -2736,14 +2735,14 @@ parser_psrun(cmd_t *cmd)
 							timeslept >= runtime)
 			break;
 
-		parser_statssnap(cmd);
+		stats_snap();
 
 		if (reset_stats)
 			stats_clear();
 	}
 
 	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
-	parser_statssnap(cmd);
+	stats_snap();
 	parser_proc_shutdown(cmd);
 	parser_filebench_shutdown((cmd_t *)0);
 }
@@ -2784,7 +2783,7 @@ parser_run_variable(cmd_t *cmd)
 	timeslept = parser_pause(runtime);
 
 	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
-	parser_statssnap(cmd);
+	stats_snap();
 	parser_proc_shutdown(cmd);
 	parser_filebench_shutdown((cmd_t *)0);
 }
@@ -2963,50 +2962,6 @@ parser_osprof_disable(cmd_t *cmd)
 {
 	filebench_shm->osprof_enabled = 0;
 	filebench_log(LOG_INFO, "OSprof disabled");
-}
-
-/*
- * Kills off background statistics collection processes, then takes a snapshot
- * of the filebench run's collected statistics using stats_snap() from
- * stats.c.
- */
-static void
-parser_statssnap(cmd_t *cmd)
-{
-	pidlist_t *pidlistent;
-	int stat;
-	pid_t pid;
-
-	for (pidlistent = pidlist; pidlistent != NULL;
-	    pidlistent = pidlistent->pl_next) {
-		filebench_log(LOG_VERBOSE, "Killing session %d for pid %d",
-		    getsid(pidlistent->pl_pid),
-		    pidlistent->pl_pid);
-		if (pidlistent->pl_fd)
-			(void) close(pidlistent->pl_fd);
-#ifdef HAVE_SIGSEND
-		sigsend(P_SID, getsid(pidlistent->pl_pid), SIGTERM);
-#else
-		(void) kill(-1, SIGTERM);
-#endif
-
-		/* Close pipe */
-		if (pidlistent->pl_fd)
-			(void) close(pidlistent->pl_fd);
-
-		/* Wait for cmd and all its children */
-		while ((pid = waitpid(pidlistent->pl_pid * -1, &stat, 0)) > 0)
-			filebench_log(LOG_DEBUG_IMPL,
-			"Waited for pid %d", (int)pid);
-	}
-
-	for (pidlistent = pidlist; pidlistent != NULL;
-	    pidlistent = pidlistent->pl_next) {
-		free(pidlistent);
-	}
-
-	pidlist = NULL;
-	stats_snap();
 }
 
 /*
