@@ -199,7 +199,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> sleep_command stats_command set_command shutdown_command
 %type <cmd> log_command system_command flowop_command
 %type <cmd> eventgen_command quit_command flowop_list thread_list
-%type <cmd> thread echo_command help_command
+%type <cmd> thread echo_command
 %type <cmd> version_command enable_command multisync_command
 %type <cmd> warmup_command fscheck_command fsflush_command
 %type <cmd> set_variable set_random_variable set_custom_variable set_mode
@@ -251,7 +251,6 @@ command:
 | echo_command
 | fscheck_command
 | fsflush_command
-| help_command
 | list_command
 | log_command
 | run_command
@@ -921,13 +920,6 @@ psrun_command: FSC_PSRUN
 	$$->cmd = parser_psrun;
 	$$->cmd_qty1 = $2;
 	$$->cmd_qty = $3;
-};
-
-help_command: FSC_HELP
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = parser_help;
 };
 
 flowop_command: FSC_FLOWOP name
@@ -2966,24 +2958,6 @@ parser_run_variable(cmd_t *cmd)
 	parser_statssnap(cmd);
 	parser_proc_shutdown(cmd);
 	parser_filebench_shutdown((cmd_t *)0);
-}
-
-char *usagestr = NULL;
-
-/*
- * Prints usage string if defined, else just a message requesting load of a
- * personality.
- */
-static void
-parser_help(cmd_t *cmd)
-{
-	if (usagestr) {
-		filebench_log(LOG_INFO, "%s", usagestr);
-	} else {
-		filebench_log(LOG_INFO,
-		    "load <personality> (ls "
-		    "%s/workloads for list)", FBDATADIR);
-	}
 }
 
 /*
