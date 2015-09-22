@@ -109,7 +109,6 @@ static void parser_fileset_shutdown(cmd_t *cmd);
 static void parser_echo(cmd_t *cmd);
 static void parser_fscheck(cmd_t *cmd);
 static void parser_fsflush(cmd_t *cmd);
-static void parser_log(cmd_t *cmd);
 static void parser_statscmd(cmd_t *cmd);
 static void parser_statsdump(cmd_t *cmd);
 static void parser_statsxmldump(cmd_t *cmd);
@@ -127,7 +126,6 @@ static void parser_sleep(cmd_t *cmd);
 static void parser_sleep_variable(cmd_t *cmd);
 static void parser_warmup(cmd_t *cmd);
 static void parser_warmup_variable(cmd_t *cmd);
-static void parser_help(cmd_t *cmd);
 static void parser_abort(int arg);
 static void parser_version(cmd_t *cmd);
 static void parser_osprof_enable(cmd_t *cmd);
@@ -197,7 +195,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> proc_define_command files_define_command
 %type <cmd> fo_define_command debug_command create_command
 %type <cmd> sleep_command stats_command set_command shutdown_command
-%type <cmd> log_command system_command flowop_command
+%type <cmd> system_command flowop_command
 %type <cmd> eventgen_command quit_command flowop_list thread_list
 %type <cmd> thread echo_command
 %type <cmd> version_command enable_command multisync_command
@@ -252,7 +250,6 @@ command:
 | fscheck_command
 | fsflush_command
 | list_command
-| log_command
 | run_command
 | psrun_command
 | set_command
@@ -499,14 +496,6 @@ fsflush_command: FSC_FSFLUSH fscheck_attr_op
 	$$->cmd = &parser_fsflush;
 
 	$$->cmd_attr_list = $2;
-};
-
-log_command: FSC_LOG whitevar_string_list
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = &parser_log;
-	$$->cmd_param_list = $2;
 };
 
 debug_command: FSC_DEBUG FSV_VAL_INT
@@ -3100,30 +3089,6 @@ parser_sleep_variable(cmd_t *cmd)
 	timeslept = parser_pause(sleeptime);
 
 	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
-}
-
-/*
- * Parser log prints the values of a list of variables to the log file.
- * The list of variables is placed on the command line, separated
- * by comas and the entire list is enclosed in quotes.
- * For example, if $dir contains "/export/home/tmp" and $filesize = 1048576,
- * then typing: log "$dir, $filesize" prints: log /export/home/tmp, 1048576
- */
-static void
-parser_log(cmd_t *cmd)
-{
-	char *string;
-
-	if (cmd->cmd_param_list == NULL)
-		return;
-
-	string = parser_list2string(cmd->cmd_param_list);
-
-	if (string == NULL)
-		return;
-
-	filebench_log(LOG_VERBOSE, "log %s", string);
-	filebench_log(LOG_LOG, "%s", string);
 }
 
 /*
