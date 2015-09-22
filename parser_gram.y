@@ -107,8 +107,6 @@ static void parser_fileset_shutdown(cmd_t *cmd);
 
 /* Other Commands */
 static void parser_echo(cmd_t *cmd);
-static void parser_fscheck(cmd_t *cmd);
-static void parser_fsflush(cmd_t *cmd);
 static void parser_statscmd(cmd_t *cmd);
 static void parser_statsdump(cmd_t *cmd);
 static void parser_statsxmldump(cmd_t *cmd);
@@ -199,7 +197,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> eventgen_command quit_command flowop_list thread_list
 %type <cmd> thread echo_command
 %type <cmd> version_command enable_command multisync_command
-%type <cmd> warmup_command fscheck_command fsflush_command
+%type <cmd> warmup_command
 %type <cmd> set_variable set_random_variable set_custom_variable set_mode
 %type <cmd> osprof_enable_command osprof_disable_command
 
@@ -209,7 +207,6 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <attr> randvar_attr_srcop attr_value
 %type <attr> comp_lvar_def comp_attr_op comp_attr_ops
 %type <attr> enable_multi_ops enable_multi_op multisync_op
-%type <attr> fscheck_attr_op
 %type <attr> cvar_attr_ops cvar_attr_op
 %type <list> var_string_list
 %type <list> var_string whitevar_string whitevar_string_list
@@ -247,8 +244,6 @@ command:
 | eventgen_command
 | create_command
 | echo_command
-| fscheck_command
-| fsflush_command
 | list_command
 | run_command
 | psrun_command
@@ -474,28 +469,6 @@ list_command: FSC_LIST FSE_FILESET
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
 	$$->cmd = &parser_flowop_list;
-};
-
-fscheck_command: FSC_FSCHECK fscheck_attr_op
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = &parser_fscheck;
-
-	$$->cmd_attr_list = $2;
-}
-| fscheck_command fscheck_attr_op
-{
-	$1->cmd_attr_list->attr_next = $2;
-};
-
-fsflush_command: FSC_FSFLUSH fscheck_attr_op
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = &parser_fsflush;
-
-	$$->cmd_attr_list = $2;
 };
 
 debug_command: FSC_DEBUG FSV_VAL_INT
@@ -1214,14 +1187,6 @@ multisync_op: FSA_VALUE FSK_ASSIGN attr_value
 {
 	$$ = $3;
 	$$->attr_name = FSA_VALUE;
-};
-
-fscheck_attr_op: fscheck_attr_name FSK_ASSIGN FSV_STRING
-{
-	if (($$ = alloc_attr()) == NULL)
-		YYERROR;
-	$$->attr_avd = avd_str_alloc($3);
-	$$->attr_name = $1;
 };
 
 files_attr_name: attrs_define_fileset;
@@ -3273,142 +3238,6 @@ parser_echo(cmd_t *cmd)
 		return;
 
 	filebench_log(LOG_INFO, "%s", string);
-}
-
-static void parser_fscheck(cmd_t *cmd) {
-	return;
-}
-
-#if 0
-/* XXX: do not support this command for now */
-/*
- * Checks to see if the specified data directory exists and it's mounted file
- * system is the correct type.
- */
-static void
-parser_fscheck(cmd_t *cmd)
-{
-	int fstype_idx;
-	char *pathname = NULL;
-	char *filesys = "tmpfs";
-	char string[MAXPATHLEN];
-	struct statvfs64 statbuf;
-	attr_t *attr;
-
-	if (cmd->cmd_attr_list == NULL)
-		return;
-
-	for (attr = cmd->cmd_attr_list; attr; attr = attr->attr_next) {
-
-		switch(attr->attr_name) {
-		case FSA_PATH:
-			pathname = avd_get_str(attr->attr_avd);
-			break;
-		case FSA_FSTYPE:
-			filesys = avd_get_str(attr->attr_avd);
-			break;
-		}
-	}
-
-	if (pathname == NULL)
-		return;
-
-	if (statvfs64(pathname, &statbuf) < 0) {
-		filebench_log(LOG_ERROR,
-		    "%s error with supplied data path name: %s; exiting",
-		    strerror(errno), pathname);
-		filebench_shutdown(1);
-		return;
-	}
-
-	if (strncmp(filesys, statbuf.f_basetype, FSTYPSZ) != 0) {
-		filebench_log(LOG_ERROR,
-		    "File System is of type %s, NOT %s as indicated",
-		    statbuf.f_basetype, filesys);
-		filebench_shutdown(1);
-		return;
-	}
-}
-#endif
-
-/*
- * Checks to see if any filesets need to have their caches flushed, and
- * if so invokes the fs_flush script.
- */
-static void
-parser_fsflush(cmd_t *cmd)
-{
-	fileset_t *fileset;
-	char **fspathlist;
-	char *pathname = NULL;
-	char *filesys = NULL;
-	char string[MAXPATHLEN];
-	attr_t *attr;
-	int fsidx;
-
-	if ((attr = cmd->cmd_attr_list) == NULL)
-		return;
-
-	/* Get supplied file system type */
-	if (attr->attr_name == FSA_FSTYPE)
-		filesys = avd_get_str(attr->attr_avd);
-
-	if (filesys == NULL) {
-		filebench_log(LOG_ERROR,
-		    "FSFLUSH command lacks file system type");
-		return;
-	}
-
-	/* Check all filesets for any that remain cached and count them*/
-	fsidx = 0;
-	for (fileset = filebench_shm->shm_filesetlist; fileset != NULL;
-	     fileset = fileset->fs_next) {
-
-		if (avd_get_bool(fileset->fs_cached))
-			return;
-
-		fsidx++;
-	}
-
-	/* allocated space for fileset path pointers */
-	fspathlist = (char **)malloc(fsidx * sizeof(char *));
-
-	/* If flushing still required, flush all filesets */
-	fsidx = 0;
-	for (fileset = filebench_shm->shm_filesetlist; fileset != NULL;
-	     fileset = fileset->fs_next) {
-		int idx;
-
-		if ((pathname = avd_get_str(fileset->fs_path)) == NULL)
-			goto out;
-
-		for (idx = 0; idx < fsidx; idx++) {
-			if (strcmp(pathname, fspathlist[idx]) == 0)
-				break;
-		}
-
-		if (fsidx == idx) {
-
-			/* found a new path */
-			fspathlist[fsidx++] = pathname;
-
-			/* now flush it */
-			snprintf(string, MAXPATHLEN,
-			    "%s/scripts/fs_flush %s %s", FBDATADIR,
-			    filesys, pathname);
-
-			if (system(string) < 0) {
-				filebench_log(LOG_ERROR,
-				    "exec of fs_flush script failed: %s",
-				    strerror(errno));
-				free(fspathlist);
-				filebench_shutdown(1);
-			}
-		}
-	}
-
-out:
-	free(fspathlist);
 }
 
 /*
