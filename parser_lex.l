@@ -88,7 +88,6 @@ stats                   { return FSC_STATS; }
 system                  { return FSC_SYSTEM; }
 usage                   { return FSC_USAGE; }
 version                 { return FSC_VERSION; }
-lathist			{ return FSC_LATHIST; }
 warmup                  { return FSC_WARMUP; }
 
 file[s]*       	        { return FSE_FILE; }
@@ -106,6 +105,7 @@ multidump               { return FSE_MULTIDUMP; }
 mode                    { return FSE_MODE; }
 multi			{ return FSE_MULTI; }
 cvar                    { return FSE_CVAR; }
+lathist			{ return FSE_LATHIST; }
 
 alldone                 { return FSA_ALLDONE; }
 blocking                { return FSA_BLOCKING; }

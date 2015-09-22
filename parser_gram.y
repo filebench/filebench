@@ -117,7 +117,7 @@ static void parser_sleep(cmd_t *cmd);
 static void parser_sleep_variable(cmd_t *cmd);
 static void parser_abort(int arg);
 static void parser_version(cmd_t *cmd);
-static void parser_lathist(cmd_t *cmd);
+static void parser_enable_lathist(cmd_t *cmd);
 
 %}
 
@@ -159,7 +159,7 @@ static void parser_lathist(cmd_t *cmd);
 %token FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC FSS_ROUND
 %token FSA_LVAR_ASSIGN
 %token FSA_ALLDONE FSA_FIRSTDONE FSA_TIMEOUT
-%token FSC_LATHIST
+%token FSE_LATHIST
 %token FSA_NOREADAHEAD
 %token FSA_IOPRIO
 %token FSA_WRITEONLY
@@ -188,7 +188,6 @@ static void parser_lathist(cmd_t *cmd);
 %type <cmd> thread echo_command
 %type <cmd> version_command enable_command multisync_command
 %type <cmd> set_variable set_random_variable set_custom_variable set_mode
-%type <cmd> lathist
 
 %type <attr> files_attr_op files_attr_ops p_attr_op t_attr_op p_attr_ops t_attr_ops
 %type <attr> fo_attr_op fo_attr_ops ev_attr_op ev_attr_ops
@@ -237,13 +236,12 @@ command:
 | psrun_command
 | set_command
 | shutdown_command
+| quit_command
 | sleep_command
 | system_command
 | version_command
-| lathist
 | enable_command
 | multisync_command
-| quit_command
 
 eventgen_command: FSC_EVENTGEN
 {
@@ -281,14 +279,6 @@ version_command: FSC_VERSION
 	$$->cmd = parser_version;
 };
 
-lathist: FSC_LATHIST FSV_VAL_BOOLEAN
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = parser_lathist;
-	$$->cmd_qty1 = $2;
-};
-
 enable_command: FSC_ENABLE FSE_MULTI
 {
 	if (($$ = alloc_cmd()) == NULL)
@@ -296,9 +286,16 @@ enable_command: FSC_ENABLE FSE_MULTI
 
 	$$->cmd = parser_enable_mc;
 }
-| enable_command  enable_multi_ops
+| enable_command enable_multi_ops
 {
 	$1->cmd_attr_list = $2;
+}
+| FSC_ENABLE FSE_LATHIST
+{
+	if (($$ = alloc_cmd()) == NULL)
+		YYERROR;
+
+	$$->cmd = parser_enable_lathist;
 };
 
 multisync_command: FSC_DOMULTISYNC multisync_op
@@ -2936,15 +2933,10 @@ parser_version(cmd_t *cmd)
 }
 
 static void
-parser_lathist(cmd_t *cmd)
+parser_enable_lathist(cmd_t *cmd)
 {
-	if (cmd->cmd_qty1 == TRUE) {
-		filebench_shm->lathist_enabled = 1;
-		filebench_log(LOG_INFO, "Latency histogram enabled");
-	} else {
-		filebench_shm->lathist_enabled = 0;
-		filebench_log(LOG_INFO, "Latency histogram disabled");
-	}
+	filebench_shm->lathist_enabled = 1;
+	filebench_log(LOG_INFO, "Latency histogram enabled");
 }
 
 /*
