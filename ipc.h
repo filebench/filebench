@@ -155,7 +155,6 @@ typedef struct filebench_shm {
 	 */
 	int		shm_debug_level;
 	int		shm_bequiet;	/* pause run while collecting stats */
-	int		shm_log_fd;	/* log file descriptor */
 	int		shm_dump_fd;	/* dump file descriptor */
 	char		shm_dump_filename[MAXPATHLEN];
 

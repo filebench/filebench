@@ -371,7 +371,6 @@ void ipc_init(void)
 
 	filebench_shm->shm_semkey = key;
 	filebench_shm->shm_sys_semid = -1;
-	filebench_shm->shm_log_fd = -1;
 	filebench_shm->shm_dump_fd = -1;
 	filebench_shm->shm_eventgen_hz = 0;
 	filebench_shm->shm_id = -1;

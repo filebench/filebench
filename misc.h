@@ -45,7 +45,6 @@
 #define	LOG_DEBUG_IMPL 6
 #define	LOG_DEBUG_NEVER 10
 #define	LOG_FATAL 999	/* really bad error, shut down */
-#define	LOG_LOG 1000
 #define	LOG_DUMP 1001
 
 var_t *date_var(var_t *var);

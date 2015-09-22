@@ -174,9 +174,8 @@ extern int lex_lineno;
  * Writes a message consisting of information formated by
  * "fmt" to the log file, dump file or stdout.  The supplied
  * "level" argument determines which file to write to and
- * what other actions to take. The level LOG_LOG writes to
- * the "log" file, and will open the file on the first
- * invocation. The level LOG_DUMP writes to the "dump" file,
+ * what other actions to take.
+ * The level LOG_DUMP writes to the "dump" file,
  * and will open it on the first invocation. Other levels
  * print to the stdout device, with the amount of information
  * dependent on the error level and the current error level
@@ -200,35 +199,6 @@ __V((int level, const char *fmt, ...))
 
 	if (level == LOG_FATAL)
 		goto fatal;
-
-	/* open logfile if not already open and writing to it */
-	if ((level == LOG_LOG) &&
-	    (filebench_shm->shm_log_fd < 0)) {
-		char path[MAXPATHLEN];
-		char *s;
-
-		(void) strcpy(path, filebench_shm->shm_fscriptname);
-		if ((s = strstr(path, ".f")))
-			*s = 0;
-		else
-			(void) strcpy(path, "filebench");
-
-		(void) strcat(path, ".csv");
-
-		filebench_shm->shm_log_fd =
-		    open(path, O_RDWR | O_CREAT | O_TRUNC, 0666);
-	}
-
-	/*
-	 * if logfile still not open, switch to LOG_ERROR level so
-	 * it gets reported to stdout
-	 */
-	if ((level == LOG_LOG) &&
-	    (filebench_shm->shm_log_fd < 0)) {
-		(void) snprintf(line, sizeof (line),  "Open logfile failed: %s",
-		    strerror(errno));
-		level = LOG_ERROR;
-	}
 
 	/* open dumpfile if not already open and writing to it */
 	if ((level == LOG_DUMP) &&
@@ -264,7 +234,7 @@ __V((int level, const char *fmt, ...))
 	}
 
 	/* Only log greater or equal than debug setting */
-	if ((level != LOG_DUMP) && (level != LOG_LOG) &&
+	if ((level != LOG_DUMP) &&
 	    (level > filebench_shm->shm_debug_level))
 		return;
 
@@ -292,17 +262,7 @@ fatal:
 	/* Serialize messages to log */
 	(void) ipc_mutex_lock(&filebench_shm->shm_msg_lock);
 
-	if (level == LOG_LOG) {
-		if (filebench_shm->shm_log_fd > 0) {
-			(void) snprintf(buf, sizeof (buf), "%s\n", line);
-			ret = write(filebench_shm->shm_log_fd, buf,
-			    strlen(buf));
-			(void) fsync(filebench_shm->shm_log_fd);
-			(void) ipc_mutex_unlock(&filebench_shm->shm_msg_lock);
-			return;
-		}
-
-	} else if (level == LOG_DUMP) {
+	if (level == LOG_DUMP) {
 		if (filebench_shm->shm_dump_fd != -1) {
 			(void) snprintf(buf, sizeof (buf), "%s\n", line);
 			ret = write(filebench_shm->shm_dump_fd, buf,
