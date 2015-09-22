@@ -114,7 +114,6 @@ static void parser_statscmd(cmd_t *cmd);
 static void parser_statsdump(cmd_t *cmd);
 static void parser_statsxmldump(cmd_t *cmd);
 static void parser_statsmultidump(cmd_t *cmd);
-static void parser_usage(cmd_t *cmd);
 static void parser_system(cmd_t *cmd);
 static void parser_statssnap(cmd_t *cmd);
 static void parser_directory(cmd_t *cmd);
@@ -200,7 +199,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> sleep_command stats_command set_command shutdown_command
 %type <cmd> log_command system_command flowop_command
 %type <cmd> eventgen_command quit_command flowop_list thread_list
-%type <cmd> thread echo_command usage_command help_command
+%type <cmd> thread echo_command help_command
 %type <cmd> version_command enable_command multisync_command
 %type <cmd> warmup_command fscheck_command fsflush_command
 %type <cmd> set_variable set_random_variable set_custom_variable set_mode
@@ -250,7 +249,6 @@ command:
 | eventgen_command
 | create_command
 | echo_command
-| usage_command
 | fscheck_command
 | fsflush_command
 | help_command
@@ -319,15 +317,6 @@ osprof_disable_command: FSC_OSPROF_DISABLE
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
 	$$->cmd = parser_osprof_disable;
-};
-
-usage_command: FSC_USAGE whitevar_string_list
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-
-	$$->cmd_param_list = $2;
-	$$->cmd = parser_usage;
 };
 
 enable_command: FSC_ENABLE FSE_MULTI
@@ -3510,48 +3499,6 @@ parser_osprof_disable(cmd_t *cmd)
 {
 	filebench_shm->osprof_enabled = 0;
 	filebench_log(LOG_INFO, "OSprof disabled");
-}
-
-/*
- * Adds the string supplied as the argument to the usage command
- * to the end of the string printed by the help command.
- */
-static void
-parser_usage(cmd_t *cmd)
-{
-	char *string;
-	char *newusage;
-
-	if (cmd->cmd_param_list == NULL)
-		return;
-
-	string = parser_list2string(cmd->cmd_param_list);
-
-	if (string == NULL)
-		return;
-
-	/* XXX: usage will be redone */
-	free(string);
-	return;
-
-	if (usagestr == NULL) {
-		newusage = malloc(strlen(string) + 2);
-		*newusage = 0;
-	} else {
-		newusage = malloc(strlen(usagestr) + strlen(string) + 2);
-		(void) strcpy(newusage, usagestr);
-	}
-	(void) strcat(newusage, "\n");
-	(void) strcat(newusage, string);
-
-	if (usagestr)
-		free(usagestr);
-
-	usagestr = newusage;
-
-	filebench_log(LOG_INFO, "%s", string);
-
-	free(string);
 }
 
 /*
