@@ -107,13 +107,8 @@ static void parser_fileset_shutdown(cmd_t *cmd);
 
 /* Other Commands */
 static void parser_echo(cmd_t *cmd);
-static void parser_statscmd(cmd_t *cmd);
-static void parser_statsdump(cmd_t *cmd);
-static void parser_statsxmldump(cmd_t *cmd);
-static void parser_statsmultidump(cmd_t *cmd);
 static void parser_system(cmd_t *cmd);
 static void parser_statssnap(cmd_t *cmd);
-static void parser_directory(cmd_t *cmd);
 static void parser_eventgen(cmd_t *cmd);
 static void parser_enable_mc(cmd_t *cmd);
 static void parser_domultisync(cmd_t *cmd);
@@ -190,7 +185,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> command run_command list_command psrun_command
 %type <cmd> proc_define_command files_define_command
 %type <cmd> fo_define_command debug_command create_command
-%type <cmd> sleep_command stats_command set_command shutdown_command
+%type <cmd> sleep_command set_command shutdown_command
 %type <cmd> system_command flowop_command
 %type <cmd> eventgen_command quit_command flowop_list thread_list
 %type <cmd> thread echo_command
@@ -205,8 +200,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <attr> comp_lvar_def comp_attr_op comp_attr_ops
 %type <attr> enable_multi_ops enable_multi_op multisync_op
 %type <attr> cvar_attr_ops cvar_attr_op
-%type <list> var_string_list
-%type <list> var_string whitevar_string whitevar_string_list
+%type <list> whitevar_string whitevar_string_list
 %type <ival> attrs_define_thread attrs_flowop
 %type <ival> attrs_define_fileset attrs_define_proc attrs_eventgen attrs_define_comp
 %type <ival> files_attr_name fo_attr_name ev_attr_name
@@ -247,7 +241,6 @@ command:
 | set_command
 | shutdown_command
 | sleep_command
-| stats_command
 | system_command
 | version_command
 | osprof_enable_command
@@ -326,40 +319,6 @@ multisync_command: FSC_DOMULTISYNC multisync_op
 	$$->cmd = parser_domultisync;
 	$$->cmd_attr_list = $2;
 }
-
-var_string: FSV_VARIABLE
-{
-	if (($$ = alloc_list()) == NULL)
-			YYERROR;
-
-	$$->list_string = avd_str_alloc($1);
-}
-| FSV_STRING
-{
-	if (($$ = alloc_list()) == NULL)
-			YYERROR;
-
-	$$->list_string = avd_str_alloc($1);
-};
-
-var_string_list: var_string
-{
-	$$ = $1;
-}
-| var_string_list var_string
-{
-	list_t *list = NULL;
-	list_t *list_end = NULL;
-
-	/* Find end of list */
-	for (list = $1; list != NULL;
-	    list = list->list_next)
-		list_end = list;
-
-	list_end->list_next = $2;
-
-	$$ = $1;
-};
 
 whitevar_string: FSK_QUOTE FSV_VARIABLE
 {
@@ -589,60 +548,6 @@ set_mode: FSC_SET FSE_MODE FSC_QUIT FSA_TIMEOUT
 	filebench_shm->shm_mmode |= FILEBENCH_MODE_NOUSAGE;
 
 	$$->cmd = NULL;
-};
-
-stats_command: FSC_STATS FSE_SNAP
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = (void (*)(struct cmd *))&parser_statssnap;
-	break;
-
-}
-| FSC_STATS FSE_CLEAR
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = (void (*)(struct cmd *))&stats_clear;
-
-}
-| FSC_STATS FSE_DIRECTORY var_string_list
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd_param_list = $3;
-	$$->cmd = (void (*)(struct cmd *))&parser_directory;
-
-}
-| FSC_STATS FSE_COMMAND whitevar_string_list
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-
-	$$->cmd_param_list = $3;
-	$$->cmd = parser_statscmd;
-
-}| FSC_STATS FSE_DUMP whitevar_string_list
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-
-	$$->cmd_param_list = $3;
-	$$->cmd = parser_statsdump;
-}| FSC_STATS FSE_XMLDUMP whitevar_string_list
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-
-	$$->cmd_param_list = $3;
-	$$->cmd = parser_statsxmldump;
-}| FSC_STATS FSE_MULTIDUMP whitevar_string_list
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-
-	$$->cmd_param_list = $3;
-	$$->cmd = parser_statsmultidump;
 };
 
 quit_command: FSC_QUIT
@@ -2982,140 +2887,6 @@ parser_sleep_variable(cmd_t *cmd)
 }
 
 /*
- * Implements the stats directory command. changes the directory for
- * dumping statistics to supplied directory path. For example:
- * 	stats directory /tmp
- * changes the stats directory to "/tmp".
- */
-static void
-parser_directory(cmd_t *cmd)
-{
-	char newdir[MAXPATHLEN];
-	char *dir;
-	int ret;
-
-	if ((dir = parser_list2string(cmd->cmd_param_list)) == NULL) {
-		filebench_log(LOG_ERROR, "Cannot interpret directory");
-		return;
-	}
-
-	*newdir = 0;
-	/* Change dir relative to cwd if path not fully qualified */
-	if (*dir != '/') {
-		(void) strcat(newdir, cwd);
-		(void) strcat(newdir, "/");
-	}
-	(void) strcat(newdir, dir);
-	(void) mkdir(newdir, 0755);
-	filebench_log(LOG_VERBOSE, "Change dir to %s", newdir);
-	ret = chdir(newdir);
-	free(dir);
-}
-
-#define	PIPE_PARENT 1
-#define	PIPE_CHILD  0
-
-/*
- * Runs the quoted unix command as a background process. Intended for
- * running statistics gathering utilities such as mpstat while the filebench
- * workload is running. Also records the pid's of the background processes
- * so that parser_statssnap() can terminate them when the run completes.
- */
-static void
-parser_statscmd(cmd_t *cmd)
-{
-	char *string;
-	pid_t pid;
-	pidlist_t *pidlistent;
-	int pipe_fd[2];
-	int newstdout;
-
-	if (cmd->cmd_param_list == NULL)
-		return;
-
-	string = parser_list2string(cmd->cmd_param_list);
-
-	if (string == NULL)
-		return;
-
-	if ((pipe(pipe_fd)) < 0) {
-		filebench_log(LOG_ERROR, "statscmd pipe failed");
-		goto out;
-	}
-
-#ifdef HAVE_FORK1
-	if ((pid = fork1()) < 0) {
-		filebench_log(LOG_ERROR, "statscmd fork failed");
-		goto out;
-	}
-#elif HAVE_FORK
-	if ((pid = fork()) < 0) {
-		filebench_log(LOG_ERROR, "statscmd fork failed");
-		goto out;
-	}
-#else
-	Crash! - Need code to deal with no fork1!
-#endif /* HAVE_FORK1 */
-
-	if (pid == 0) {
-
-		setsid();
-
-		filebench_log(LOG_VERBOSE,
-		    "Backgrounding %s", string);
-		/*
-		 * Child
-		 * - close stdout
-		 * - dup to create new stdout
-		 * - close pipe fds
-		 */
-		(void) close(1);
-
-		if ((newstdout = dup(pipe_fd[PIPE_CHILD])) < 0) {
-			filebench_log(LOG_ERROR,
-			    "statscmd dup failed: %s",
-			    strerror(errno));
-		}
-
-		(void) close(pipe_fd[PIPE_PARENT]);
-		(void) close(pipe_fd[PIPE_CHILD]);
-
-		if (system(string) < 0) {
-			filebench_log(LOG_ERROR,
-			    "statscmd exec failed: %s",
-			    strerror(errno));
-		}
-		/* Failed! */
-		exit(1);
-
-	} else {
-
-		/* Record pid in pidlist for subsequent reaping by stats snap */
-		if ((pidlistent = (pidlist_t *)malloc(sizeof (pidlist_t)))
-		    == NULL) {
-			filebench_log(LOG_ERROR, "pidlistent malloc failed");
-			goto out;
-		}
-
-		pidlistent->pl_pid = pid;
-		pidlistent->pl_fd = pipe_fd[PIPE_PARENT];
-		(void) close(pipe_fd[PIPE_CHILD]);
-
-		/* Add fileobj to global list */
-		if (pidlist == NULL) {
-			pidlist = pidlistent;
-			pidlistent->pl_next = NULL;
-		} else {
-			pidlistent->pl_next = pidlist;
-			pidlist = pidlistent;
-		}
-	}
-
-out:
-	free(string);
-}
-
-/*
  * Launches a shell to run the unix command supplied in the argument.
  * The command should be enclosed in quotes, as in:
  * 	system "rm xyz"
@@ -3192,81 +2963,6 @@ parser_osprof_disable(cmd_t *cmd)
 {
 	filebench_shm->osprof_enabled = 0;
 	filebench_log(LOG_INFO, "OSprof disabled");
-}
-
-/*
- * Updates the global dump filename with the filename supplied
- * as the command's argument. Then dumps the statistics of each
- * worker flowop into the dump file, followed by a summary of
- * overall totals.
- */
-static void
-parser_statsdump(cmd_t *cmd)
-{
-	char *string;
-
-	if (cmd->cmd_param_list == NULL)
-		return;
-
-	string = parser_list2string(cmd->cmd_param_list);
-
-	if (string == NULL)
-		return;
-
-	filebench_log(LOG_VERBOSE,
-	    "Stats dump to file '%s'", string);
-
-	stats_dump(string);
-
-	free(string);
-}
-
-/*
- * Same as statsdump, but outputs in a computer friendly format.
- */
-static void
-parser_statsmultidump(cmd_t *cmd)
-{
-	char *string;
-
-	if (cmd->cmd_param_list == NULL)
-		return;
-
-	string = parser_list2string(cmd->cmd_param_list);
-
-	if (string == NULL)
-		return;
-
-	filebench_log(LOG_VERBOSE,
-	    "Stats dump to file '%s'", string);
-
-	stats_multidump(string);
-
-	free(string);
-}
-
-/*
- * Same as parser_statsdump, but in xml format.
- */
-static void
-parser_statsxmldump(cmd_t *cmd)
-{
-	char *string;
-
-	if (cmd->cmd_param_list == NULL)
-		return;
-
-	string = parser_list2string(cmd->cmd_param_list);
-
-	if (string == NULL)
-		return;
-
-	filebench_log(LOG_VERBOSE,
-	    "Stats dump to file '%s'", string);
-
-	stats_xmldump(string);
-
-	free(string);
 }
 
 /*
