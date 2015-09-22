@@ -71,7 +71,7 @@ domultisync		{ return FSC_DOMULTISYNC; }
 echo                    { return FSC_ECHO; }
 enable			{ return FSC_ENABLE; }
 eventgen                { return FSC_EVENTGEN; }
-exit		        { return FSC_QUIT; }
+quit		        { return FSC_QUIT; }
 flowop		        { return FSC_FLOWOP; }
 fscheck		        { return FSC_FSCHECK; }
 fsflush		        { return FSC_FSFLUSH; }
@@ -91,7 +91,6 @@ version                 { return FSC_VERSION; }
 enable_osprof		{ return FSC_OSPROF_ENABLE; }
 disable_osprof		{ return FSC_OSPROF_DISABLE; }
 warmup                  { return FSC_WARMUP; }
-quit		        { return FSC_QUIT; }
 
 file[s]*       	        { return FSE_FILE; }
 fileset[s]*             { return FSE_FILESET; }
