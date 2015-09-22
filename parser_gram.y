@@ -64,7 +64,6 @@ extern int yylex(void);
 char *execname;
 
 static char cwd[MAXPATHLEN];
-static pidlist_t *pidlist;
 static int filecreate_done;
 
 /* utilities */
