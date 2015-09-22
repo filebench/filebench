@@ -314,7 +314,7 @@ flowop_endop(threadflow_t *threadflow, flowop_t *flowop, int64_t bytes)
 		controlstats.fs_wcount++;
 	}
 
-	if (filebench_shm->osprof_enabled)
+	if (filebench_shm->lathist_enabled)
 		flowop_populate_distribution(flowop, ll_delay);
 
 	(void) ipc_mutex_unlock(&controlstats_lock);

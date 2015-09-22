@@ -189,7 +189,7 @@ typedef struct filebench_shm {
 	hrtime_t	shm_epoch;
 	hrtime_t	shm_starttime;
 	int		shm_utid;
-	int		osprof_enabled;
+	int		lathist_enabled;
 	int		shm_cvar_heapsize;
 
 	/*

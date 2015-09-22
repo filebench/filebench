@@ -88,8 +88,7 @@ stats                   { return FSC_STATS; }
 system                  { return FSC_SYSTEM; }
 usage                   { return FSC_USAGE; }
 version                 { return FSC_VERSION; }
-enable_osprof		{ return FSC_OSPROF_ENABLE; }
-disable_osprof		{ return FSC_OSPROF_DISABLE; }
+lathist			{ return FSC_LATHIST; }
 warmup                  { return FSC_WARMUP; }
 
 file[s]*       	        { return FSE_FILE; }

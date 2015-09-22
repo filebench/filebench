@@ -593,7 +593,7 @@ stats_snap(void)
 			flowop->fo_stats.fs_maxlat / 1000000);
 		(void) strcat(str, line);
 
-		if (filebench_shm->osprof_enabled) {
+		if (filebench_shm->lathist_enabled) {
 			(void) sprintf(histogram, "\t[ ");
 			for (i = 0; i < OSPROF_BUCKET_NUMBER; i++) {
 				(void) sprintf(hist_reading, "%lu ",

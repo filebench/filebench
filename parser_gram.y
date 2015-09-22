@@ -117,8 +117,7 @@ static void parser_sleep(cmd_t *cmd);
 static void parser_sleep_variable(cmd_t *cmd);
 static void parser_abort(int arg);
 static void parser_version(cmd_t *cmd);
-static void parser_osprof_enable(cmd_t *cmd);
-static void parser_osprof_disable(cmd_t *cmd);
+static void parser_lathist(cmd_t *cmd);
 
 %}
 
@@ -160,7 +159,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %token FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC FSS_ROUND
 %token FSA_LVAR_ASSIGN
 %token FSA_ALLDONE FSA_FIRSTDONE FSA_TIMEOUT
-%token FSC_OSPROF_ENABLE FSC_OSPROF_DISABLE
+%token FSC_LATHIST
 %token FSA_NOREADAHEAD
 %token FSA_IOPRIO
 %token FSA_WRITEONLY
@@ -189,7 +188,7 @@ static void parser_osprof_disable(cmd_t *cmd);
 %type <cmd> thread echo_command
 %type <cmd> version_command enable_command multisync_command
 %type <cmd> set_variable set_random_variable set_custom_variable set_mode
-%type <cmd> osprof_enable_command osprof_disable_command
+%type <cmd> lathist
 
 %type <attr> files_attr_op files_attr_ops p_attr_op t_attr_op p_attr_ops t_attr_ops
 %type <attr> fo_attr_op fo_attr_ops ev_attr_op ev_attr_ops
@@ -241,8 +240,7 @@ command:
 | sleep_command
 | system_command
 | version_command
-| osprof_enable_command
-| osprof_disable_command
+| lathist
 | enable_command
 | multisync_command
 | quit_command
@@ -283,18 +281,12 @@ version_command: FSC_VERSION
 	$$->cmd = parser_version;
 };
 
-osprof_enable_command: FSC_OSPROF_ENABLE
+lathist: FSC_LATHIST FSV_VAL_BOOLEAN
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
-	$$->cmd = parser_osprof_enable;
-};
-
-osprof_disable_command: FSC_OSPROF_DISABLE
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	$$->cmd = parser_osprof_disable;
+	$$->cmd = parser_lathist;
+	$$->cmd_qty1 = $2;
 };
 
 enable_command: FSC_ENABLE FSE_MULTI
@@ -2943,24 +2935,16 @@ parser_version(cmd_t *cmd)
 	filebench_log(LOG_INFO, "Filebench Version: %s", FILEBENCH_VERSION);
 }
 
-/*
- * Sets osprof_enabled option
- */
 static void
-parser_osprof_enable(cmd_t *cmd)
+parser_lathist(cmd_t *cmd)
 {
-	filebench_shm->osprof_enabled = 1;
-	filebench_log(LOG_INFO, "OSprof enabled");
-}
-
-/*
- * Resets osprof_enabled option
- */
-static void
-parser_osprof_disable(cmd_t *cmd)
-{
-	filebench_shm->osprof_enabled = 0;
-	filebench_log(LOG_INFO, "OSprof disabled");
+	if (cmd->cmd_qty1 == TRUE) {
+		filebench_shm->lathist_enabled = 1;
+		filebench_log(LOG_INFO, "Latency histogram enabled");
+	} else {
+		filebench_shm->lathist_enabled = 0;
+		filebench_log(LOG_INFO, "Latency histogram disabled");
+	}
 }
 
 /*
