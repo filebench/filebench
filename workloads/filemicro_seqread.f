@@ -43,10 +43,3 @@ define process name=filereader,instances=1
 }
 
 echo  "FileMicro-SeqRead Version 2.1 personality successfully loaded"
-usage "Usage: set \$dir=<dir>"
-usage "       set \$cached=<bool>    defaults to $cached"
-usage "       set \$filesize=<size>  defaults to $filesize"
-usage "       set \$iosize=<size>    defaults to $iosize"
-usage "       set \$nthreads=<value> defaults to $nthreads"
-usage " "
-usage "       run runtime (e.g. run 60)"

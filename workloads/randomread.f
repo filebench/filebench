@@ -41,10 +41,3 @@ define process name=rand-read,instances=1
 }
 
 echo "Random Read Version 3.0 personality successfully loaded"
-usage "Usage: set \$dir=<dir>         defaults to $dir"
-usage "       set \$filesize=<size>   defaults to $filesize"
-usage "       set \$iosize=<value>    defaults to $iosize"
-usage "       set \$nthreads=<value>  defaults to $nthreads"
-usage "       set \$workingset=<value>  defaults to $workingset"
-usage "       set \$directio=<bool>   defaults to $directio"
-usage "       run runtime (e.g. run 60)"

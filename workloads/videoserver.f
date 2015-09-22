@@ -75,12 +75,3 @@ define process name=vidreaders,instances=1
 }
 
 echo  "Video Server Version 3.0 personality successfully loaded"
-usage "Usage: set \$dir=<dir>              defaults to $dir"
-usage "       set \$eventrate=<value>      defaults to $eventrate"
-usage "       set \$filesize=<size>        defaults to $filesize"
-usage "       set \$nthreads=<value>       defaults to $nthreads"
-usage "       set \$writeiosize=<value>    defaults to $writeiosize"
-usage "       set \$readiosize=<value>     defaults to $readiosize"
-usage "       set \$numactivevids=<value>  defaults to $numactivevids"
-usage "       set \$numpassivevids=<value> defaults to $numpassivevids"
-usage "       run runtime (e.g. run 60)"

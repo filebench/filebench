@@ -83,15 +83,3 @@ define process name=shadow,instances=$nshadows
 }
 
 echo "OLTP Version 3.0  personality successfully loaded"
-usage "Usage: set \$dir=<dir>         defaults to $dir"
-usage "       set \$eventrate=<value> defaults to $eventrate"
-usage "       set \$filesize=<size>   defaults to $filesize, n.b. there are ten files of this size"
-usage "       set \$logfilesize=<size> defaults to $logfilesize, n.b. there is one file of this size"
-usage "       set \$iosize=<value>    defaults to $iosize, typically 2k or 8k"
-usage "       set \$cached=<bool>     defaults to $cached"
-usage "       set \$memperthread=<value> defaults to $memperthread"
-usage "       set \$directio=<value>  defaults to $directio"
-usage "       run runtime (e.g. run 60)"
-usage "Note - total filesize should be at least 2x physical memory size for conforming test)"
-usage "       i.e. if physmem = 4G, set filesize to 4G * 2 / 10, or 800m"
-usage "Note - this workload needs at least 512MB of of memory"

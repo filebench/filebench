@@ -45,11 +45,3 @@ define process name=examinefiles,instances=1
 }
 
 echo  "Stat File Version 1.0 personality successfully loaded"
-usage "Usage: set \$dir=<dir>           defaults to $dir"
-usage "       set \$filesize=<size>     defaults to $filesize"
-usage "       set \$nfiles=<value>      defaults to $nfiles"
-usage "       set \$nthreads=<value>    defaults to $nthreads"
-usage "       set \$meandirwidth=<size> defaults to $meandirwidth"
-usage "(sets mean dir width and dir depth is calculated as log (width, nfiles)"
-usage " "
-usage "       run runtime (e.g. run 60)"

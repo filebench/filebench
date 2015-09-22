@@ -73,10 +73,3 @@ define process name=filereader,instances=1
 }
 
 echo  "Web-server Version 3.1 personality successfully loaded"
-usage "Usage: set \$dir=<dir>"
-usage "       set \$meanfilesize=<size>   defaults to $meanfilesize"
-usage "       set \$nfiles=<value>    defaults to $nfiles"
-usage "       set \$meandirwidth=<value>  defaults to $meandirwidth"
-usage "       set \$nthreads=<value>  defaults to $nthreads"
-usage "       set \$iosize=<size>     defaults to $iosize"
-usage "       run runtime (e.g. run 60)"

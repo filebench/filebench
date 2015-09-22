@@ -38,7 +38,3 @@ define process name=seqwrite,instances=1
 }
 
 echo  "Single Stream Write Version 3.0 personality successfully loaded"
-usage "Usage: set \$dir=<dir>"
-usage "       set \$iosize=<value>     defaults to $iosize"
-usage "       set \$nthreads=<value>   defaults to $nthreads"
-usage "       run runtime (e.g. run 60)"

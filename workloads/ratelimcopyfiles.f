@@ -70,12 +70,3 @@ define process name=filereader,instances=1
 }
 
 echo  "RateLimCopyFiles Version 1.1 personality successfully loaded"
-usage "Usage: set \$dir=<dir>         defaults to $dir"
-usage "       set \$eventrate=<value> defaults to $eventrate"
-usage "       set \$filesize=<size>   defaults to $filesize"
-usage "       set \$nfiles=<value>    defaults to $nfiles"
-usage "       set \$iosize=<size>     defaults to $iosize"
-usage "       set \$dirwidth=<value>  defaults to $dirwidth"
-usage "       set \$nthreads=<value>  defaults to $nthreads"
-usage " "
-usage "       run"

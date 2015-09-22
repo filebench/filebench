@@ -45,10 +45,3 @@ define process name=filecreate,instances=1
 }
 
 echo  "Createfiles Version 3.0 personality successfully loaded"
-usage "Usage: set \$dir=<dir>          defaults to $dir"
-usage "       set \$meanfilesize=<size>    defaults to $meanfilesize"
-usage "       set \$iosize=<size>      defaults to $iosize"
-usage "       set \$nfiles=<value>     defaults to $nfiles"
-usage "       set \$nthreads=<value>   defaults to $nthreads"
-usage "       set \$meandirwidth=<size> defaults to $meandirwidth"
-usage "       run"

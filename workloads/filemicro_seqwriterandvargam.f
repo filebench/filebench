@@ -49,14 +49,3 @@ define process name=filewriter,instances=1
 }
 
 echo  "FileMicro-SeqWriteRandVarGam Version 1.1 personality successfully loaded"
-usage "Usage: set \$dir=<dir>"
-usage "       set \$cached=<bool>        defaults to $cached"
-usage "       set \$count=<value>        defaults to $count"
-usage "       set \$iosize.type=<type>   defaults to $iosize.type"
-usage "       set \$iosize.randsrc=<src> defaults to $iosize.randsrc"
-usage "       set \$iosize.mean=<mean>   defaults to $iosize.mean"
-usage "       set \$iosize.gamma=<gamma> defaults to $iosize.gamma"
-usage "       set \$nthreads=<value>     defaults to $nthreads"
-usage "       set \$sync=<bool>          defaults to $sync"
-usage " "
-usage "       run runtime (e.g. run 60)"

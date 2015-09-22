@@ -42,10 +42,3 @@ define process name=dirmake,instances=1
 }
 
 echo  "MakeDirs Version 1.0 personality successfully loaded"
-usage "Usage: set \$dir=<dir>          defaults to $dir"
-usage "       set \$meandirwidth=<size> defaults to $meandirwidth"
-usage "       set \$ndirs=<value>      defaults to $ndirs"
-usage "       set \$nthreads=<value>   defaults to $nthreads"
-usage "(sets mean dir width and dir depth is calculated as log (width, ndirs)"
-usage " "
-usage "       run"

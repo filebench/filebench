@@ -61,11 +61,3 @@ define process name=proxycache,instances=1
 }
 
 echo  "Web proxy-server Version 3.0 personality successfully loaded"
-usage "Usage: set \$dir=<dir>"
-usage "       set \$meanfilesize=<size>    defaults to $meanfilesize"
-usage "       set \$nfiles=<value>     defaults to $nfiles"
-usage "       set \$nthreads=<value>   defaults to $nthreads"
-usage "       set \$meaniosize=<value> defaults to $meaniosize"
-usage "       set \$iosize=<size>  defaults to $iosize"
-usage "       set \$meandirwidth=<size> defaults to $meandirwidth"
-usage "       run runtime (e.g. run 60)"

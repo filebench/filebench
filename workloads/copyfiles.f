@@ -49,10 +49,3 @@ define process name=filereader,instances=1
 }
 
 echo  "Copyfiles Version 3.0 personality successfully loaded"
-usage "Usage: set \$dir=<dir>         defaults to $dir"
-usage "       set \$meanfilesize=<size>   defaults to $meanfilesize"
-usage "       set \$nfiles=<value>    defaults to $nfiles"
-usage "       set \$iosize=<size>     defaults to $iosize"
-usage "       set \$meanddirwidth=<value>  defaults to $meandirwidth"
-usage "       set \$nthreads=<value>  defaults to $nthreads"
-usage "       run"

@@ -49,12 +49,3 @@ define process name=filewriter,instances=1
 }
 
 echo  "FileMicro-WriteRandFsync Version 2.1 personality successfully loaded"
-usage "Usage: set \$dir=<dir>"
-usage "       set \$cached=<bool>    defaults to $cached"
-usage "       set \$count=<value>    defaults to $count"
-usage "       set \$filesize=<size>  defaults to $filesize"
-usage "       set \$iosize=<size>    defaults to $iosize"
-usage "       set \$iters=<value>    defaults to $iters"
-usage "       set \$nthreads=<value> defaults to $nthreads"
-usage " "
-usage "       run runtime (e.g. run 60)"

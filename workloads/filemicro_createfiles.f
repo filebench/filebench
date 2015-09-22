@@ -54,12 +54,3 @@ define process name=filecreate,instances=1
 }
 
 echo  "FileMicro-Createfiles Version 2.2 personality successfully loaded"
-usage "Usage: set \$dir=<dir>"
-usage "       set \$count=<value>        defaults to $count"
-usage "       set \$filesize=<size>      defaults to $filesize"
-usage "       set \$iosize=<size>        defaults to $iosize"
-usage "       set \$meandirwidth=<value> defaults to $meandirwidth"
-usage "       set \$nfiles=<value>       defaults to $nfiles"
-usage "       set \$nthreads=<value>     defaults to $nthreads"
-usage " "
-usage "       run runtime (e.g. run 60)"

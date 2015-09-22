@@ -45,10 +45,3 @@ define process name=filecreater,instances=1
 }
 
 echo  "FileMicro-Create Version 2.1 personality successfully loaded"
-usage "Usage: set \$dir=<dir>"
-usage "       set \$count=<value>    defaults to $count"
-usage "       set \$iosize=<size>    defaults to $iosize"
-usage "       set \$nthreads=<value> defaults to $nthreads"
-usage "       set \$sync=<bool>      defaults to $sync"
-usage " "
-usage "       run runtime (e.g. run 60)"

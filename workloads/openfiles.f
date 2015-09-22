@@ -42,10 +42,3 @@ define process name=fileopen,instances=1
 }
 
 echo  "Openfiles Version 1.0 personality successfully loaded"
-usage "Usage: set \$dir=<dir>          defaults to $dir"
-usage "       set \$meandirwidth=<size> defaults to $meandirwidth"
-usage "       set \$nfiles=<value>     defaults to $nfiles"
-usage "       set \$nthreads=<value>   defaults to $nthreads"
-usage "(sets mean dir width and dir depth is calculated as log (width, nfiles)"
-usage " "
-usage "       run 60"

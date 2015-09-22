@@ -254,15 +254,3 @@ define process name=shadow,instances=$nshadows
 }
 
 echo "Tpcso Version 2.1 personality successfully loaded"
-usage "Usage: set \$dir=<dir>         defaults to $dir"
-usage " "
-usage "       set \$eventrate=<value> defaults to $eventrate"
-usage " "
-usage "       set \$iosize=<value>    defaults to $iosize, typically 2k or 8k"
-usage " "
-usage "       set \$memperthread=<value> defaults to $memperthread, there are 211 threads"
-usage " "
-usage "       run runtime (e.g. run 60)"
-usage " "
-usage "Note - this workload needs at least 512MB of of memory"
-usage " "

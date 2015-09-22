@@ -114,17 +114,3 @@ define process name=netclient,instances=1
 }
 
 echo  "NetworkFileServer Version 1.0 personality successfully loaded"
-usage "Usage: set \$dir=<dir>            defaults to $dir"
-usage "       set \$cached=<bool>        defaults to $cached"
-usage "       set \$eventrate=<value>    defaults to $eventrate"
-usage "       set \$wrtiosize.type=<type>   defaults to $wrtiosize.type"
-usage "       set \$wrtiosize.randsrc=<src> defaults to $wrtiosize.randsrc"
-usage "       set \$rdiosize.type=<type>   defaults to $rdiosize.type"
-usage "       set \$rdiosize.randsrc=<src> defaults to $rdiosize.randsrc"
-usage "       set \$filesize.type=<type>   defaults to $filesize.type"
-usage "       set \$filesize.randsrc=<src> defaults to $filesize.randsrc"
-usage "       set \$nfiles=<value>       defaults to $nfiles"
-usage "       set \$nthreads=<value>     defaults to $nthreads"
-usage "       set \$sync=<bool>          defaults to $sync"
-usage " "
-usage "       run runtime (e.g. run 60)"

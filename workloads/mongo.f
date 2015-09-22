@@ -52,12 +52,3 @@ define process name=filereader,instances=1
 }
 
 echo  "Mongo-like Version 2.3 personality successfully loaded"
-usage "Usage: set \$dir=<dir>          defaults to $dir"
-usage "       set \$filesize=<size>    defaults to $filesize"
-usage "       set \$nfiles=<value>     defaults to $nfiles"
-usage "       set \$dirwidth=<value>   defaults to $dirwidth"
-usage "       set \$nthreads=<value>   defaults to $nthreads"
-usage "       set \$meaniosize=<value> defaults to $meaniosize"
-usage "       set \$readiosize=<size>  defaults to $readiosize"
-usage " "
-usage "       run"
