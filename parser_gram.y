@@ -199,7 +199,6 @@ static void parser_enable_lathist(cmd_t *cmd);
 %type <list> whitevar_string whitevar_string_list
 %type <ival> attrs_define_thread attrs_flowop
 %type <ival> attrs_define_fileset attrs_define_proc attrs_eventgen attrs_define_comp
-%type <ival> files_attr_name fo_attr_name ev_attr_name
 %type <ival> randvar_attr_name FSA_TYPE randtype_name
 %type <ival> randsrc_name FSA_RANDSRC em_attr_name
 %type <ival> FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC
@@ -766,7 +765,6 @@ entity: FSE_PROC {$$ = FSE_PROC;}
 
 name: FSV_STRING;
 
-/* attribute parsing for define file and define fileset */
 files_attr_ops: files_attr_op
 {
 	$$ = $1;
@@ -784,12 +782,12 @@ files_attr_ops: files_attr_op
 	$$ = $1;
 };
 
-files_attr_op: files_attr_name FSK_ASSIGN attr_value
+files_attr_op: attrs_define_fileset FSK_ASSIGN attr_value
 {
 	$$ = $3;
 	$$->attr_name = $1;
 }
-| files_attr_name
+| attrs_define_fileset 
 {
 	$$ = alloc_attr();
 	if (!$$)
@@ -979,12 +977,12 @@ fo_attr_ops: fo_attr_op
 	$$ = $1;
 };
 
-fo_attr_op: fo_attr_name FSK_ASSIGN attr_value
+fo_attr_op: attrs_flowop FSK_ASSIGN attr_value
 {
 	$$ = $3;
 	$$->attr_name = $1;
 }
-| fo_attr_name
+| attrs_flowop 
 {
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
@@ -1010,12 +1008,12 @@ ev_attr_ops: ev_attr_op
 	$$ = $1;
 };
 
-ev_attr_op: ev_attr_name FSK_ASSIGN attr_value
+ev_attr_op: attrs_eventgen FSK_ASSIGN attr_value
 {
 	$$ = $3;
 	$$->attr_name = $1;
 }
-| ev_attr_name
+| attrs_eventgen 
 {
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
@@ -1053,11 +1051,9 @@ multisync_op: FSA_VALUE FSK_ASSIGN attr_value
 	$$->attr_name = FSA_VALUE;
 };
 
-files_attr_name: attrs_define_fileset;
-
-fo_attr_name: attrs_flowop;
-
-ev_attr_name: attrs_eventgen;
+/*
+ * Attribute names
+ */
 
 attrs_define_proc:
   FSA_NICE { $$ = FSA_NICE;}
