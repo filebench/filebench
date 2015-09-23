@@ -34,6 +34,7 @@
 #include "procflow.h"
 #include "flowop.h"
 #include "ipc.h"
+#include "eventgen.h"
 
 /* pid and procflow pointer for this process */
 pid_t my_pid;
@@ -817,5 +818,20 @@ proc_create()
 	(void) pthread_rwlock_unlock(&filebench_shm->shm_run_lock);
 
 	filebench_shm->shm_starttime = gethrtime();
+	eventgen_reset();
+}
+
+/*
+ * Shuts down all processes and their associated threads. When finished
+ * it deletes interprocess shared memory and resets the event generator.
+ * It does not exit the filebench program though.
+ */
+void
+proc_shutdown()
+{
+	filebench_log(LOG_INFO, "Shutting down processes");
+	procflow_shutdown();
+	if (filebench_shm->shm_required)
+		ipc_ismdelete();
 	eventgen_reset();
 }

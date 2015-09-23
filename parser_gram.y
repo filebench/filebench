@@ -64,7 +64,6 @@ extern int yylex(void);
 char *execname;
 
 static char cwd[MAXPATHLEN];
-static int filecreate_done;
 
 /* utilities */
 static cmd_t *alloc_cmd(void);
@@ -99,9 +98,7 @@ static void parser_var_assign_custom(char *, cmd_t *);
 static void parser_fileset_create(cmd_t *);
 
 /* Shutdown Commands */
-static void parser_proc_shutdown(cmd_t *);
 static void parser_filebench_shutdown(cmd_t *cmd);
-static void parser_fileset_shutdown(cmd_t *cmd);
 
 /* Other Commands */
 static void parser_echo(cmd_t *cmd);
@@ -181,7 +178,7 @@ static void parser_enable_lathist(cmd_t *cmd);
 %type <cmd> command run_command list_command psrun_command
 %type <cmd> proc_define_command files_define_command
 %type <cmd> fo_define_command debug_command create_command
-%type <cmd> sleep_command set_command shutdown_command
+%type <cmd> sleep_command set_command
 %type <cmd> system_command flowop_command
 %type <cmd> eventgen_command quit_command flowop_list thread_list
 %type <cmd> thread echo_command
@@ -233,7 +230,6 @@ command:
 | run_command
 | psrun_command
 | set_command
-| shutdown_command
 | quit_command
 | sleep_command
 | system_command
@@ -632,25 +628,6 @@ create_command: FSC_CREATE FSE_FILES
 		YYERROR;
 
 	$$->cmd = &parser_fileset_create;
-};
-
-shutdown_command: FSC_SHUTDOWN entity
-{
-	if (($$ = alloc_cmd()) == NULL)
-		YYERROR;
-	switch ($2) {
-	case FSE_PROC:
-		$$->cmd = &parser_proc_shutdown;
-		break;
-	case FSE_FILE:
-	case FSE_FILESET:
-		$$->cmd = &parser_fileset_shutdown;
-		break;
-	default:
-		filebench_log(LOG_ERROR, "unknown entity", $2);
-		YYERROR;
-	}
-
 };
 
 sleep_command: FSC_SLEEP FSV_VAL_INT
@@ -2513,45 +2490,13 @@ parser_fileset_define(cmd_t *cmd)
 static void
 parser_fileset_create(cmd_t *cmd)
 {
-	if (!filecreate_done) {
-		filecreate_done = 1;
+	int ret;
 
-		if (fileset_createsets()) {
-			filebench_log(LOG_ERROR, "Failed to create filesets");
-			filebench_shutdown(1);
-		}
-	} else {
-		filebench_log(LOG_INFO,
-		    "Attempting to create fileset more than once, ignoring");
+	ret = fileset_createsets(); 
+	if (ret) {
+		filebench_log(LOG_ERROR, "Failed to create filesets");
+		filebench_shutdown(1);
 	}
-
-}
-
-/*
- * Deletes the files and directories that represent files and filesets on the
- * storage medium.
- */
-static void
-parser_fileset_shutdown(cmd_t *cmd)
-{
-	filebench_log(LOG_INFO, "Shutting down filesets");
-	fileset_delete_all_filesets();
-}
-
-/*
- * Shuts down all processes and their associated threads. When finished
- * it deletes interprocess shared memory and resets the event generator.
- * It does not exit the filebench program though.
- */
-static void
-parser_proc_shutdown(cmd_t *cmd)
-{
-	filebench_log(LOG_INFO, "Shutting down processes");
-	filecreate_done = 0;
-	procflow_shutdown();
-	if (filebench_shm->shm_required)
-		ipc_ismdelete();
-	eventgen_reset();
 }
 
 /*
@@ -2639,7 +2584,7 @@ parser_run(cmd_t *cmd)
 
 	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
 	stats_snap();
-	parser_proc_shutdown(cmd);
+	proc_shutdown();
 	parser_filebench_shutdown((cmd_t *)0);
 }
 
@@ -2706,7 +2651,7 @@ parser_psrun(cmd_t *cmd)
 
 	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
 	stats_snap();
-	parser_proc_shutdown(cmd);
+	proc_shutdown();
 	parser_filebench_shutdown((cmd_t *)0);
 }
 
@@ -2747,7 +2692,7 @@ parser_run_variable(cmd_t *cmd)
 
 	filebench_log(LOG_INFO, "Run took %d seconds...", timeslept);
 	stats_snap();
-	parser_proc_shutdown(cmd);
+	proc_shutdown();
 	parser_filebench_shutdown((cmd_t *)0);
 }
 

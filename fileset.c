@@ -39,6 +39,8 @@
 #include "utils.h"
 #include "fsplug.h"
 
+static int filecreate_done;
+
 /*
  * File sets, of type fileset_t, are entities which contain
  * information about collections of files and subdirectories in Filebench.
@@ -1698,6 +1700,16 @@ fileset_createsets()
 {
 	fileset_t *list;
 	int ret = 0;
+
+	if (filecreate_done) {
+		/* XXX: what if user defines a fileset after create? 
+ 		* IMHO, we should have filecreate_done flag per fileset */
+		filebench_log(LOG_INFO,
+		    "Attempting to create fileset more than once, ignoring");
+		return 0;
+	}
+
+	filecreate_done = 1;
 
 	/* Set up for possible parallel pre-allocation */
 	filebench_shm->shm_fsparalloc_count = 0;
