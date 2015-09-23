@@ -72,41 +72,24 @@ echo                    { return FSC_ECHO; }
 enable			{ return FSC_ENABLE; }
 eventgen                { return FSC_EVENTGEN; }
 quit		        { return FSC_QUIT; }
-flowop		        { return FSC_FLOWOP; }
-fscheck		        { return FSC_FSCHECK; }
-fsflush		        { return FSC_FSFLUSH; }
-help		        { return FSC_HELP; }
 list		        { return FSC_LIST; }
-log		        { return FSC_LOG; }
-nousestats		{ return FSC_NOUSESTATS; }
 run                     { return FSC_RUN; }
 psrun                   { return FSC_PSRUN; }
 set                     { return FSC_SET; }
-shutdown                { return FSC_SHUTDOWN; }
 sleep                   { return FSC_SLEEP; }
-stats                   { return FSC_STATS; }
 system                  { return FSC_SYSTEM; }
-usage                   { return FSC_USAGE; }
 version                 { return FSC_VERSION; }
-warmup                  { return FSC_WARMUP; }
 
 file       	        { return FSE_FILE; }
 files       	        { return FSE_FILES; }
 fileset[s]*             { return FSE_FILESET; }
-directory               { return FSE_DIRECTORY; }
-command                 { return FSE_COMMAND; }
 process[es]*	        { return FSE_PROC; }
 thread		        { return FSE_THREAD; }
+flowop		        { return FSE_FLOWOP; }
 randvar		        { return FSE_RAND; }
-clear                   { return FSE_CLEAR; }
-snap                    { return FSE_SNAP; }
-dump                    { return FSE_DUMP; }
-xmldump                 { return FSE_XMLDUMP; }
-multidump               { return FSE_MULTIDUMP; }
 mode                    { return FSE_MODE; }
 multi			{ return FSE_MULTI; }
 cvar                    { return FSE_CVAR; }
-lathist			{ return FSE_LATHIST; }
 
 alldone                 { return FSA_ALLDONE; }
 blocking                { return FSA_BLOCKING; }
@@ -119,11 +102,10 @@ dirgamma                { return FSA_DIRGAMMA; }
 dsync                   { return FSA_DSYNC;  }
 entries                 { return FSA_ENTRIES;}
 fd                      { return FSA_FD; }
-filename                { return FSA_FILE; }
-filesetname             { return FSA_FILE; }
+filename                { return FSA_FILENAME; }
+filesetname             { return FSA_FILENAME; }
 filesize                { return FSA_SIZE; }
 firstdone               { return FSA_FIRSTDONE; }
-fstype		        { return FSA_FSTYPE; }
 gamma                   { return FSA_RANDGAMMA; }
 highwater               { return FSA_HIGHWATER; }
 indexed                 { return FSA_INDEXED; }
@@ -144,7 +126,6 @@ paralloc                { return FSA_PARALLOC; }
 parameters              { return FSA_PARAMETERS; }
 path                    { return FSA_PATH; }
 prealloc                { return FSA_PREALLOC; }
-procname                { return FSA_PROCESS; }
 random                  { return FSA_RANDOM;}
 randsrc			{ return FSA_RANDSRC; }
 randtable		{ return FSA_RANDTABLE; }
@@ -163,6 +144,8 @@ type			{ return FSA_TYPE; }
 useism                  { return FSA_USEISM;}
 value                   { return FSA_VALUE;}
 workingset              { return FSA_WSS; }
+nousestats		{ return FSA_NOUSESTATS; }
+lathist			{ return FSA_LATHIST; }
 
 uniform                 { return FSV_RANDUNI; }
 tabular			{ return FSV_RANDTAB; }
@@ -228,7 +211,7 @@ noreadahead             { return FSA_NOREADAHEAD; }
 						"Invalid I value '%s':%s", yytext,
 						strerror(errno));
 				}
-                                return FSV_VAL_INT;
+                                return FSV_VAL_POSINT;
 }
 
 <INITIAL>-[0-9]+	{
@@ -250,7 +233,7 @@ noreadahead             { return FSA_NOREADAHEAD; }
 						"Invalid I value '%s':%s", yytext,
 						strerror(errno));
 				}
-                                return FSV_VAL_INT;
+                                return FSV_VAL_POSINT;
 }
 
 <INITIAL>[0-9]+m	{
@@ -261,7 +244,7 @@ noreadahead             { return FSA_NOREADAHEAD; }
 						"Invalid I value '%s':%s", yytext,
 						strerror(errno));
 				}
-                                return FSV_VAL_INT;
+                                return FSV_VAL_POSINT;
 }
 
 <INITIAL>[0-9]+g	{
@@ -272,7 +255,7 @@ noreadahead             { return FSA_NOREADAHEAD; }
 						"Invalid I value '%s':%s", yytext,
 						strerror(errno));
 				}
-                                return FSV_VAL_INT;
+                                return FSV_VAL_POSINT;
 }
 
 <INITIAL>true	{

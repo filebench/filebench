@@ -63,8 +63,6 @@ extern int yylex(void);
 /* executable name to execute worker processes later */
 char *execname;
 
-static char cwd[MAXPATHLEN];
-
 /* utilities */
 static cmd_t *alloc_cmd(void);
 static attr_t *alloc_attr(void);
@@ -79,25 +77,28 @@ static probtabent_t *alloc_probtabent(void);
 static void add_lvar_to_list(var_t *newlvar, var_t **lvar_list);
 
 /* Info Commands */
-static void parser_list(cmd_t *);
+static void parser_fileset_list(cmd_t *);
 static void parser_flowop_list(cmd_t *);
-static void parser_list_cvar_types(void);
-static void parser_list_cvar_type_parameters(char *);
 
 /* Define Commands */
 static void parser_proc_define(cmd_t *);
-static void parser_thread_define(cmd_t *, procflow_t *, int instances);
+static void thread_define(cmd_t *, procflow_t *, int instances);
 static void parser_flowop_define(cmd_t *, threadflow_t *, flowop_t **, int);
+static void parser_composite_flowop_define(cmd_t *);
 static void parser_file_define(cmd_t *);
 static void parser_fileset_define(cmd_t *);
 static void parser_var_assign_random(char *, cmd_t *);
-static void parser_composite_flowop_define(cmd_t *);
 static void parser_var_assign_custom(char *, cmd_t *);
 
 /* Create Commands */
 static void parser_fileset_create(cmd_t *);
 
-/* Shutdown Commands */
+/* Run Commands */
+static void parser_run(cmd_t *cmd);
+static void parser_run_variable(cmd_t *cmd);
+static void parser_psrun(cmd_t *cmd);
+
+/* Shutdown (Quit) Commands */
 static void parser_filebench_shutdown(cmd_t *cmd);
 
 /* Other Commands */
@@ -106,12 +107,8 @@ static void parser_system(cmd_t *cmd);
 static void parser_eventgen(cmd_t *cmd);
 static void parser_enable_mc(cmd_t *cmd);
 static void parser_domultisync(cmd_t *cmd);
-static void parser_run(cmd_t *cmd);
-static void parser_run_variable(cmd_t *cmd);
-static void parser_psrun(cmd_t *cmd);
 static void parser_sleep(cmd_t *cmd);
 static void parser_sleep_variable(cmd_t *cmd);
-static void parser_abort(int arg);
 static void parser_version(cmd_t *cmd);
 static void parser_enable_lathist(cmd_t *cmd);
 
@@ -131,37 +128,32 @@ static void parser_enable_lathist(cmd_t *cmd);
 
 %start commands
 
-%token FSC_LIST FSC_DEFINE FSC_QUIT FSC_DEBUG FSC_CREATE
-%token FSC_SLEEP FSC_STATS FSC_FOREACH FSC_SET FSC_SHUTDOWN FSC_LOG
-%token FSC_SYSTEM FSC_FLOWOP FSC_EVENTGEN FSC_ECHO FSC_RUN FSC_PSRUN
-%token FSC_WARMUP FSC_NOUSESTATS FSC_FSCHECK FSC_FSFLUSH
-%token FSC_USAGE FSC_HELP FSC_VERSION FSC_ENABLE FSC_DOMULTISYNC
-%token FSV_STRING FSV_VAL_INT FSV_VAL_NEGINT FSV_VAL_BOOLEAN FSV_VARIABLE FSV_WHITESTRING
-%token FSV_RANDUNI FSV_RANDTAB FSV_URAND FSV_RAND48
-%token FSE_FILE FSE_FILES FSE_PROC FSE_THREAD FSE_CLEAR FSE_SNAP FSE_DUMP
-%token FSE_DIRECTORY FSE_COMMAND FSE_FILESET FSE_XMLDUMP FSE_RAND FSE_MODE
-%token FSE_MULTI FSE_MULTIDUMP
-%token FSK_SEPLST FSK_OPENLST FSK_CLOSELST FSK_OPENPAR FSK_CLOSEPAR FSK_ASSIGN FSK_IN FSK_QUOTE
+%token FSC_LIST FSC_DEFINE FSC_QUIT FSC_DEBUG FSC_CREATE FSC_SLEEP FSC_SET
+%token FSC_SYSTEM FSC_EVENTGEN FSC_ECHO FSC_RUN FSC_PSRUN FSC_VERSION FSC_ENABLE
+%token FSC_DOMULTISYNC
+
+%token FSV_STRING FSV_VAL_POSINT FSV_VAL_NEGINT FSV_VAL_BOOLEAN FSV_VARIABLE 
+%token FSV_WHITESTRING FSV_RANDUNI FSV_RANDTAB FSV_URAND FSV_RAND48
+
+%token FSE_FILE FSE_FILES FSE_FILESET FSE_PROC FSE_THREAD FSE_FLOWOP FSE_CVAR
+%token FSE_RAND FSE_MODE FSE_MULTI
+
+%token FSK_SEPLST FSK_OPENLST FSK_CLOSELST FSK_OPENPAR FSK_CLOSEPAR FSK_ASSIGN
+%token FSK_IN FSK_QUOTE
+
 %token FSA_SIZE FSA_PREALLOC FSA_PARALLOC FSA_PATH FSA_REUSE
-%token FSA_PROCESS FSA_MEMSIZE FSA_RATE FSA_CACHED FSA_READONLY FSA_TRUSTTREE
-%token FSA_IOSIZE FSA_FILE FSA_WSS FSA_NAME FSA_RANDOM FSA_INSTANCES
+%token FSA_MEMSIZE FSA_RATE FSA_CACHED FSA_READONLY FSA_TRUSTTREE
+%token FSA_IOSIZE FSA_FILENAME FSA_WSS FSA_NAME FSA_RANDOM FSA_INSTANCES
 %token FSA_DSYNC FSA_TARGET FSA_ITERS FSA_NICE FSA_VALUE FSA_BLOCKING
 %token FSA_HIGHWATER FSA_DIRECTIO FSA_DIRWIDTH FSA_FD FSA_SRCFD FSA_ROTATEFD
-%token FSA_ENTRIES FSA_DIRDEPTHRV
-%token FSA_DIRGAMMA FSA_USEISM FSA_TYPE FSA_RANDTABLE FSA_RANDSRC FSA_ROUND
-%token FSA_LEAFDIRS FSA_INDEXED FSA_FSTYPE
+%token FSA_ENTRIES FSA_DIRDEPTHRV FSA_DIRGAMMA FSA_USEISM FSA_TYPE
+%token FSA_LEAFDIRS FSA_INDEXED FSA_RANDTABLE FSA_RANDSRC FSA_ROUND
 %token FSA_RANDSEED FSA_RANDGAMMA FSA_RANDMEAN FSA_MIN FSA_MAX FSA_MASTER
-%token FSA_CLIENT
-%token FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC FSS_ROUND
-%token FSA_LVAR_ASSIGN
-%token FSA_ALLDONE FSA_FIRSTDONE FSA_TIMEOUT
-%token FSE_LATHIST
-%token FSA_NOREADAHEAD
-%token FSA_IOPRIO
-%token FSA_WRITEONLY
-%token FSE_CVAR FSA_PARAMETERS
+%token FSA_CLIENT FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC FSS_ROUND
+%token FSA_LVAR_ASSIGN FSA_ALLDONE FSA_FIRSTDONE FSA_TIMEOUT FSA_LATHIST
+%token FSA_NOREADAHEAD FSA_IOPRIO FSA_WRITEONLY FSA_PARAMETERS FSA_NOUSESTATS
 
-%type <ival> FSV_VAL_INT FSV_VAL_NEGINT
+%type <ival> FSV_VAL_POSINT FSV_VAL_NEGINT
 %type <bval> FSV_VAL_BOOLEAN
 %type <sval> FSV_STRING
 %type <sval> FSV_WHITESTRING
@@ -170,10 +162,9 @@ static void parser_enable_lathist(cmd_t *cmd);
 
 %type <ival> FSC_DEFINE FSC_SET FSC_RUN FSC_ENABLE FSC_PSRUN
 %type <ival> FSC_DOMULTISYNC
-%type <ival> FSE_FILE FSE_FILES FSE_PROC FSE_THREAD FSE_CLEAR FSC_HELP FSC_VERSION
+%type <ival> FSE_FILE FSE_FILES FSE_PROC FSE_THREAD FSC_VERSION
 
 %type <sval> name
-%type <ival> entity
 
 %type <cmd> command run_command list_command psrun_command
 %type <cmd> proc_define_command files_define_command
@@ -198,7 +189,6 @@ static void parser_enable_lathist(cmd_t *cmd);
 %type <ival> randvar_attr_name FSA_TYPE randtype_name
 %type <ival> randsrc_name FSA_RANDSRC em_attr_name
 %type <ival> FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC
-%type <ival> FSA_FSTYPE
 %type <ival> cvar_attr_name
 
 %type <rndtb>  probtabentry_list probtabentry
@@ -282,7 +272,7 @@ enable_command: FSC_ENABLE FSE_MULTI enable_multi_ops
 	$$->cmd = parser_enable_mc;
 	$$->cmd_attr_list = $3;
 }
-| FSC_ENABLE FSE_LATHIST
+| FSC_ENABLE FSA_LATHIST
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -396,16 +386,16 @@ list_command: FSC_LIST FSE_FILESET
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
-	$$->cmd = &parser_list;
+	$$->cmd = &parser_fileset_list;
 }
-| FSC_LIST FSC_FLOWOP
+| FSC_LIST FSE_FLOWOP
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
 	$$->cmd = &parser_flowop_list;
 };
 
-debug_command: FSC_DEBUG FSV_VAL_INT
+debug_command: FSC_DEBUG FSV_VAL_POSINT
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -422,7 +412,7 @@ debug_command: FSC_DEBUG FSV_VAL_INT
 
 set_command: set_variable | set_random_variable | set_custom_variable | set_mode;
 
-set_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_INT
+set_variable: FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_POSINT
 {
 	$$ = alloc_cmd();
 	if (!$$)
@@ -517,7 +507,7 @@ set_mode: FSC_SET FSE_MODE FSC_QUIT FSA_TIMEOUT
 
 	$$->cmd = NULL;
 }
-| FSC_SET FSE_MODE FSC_NOUSESTATS
+| FSC_SET FSE_MODE FSA_NOUSESTATS
 {
 	$$ = alloc_cmd();
 	if (!$$)
@@ -630,7 +620,7 @@ create_command: FSC_CREATE FSE_FILES
 	$$->cmd = &parser_fileset_create;
 };
 
-sleep_command: FSC_SLEEP FSV_VAL_INT
+sleep_command: FSC_SLEEP FSV_VAL_POSINT
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -645,7 +635,7 @@ sleep_command: FSC_SLEEP FSV_VAL_INT
 	$$->cmd_tgt1 = fb_stralloc($2);
 }
 
-run_command: FSC_RUN FSV_VAL_INT
+run_command: FSC_RUN FSV_VAL_POSINT
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -684,7 +674,7 @@ psrun_command: FSC_PSRUN
 	$$->cmd_qty = 0;
 
 }
-| FSC_PSRUN FSV_VAL_INT
+| FSC_PSRUN FSV_VAL_POSINT
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -693,7 +683,7 @@ psrun_command: FSC_PSRUN
 	$$->cmd_qty = 0;
 
 }
-| FSC_PSRUN FSV_VAL_NEGINT FSV_VAL_INT
+| FSC_PSRUN FSV_VAL_NEGINT FSV_VAL_POSINT
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -701,7 +691,7 @@ psrun_command: FSC_PSRUN
 	$$->cmd_qty1 = $2;
 	$$->cmd_qty = $3;
 }
-| FSC_PSRUN FSV_VAL_INT FSV_VAL_INT
+| FSC_PSRUN FSV_VAL_POSINT FSV_VAL_POSINT
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -710,7 +700,7 @@ psrun_command: FSC_PSRUN
 	$$->cmd_qty = $3;
 };
 
-flowop_command: FSC_FLOWOP name
+flowop_command: FSE_FLOWOP name
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -720,11 +710,6 @@ flowop_command: FSC_FLOWOP name
 {
 	$1->cmd_attr_list = $2;
 };
-
-entity: FSE_PROC {$$ = FSE_PROC;}
-| FSE_THREAD {$$ = FSE_THREAD;}
-| FSE_FILESET {$$ = FSE_FILESET;}
-| FSE_FILE {$$ = FSE_FILE;};
 
 name: FSV_STRING;
 
@@ -1120,8 +1105,7 @@ cvar_attr_name:
 | FSA_ROUND { $$ = FSA_ROUND;};
 
 attrs_define_thread:
-  FSA_PROCESS { $$ = FSA_PROCESS;}
-| FSA_NAME { $$ = FSA_NAME;}
+  FSA_NAME { $$ = FSA_NAME;}
 | FSA_MEMSIZE { $$ = FSA_MEMSIZE;}
 | FSA_USEISM { $$ = FSA_USEISM;}
 | FSA_INSTANCES { $$ = FSA_INSTANCES;}
@@ -1129,7 +1113,7 @@ attrs_define_thread:
 
 attrs_flowop:
   FSA_WSS { $$ = FSA_WSS;}
-| FSA_FILE { $$ = FSA_FILE;}
+| FSA_FILENAME { $$ = FSA_FILENAME;}
 | FSA_NAME { $$ = FSA_NAME;}
 | FSA_RANDOM { $$ = FSA_RANDOM;}
 | FSA_FD { $$ = FSA_FD;}
@@ -1195,7 +1179,7 @@ comp_lvar_def: FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
 	if (($$ = alloc_lvar_attr(var_lvar_assign_boolean($1, $3))) == NULL)
 		YYERROR;
 }
-| FSV_VARIABLE FSK_ASSIGN FSV_VAL_INT
+| FSV_VARIABLE FSK_ASSIGN FSV_VAL_POSINT
 {
 	if (($$ = alloc_lvar_attr(var_lvar_assign_integer($1, $3))) == NULL)
 		YYERROR;
@@ -1221,7 +1205,7 @@ comp_lvar_def: FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
 		YYERROR;
 };
 
-fo_define_command: FSC_DEFINE FSC_FLOWOP comp_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
+fo_define_command: FSC_DEFINE FSE_FLOWOP comp_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -1268,7 +1252,7 @@ attr_value: FSV_STRING
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
 	$$->attr_avd = avd_str_alloc($1);
-} | FSV_VAL_INT {
+} | FSV_VAL_POSINT {
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
 	$$->attr_avd = avd_int_alloc($1);
@@ -1282,7 +1266,7 @@ attr_value: FSV_STRING
 	$$->attr_avd = avd_var_alloc($1);
 };
 
-var_int_val: FSV_VAL_INT
+var_int_val: FSV_VAL_POSINT
 {
 	$$ = avd_int_alloc($1);
 } | FSV_VARIABLE
@@ -1483,6 +1467,62 @@ worker_mode(struct fbparams *fbparams)
 	exit(0);
 }
 
+void parser_list_cvar_types(void)
+{
+	cvar_library_info_t *t;
+
+	if (!filebench_shm->shm_cvar_lib_info_list) {
+		printf("No custom variables supported.\n");
+		return;
+	}
+
+	printf("Custom variable types supported:\n");
+	for (t = filebench_shm->shm_cvar_lib_info_list; t; t = t->next)
+		printf("  %s\n", t->type);
+
+	return;
+}
+
+void parser_list_cvar_type_parameters(char *type)
+{
+	const char *version = NULL;
+	const char *usage = NULL;
+
+	cvar_library_info_t *t;
+
+	for (t = filebench_shm->shm_cvar_lib_info_list; t != NULL; t = t->next) {
+		if (!strcmp(type, t->type))
+			break;
+	}
+
+	if (!t) {
+		printf("Unknown custom variable type %s.\n", type);
+		return;
+	}
+
+	printf("Custom variable type: %s\n", t->type);
+	printf("Supporting library: %s\n", t->filename);
+
+	if (cvar_libraries[t->index]->cvar_op.cvar_version)
+		version = cvar_libraries[t->index]->cvar_op.cvar_version();
+
+	if (cvar_libraries[t->index]->cvar_op.cvar_usage)
+		usage = cvar_libraries[t->index]->cvar_op.cvar_usage();
+
+
+	if (version)
+		printf("Version: %s\n", version);
+	else
+		printf("Oops. No version information provided.\n");
+
+	if (usage)
+		printf("Usage:\n%s\n", usage);
+	else
+		printf("Oops. No usage information provided.\n");
+
+	return;
+}
+
 static void
 cvars_mode(struct fbparams *fbparams)
 {
@@ -1508,9 +1548,19 @@ cvars_mode(struct fbparams *fbparams)
 	exit(0);
 }
 
+/*
+ * Shutdown filebench.
+ */
+static void
+parser_abort(int arg)
+{
+	(void) sigignore(SIGINT);
+	filebench_log(LOG_INFO, "Aborting...");
+	filebench_shutdown(1);
+}
+
 static void
 master_mode(struct fbparams *fbparams) {
-	char *cwdret;
 	int ret;
 
 	printf("Filebench Version %s\n", FILEBENCH_VERSION);
@@ -1525,13 +1575,6 @@ master_mode(struct fbparams *fbparams) {
 	execname = fbparams->execname;
 	fb_set_shmmax();
 	stats_init();
-
-	cwdret = getcwd(cwd, MAXPATHLEN);
-	if (cwdret != cwd) {
-		filebench_log(LOG_FATAL, "Cannot save current "
-				 "working directory!");
-		exit(1);
-	}
 
 	ipc_init();
 
@@ -1767,7 +1810,7 @@ parser_eventgen(cmd_t *cmd)
  * filesets.
  */
 static void
-parser_list(cmd_t *cmd)
+parser_fileset_list(cmd_t *cmd)
 {
 	(void) fileset_iter(fileset_print);
 }
@@ -1787,7 +1830,7 @@ parser_flowop_list(cmd_t *cmd)
  * one. An optional priority level attribute can be supplied and is stored in
  * pf_nice. Finally the routine loops through the list of inner commands, if
  * any, which are defines for threadflows, and passes them one at a time to
- * parser_thread_define() to allocate threadflow entities for the process(es).
+ * thread_define() to allocate threadflow entities for the process(es).
  */
 static void
 parser_proc_define(cmd_t *cmd)
@@ -1850,7 +1893,7 @@ parser_proc_define(cmd_t *cmd)
 	/* Create the list of threads for this process  */
 	for (inner_cmd = cmd->cmd_list; inner_cmd != NULL;
 	    inner_cmd = inner_cmd->cmd_next) {
-		parser_thread_define(inner_cmd, procflow, instances);
+		thread_define(inner_cmd, procflow, instances);
 	}
 }
 
@@ -1865,7 +1908,7 @@ parser_proc_define(cmd_t *cmd)
  * parser_flowop_define() to allocate flowop entities for the threadflows.
  */
 static void
-parser_thread_define(cmd_t *cmd, procflow_t *procflow, int procinstances)
+thread_define(cmd_t *cmd, procflow_t *procflow, int procinstances)
 {
 	threadflow_t *threadflow, template;
 	attr_t *attr;
@@ -1932,7 +1975,7 @@ parser_flowop_get_attrs(cmd_t *cmd, flowop_t *flowop)
 	attr_t *attr;
 
 	/* Get the filename from attribute */
-	if ((attr = get_attr(cmd, FSA_FILE))) {
+	if ((attr = get_attr(cmd, FSA_FILENAME))) {
 		flowop->fo_filename = attr->attr_avd;
 		if (flowop->fo_filename == NULL) {
 			filebench_log(LOG_ERROR,
@@ -2182,6 +2225,7 @@ parser_inner_flowop_define(threadflow_t *thread, flowop_t *comp0_flow,
  */
 static void
 parser_flowop_define(cmd_t *cmd, threadflow_t *thread,
+
     flowop_t **flowoplist_hdp, int category)
 {
 	flowop_t *flowop, *flowop_type;
@@ -2861,17 +2905,6 @@ parser_enable_lathist(cmd_t *cmd)
 }
 
 /*
- * Shutdown filebench.
- */
-static void
-parser_abort(int arg)
-{
-	(void) sigignore(SIGINT);
-	filebench_log(LOG_INFO, "Aborting...");
-	filebench_shutdown(1);
-}
-
-/*
  * define a random variable and initialize the distribution parameters
  */
 static void
@@ -3340,60 +3373,4 @@ parser_var_assign_custom(char *name, cmd_t *cmd)
 	}
 
 	var_assign_custom(name, cvar);
-}
-
-void parser_list_cvar_types(void)
-{
-	cvar_library_info_t *t;
-
-	if (!filebench_shm->shm_cvar_lib_info_list) {
-		printf("No custom variables supported.\n");
-		return;
-	}
-
-	printf("Custom variable types supported:\n");
-	for (t = filebench_shm->shm_cvar_lib_info_list; t; t = t->next)
-		printf("  %s\n", t->type);
-
-	return;
-}
-
-void parser_list_cvar_type_parameters(char *type)
-{
-	const char *version = NULL;
-	const char *usage = NULL;
-
-	cvar_library_info_t *t;
-
-	for (t = filebench_shm->shm_cvar_lib_info_list; t != NULL; t = t->next) {
-		if (!strcmp(type, t->type))
-			break;
-	}
-
-	if (!t) {
-		printf("Unknown custom variable type %s.\n", type);
-		return;
-	}
-
-	printf("Custom variable type: %s\n", t->type);
-	printf("Supporting library: %s\n", t->filename);
-
-	if (cvar_libraries[t->index]->cvar_op.cvar_version)
-		version = cvar_libraries[t->index]->cvar_op.cvar_version();
-
-	if (cvar_libraries[t->index]->cvar_op.cvar_usage)
-		usage = cvar_libraries[t->index]->cvar_op.cvar_usage();
-
-
-	if (version)
-		printf("Version: %s\n", version);
-	else
-		printf("Oops. No version information provided.\n");
-
-	if (usage)
-		printf("Usage:\n%s\n", usage);
-	else
-		printf("Oops. No usage information provided.\n");
-
-	return;
 }

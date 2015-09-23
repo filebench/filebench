@@ -136,7 +136,7 @@ extern pthread_mutex_t controlstats_lock;
 void flowop_init(void);
 void flowop_plugin_flowinit(void);
 flowop_t *flowop_define(threadflow_t *, char *name, flowop_t *inherit,
-    flowop_t **flowoplist_hdp, int instance, int type);
+		flowop_t **flowoplist_hdp, int instance, int type);
 flowop_t *flowop_find(char *name);
 flowop_t *flowop_find_one(char *name, int instance);
 flowop_t *flowop_find_from_list(char *name, flowop_t *list);
