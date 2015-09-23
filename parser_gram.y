@@ -189,7 +189,7 @@ static void parser_enable_lathist(cmd_t *cmd);
 %type <cmd> version_command enable_command multisync_command
 %type <cmd> set_variable set_random_variable set_custom_variable set_mode
 
-%type <attr> files_attr_op files_attr_ops p_attr_op t_attr_op p_attr_ops t_attr_ops
+%type <attr> fileset_attr_op fileset_attr_ops file_attr_ops file_attr_op p_attr_op t_attr_op p_attr_ops t_attr_ops
 %type <attr> fo_attr_op fo_attr_ops ev_attr_op ev_attr_ops
 %type <attr> randvar_attr_op randvar_attr_ops randvar_attr_typop
 %type <attr> randvar_attr_srcop attr_value
@@ -198,7 +198,7 @@ static void parser_enable_lathist(cmd_t *cmd);
 %type <attr> cvar_attr_ops cvar_attr_op
 %type <list> whitevar_string whitevar_string_list
 %type <ival> attrs_define_thread attrs_flowop
-%type <ival> attrs_define_fileset attrs_define_proc attrs_eventgen attrs_define_comp
+%type <ival> attrs_define_fileset attrs_define_file attrs_define_proc attrs_eventgen attrs_define_comp
 %type <ival> randvar_attr_name FSA_TYPE randtype_name
 %type <ival> randsrc_name FSA_RANDSRC em_attr_name
 %type <ival> FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC
@@ -609,25 +609,23 @@ proc_define_command: FSC_DEFINE FSE_PROC p_attr_ops FSK_OPENLST thread_list FSK_
 	$1->cmd_attr_list = $2;
 };
 
-files_define_command: FSC_DEFINE FSE_FILE
+files_define_command: FSC_DEFINE FSE_FILE file_attr_ops
 {
 	$$ = alloc_cmd();
 	if (!$$)
 		YYERROR;
 
 	$$->cmd = &parser_file_define;
-}| FSC_DEFINE FSE_FILESET
+	$$->cmd_attr_list = $3;
+}| FSC_DEFINE FSE_FILESET fileset_attr_ops
 {
 	$$ = alloc_cmd();
 	if (!$$)
 		YYERROR;
 
 	$$->cmd = &parser_fileset_define;
+	$$->cmd_attr_list = $3;
 }
-| files_define_command files_attr_ops
-{
-	$1->cmd_attr_list = $2;
-};
 
 create_command: FSC_CREATE entity
 {
@@ -765,11 +763,11 @@ entity: FSE_PROC {$$ = FSE_PROC;}
 
 name: FSV_STRING;
 
-files_attr_ops: files_attr_op
+file_attr_ops: file_attr_op
 {
 	$$ = $1;
 }
-| files_attr_ops FSK_SEPLST files_attr_op
+| file_attr_ops FSK_SEPLST file_attr_op
 {
 	attr_t *attr = NULL;
 	attr_t *list_end = NULL;
@@ -782,7 +780,38 @@ files_attr_ops: files_attr_op
 	$$ = $1;
 };
 
-files_attr_op: attrs_define_fileset FSK_ASSIGN attr_value
+fileset_attr_ops: fileset_attr_op
+{
+	$$ = $1;
+}
+| fileset_attr_ops FSK_SEPLST fileset_attr_op
+{
+	attr_t *attr = NULL;
+	attr_t *list_end = NULL;
+
+	for (attr = $1; attr; attr = attr->attr_next)
+		list_end = attr;
+
+	list_end->attr_next = $3;
+
+	$$ = $1;
+};
+
+file_attr_op: attrs_define_file FSK_ASSIGN attr_value
+{
+	$$ = $3;
+	$$->attr_name = $1;
+}
+| attrs_define_file
+{
+	$$ = alloc_attr();
+	if (!$$)
+		YYERROR;
+
+	$$->attr_name = $1;
+};
+
+fileset_attr_op: attrs_define_fileset FSK_ASSIGN attr_value
 {
 	$$ = $3;
 	$$->attr_name = $1;
@@ -1059,6 +1088,16 @@ attrs_define_proc:
   FSA_NICE { $$ = FSA_NICE;}
 | FSA_NAME { $$ = FSA_NAME;}
 | FSA_INSTANCES { $$ = FSA_INSTANCES;};
+
+attrs_define_file:
+  FSA_NAME { $$ = FSA_NAME;}
+| FSA_PATH { $$ = FSA_PATH;}
+| FSA_SIZE { $$ = FSA_SIZE;}
+| FSA_PREALLOC { $$ = FSA_PREALLOC;}
+| FSA_PARALLOC { $$ = FSA_PARALLOC;}
+| FSA_REUSE { $$ = FSA_REUSE;}
+| FSA_READONLY { $$ = FSA_READONLY;}
+| FSA_CACHED { $$ = FSA_CACHED;}
 
 attrs_define_fileset:
   FSA_NAME { $$ = FSA_NAME;}
