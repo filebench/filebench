@@ -90,7 +90,8 @@ usage                   { return FSC_USAGE; }
 version                 { return FSC_VERSION; }
 warmup                  { return FSC_WARMUP; }
 
-file[s]*       	        { return FSE_FILE; }
+file       	        { return FSE_FILE; }
+files       	        { return FSE_FILES; }
 fileset[s]*             { return FSE_FILESET; }
 directory               { return FSE_DIRECTORY; }
 command                 { return FSE_COMMAND; }

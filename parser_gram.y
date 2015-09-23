@@ -96,7 +96,6 @@ static void parser_composite_flowop_define(cmd_t *);
 static void parser_var_assign_custom(char *, cmd_t *);
 
 /* Create Commands */
-static void parser_proc_create(cmd_t *);
 static void parser_fileset_create(cmd_t *);
 
 /* Shutdown Commands */
@@ -142,7 +141,7 @@ static void parser_enable_lathist(cmd_t *cmd);
 %token FSC_USAGE FSC_HELP FSC_VERSION FSC_ENABLE FSC_DOMULTISYNC
 %token FSV_STRING FSV_VAL_INT FSV_VAL_NEGINT FSV_VAL_BOOLEAN FSV_VARIABLE FSV_WHITESTRING
 %token FSV_RANDUNI FSV_RANDTAB FSV_URAND FSV_RAND48
-%token FSE_FILE FSE_PROC FSE_THREAD FSE_CLEAR FSE_SNAP FSE_DUMP
+%token FSE_FILE FSE_FILES FSE_PROC FSE_THREAD FSE_CLEAR FSE_SNAP FSE_DUMP
 %token FSE_DIRECTORY FSE_COMMAND FSE_FILESET FSE_XMLDUMP FSE_RAND FSE_MODE
 %token FSE_MULTI FSE_MULTIDUMP
 %token FSK_SEPLST FSK_OPENLST FSK_CLOSELST FSK_OPENPAR FSK_CLOSEPAR FSK_ASSIGN FSK_IN FSK_QUOTE
@@ -174,7 +173,7 @@ static void parser_enable_lathist(cmd_t *cmd);
 
 %type <ival> FSC_DEFINE FSC_SET FSC_RUN FSC_ENABLE FSC_PSRUN
 %type <ival> FSC_DOMULTISYNC
-%type <ival> FSE_FILE FSE_PROC FSE_THREAD FSE_CLEAR FSC_HELP FSC_VERSION
+%type <ival> FSE_FILE FSE_FILES FSE_PROC FSE_THREAD FSE_CLEAR FSC_HELP FSC_VERSION
 
 %type <sval> name
 %type <ival> entity
@@ -627,23 +626,12 @@ files_define_command: FSC_DEFINE FSE_FILE file_attr_ops
 	$$->cmd_attr_list = $3;
 }
 
-create_command: FSC_CREATE entity
+create_command: FSC_CREATE FSE_FILES
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
-	switch ($2) {
-	case FSE_PROC:
-		$$->cmd = &parser_proc_create;
-		break;
-	case FSE_FILESET:
-	case FSE_FILE:
-		$$->cmd = &parser_fileset_create;
-		break;
-	default:
-		filebench_log(LOG_ERROR, "unknown entity", $2);
-		YYERROR;
-	}
 
+	$$->cmd = &parser_fileset_create;
 };
 
 shutdown_command: FSC_SHUTDOWN entity
@@ -2518,54 +2506,6 @@ parser_fileset_define(cmd_t *cmd)
 }
 
 /*
- * Creates and starts all defined procflow processes. The call to
- * procflow_init() results in creation of the requested number of
- * process instances for each previously defined procflow. The
- * child processes exec() a new instance of filebench, passing it
- * the instance number and address of the shared memory region.
- * The child processes will then create their threads and flowops.
- * The routine then unlocks the run_lock to allow all the processes'
- * threads to start and  waits for all of them to begin execution.
- * Finally, it records the start time and resets the event generation
- * system.
- */
-static void
-parser_proc_create(cmd_t *cmd)
-{
-	filebench_shm->shm_1st_err = 0;
-	filebench_shm->shm_f_abort = FILEBENCH_OK;
-
-	(void) pthread_rwlock_rdlock(&filebench_shm->shm_run_lock);
-
-	if (procflow_init() != 0) {
-		filebench_log(LOG_ERROR, "Failed to create processes\n");
-		filebench_shutdown(1);
-	}
-
-	/* Wait for all threads to start */
-	if (procflow_allstarted() != 0) {
-		filebench_log(LOG_ERROR, "Could not start run");
-		return;
-	}
-
-	/*
-	 * Make sure we create the shared memory before we wake up worker
-	 * processes, which will alloc memory from this shm.
-	 */
-	if (filebench_shm->shm_required &&
-	    (ipc_ismcreate(filebench_shm->shm_required) < 0)) {
-		filebench_log(LOG_ERROR, "Could not allocate shared memory");
-		return;
-	}
-
-	/* Release the read lock, allowing threads to start */
-	(void) pthread_rwlock_unlock(&filebench_shm->shm_run_lock);
-
-	filebench_shm->shm_starttime = gethrtime();
-	eventgen_reset();
-}
-
-/*
  * Calls fileset_createsets() to populate all filesets and create all
  * associated, initially existant,  files and subdirectories.
  * If errors are encountered, calls filebench_shutdown() to exit Filebench.
@@ -2682,7 +2622,7 @@ parser_run(cmd_t *cmd)
 	runtime = cmd->cmd_qty;
 
 	parser_fileset_create(cmd);
-	parser_proc_create(cmd);
+	proc_create();
 
 	/* check for startup errors */
 	if (filebench_shm->shm_f_abort)
@@ -2730,7 +2670,7 @@ parser_psrun(cmd_t *cmd)
 	}
 
 	parser_fileset_create(cmd);
-	parser_proc_create(cmd);
+	proc_create();
 
 	/* check for startup errors */
 	if (filebench_shm->shm_f_abort)
@@ -2790,7 +2730,7 @@ parser_run_variable(cmd_t *cmd)
 	runtime = avd_get_int(integer);
 
 	parser_fileset_create(cmd);
-	parser_proc_create(cmd);
+	proc_create();
 
 	/* check for startup errors */
 	if (filebench_shm->shm_f_abort)

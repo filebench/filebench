@@ -432,7 +432,7 @@ procflow_cancel(int arg1)
  * Creates a process creator thread and waits until
  * it defines all the procflows (and threadflows in turn).
  */
-int
+static int
 procflow_init(void)
 {
 	procflow_t *procflow;
@@ -557,7 +557,7 @@ procflow_cleanup(procflow_t *procflow)
  * Returns 0 (OK), unless filebench_shm->shm_f_abort is signaled,
  * in which case it returns -1.
  */
-int
+static int
 procflow_allstarted()
 {
 	procflow_t *procflow = filebench_shm->shm_procflowlist;
@@ -770,4 +770,52 @@ procflow_define(char *name, procflow_t *inherit, avd_t instances)
 	(void) ipc_mutex_unlock(&filebench_shm->shm_procflow_lock);
 
 	return (procflow);
+}
+
+/*
+ * Creates and starts all defined procflow processes. The call to
+ * procflow_init() results in creation of the requested number of
+ * process instances for each previously defined procflow. The
+ * child processes exec() a new instance of filebench, passing it
+ * the instance number and address of the shared memory region.
+ * The child processes will then create their threads and flowops.
+ * The routine then unlocks the run_lock to allow all the processes'
+ * threads to start and  waits for all of them to begin execution.
+ * Finally, it records the start time and resets the event generation
+ * system.
+ */
+void
+proc_create()
+{
+	filebench_shm->shm_1st_err = 0;
+	filebench_shm->shm_f_abort = FILEBENCH_OK;
+
+	(void) pthread_rwlock_rdlock(&filebench_shm->shm_run_lock);
+
+	if (procflow_init() != 0) {
+		filebench_log(LOG_ERROR, "Failed to create processes\n");
+		filebench_shutdown(1);
+	}
+
+	/* Wait for all threads to start */
+	if (procflow_allstarted() != 0) {
+		filebench_log(LOG_ERROR, "Could not start run");
+		return;
+	}
+
+	/*
+	 * Make sure we create the shared memory before we wake up worker
+	 * processes, which will alloc memory from this shm.
+	 */
+	if (filebench_shm->shm_required &&
+	    (ipc_ismcreate(filebench_shm->shm_required) < 0)) {
+		filebench_log(LOG_ERROR, "Could not allocate shared memory");
+		return;
+	}
+
+	/* Release the read lock, allowing threads to start */
+	(void) pthread_rwlock_unlock(&filebench_shm->shm_run_lock);
+
+	filebench_shm->shm_starttime = gethrtime();
+	eventgen_reset();
 }

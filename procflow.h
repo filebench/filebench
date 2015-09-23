@@ -45,9 +45,8 @@ typedef struct procflow {
 } procflow_t;
 
 procflow_t *procflow_define(char *name, procflow_t *inherit, avd_t instances);
-int	procflow_init(void);
+void proc_create(void);
 void	procflow_shutdown(void);
 int	procflow_exec(char *name, int instance);
-int	procflow_allstarted(void);
 
 #endif	/* _FB_PROCFLOW_H */
