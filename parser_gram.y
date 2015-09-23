@@ -279,16 +279,14 @@ version_command: FSC_VERSION
 	$$->cmd = parser_version;
 };
 
-enable_command: FSC_ENABLE FSE_MULTI
+enable_command: FSC_ENABLE FSE_MULTI enable_multi_ops
 {
+
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
 
 	$$->cmd = parser_enable_mc;
-}
-| enable_command enable_multi_ops
-{
-	$1->cmd_attr_list = $2;
+	$$->cmd_attr_list = $3;
 }
 | FSC_ENABLE FSE_LATHIST
 {
@@ -2786,7 +2784,7 @@ parser_enable_mc(cmd_t *cmd)
 	char *master;
 	char *client;
 
-	if ((attr= get_attr(cmd, FSA_MASTER))) {
+	if ((attr = get_attr(cmd, FSA_MASTER))) {
 		master = avd_get_str(attr->attr_avd);
 	} else {
 		filebench_log(LOG_ERROR,
@@ -2794,7 +2792,7 @@ parser_enable_mc(cmd_t *cmd)
 		return;
 	}
 
-	if ((attr= get_attr(cmd, FSA_CLIENT))) {
+	if ((attr = get_attr(cmd, FSA_CLIENT))) {
 		client = avd_get_str(attr->attr_avd);
 	} else {
 		filebench_log(LOG_ERROR,

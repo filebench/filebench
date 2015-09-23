@@ -26,7 +26,6 @@
 
 #include "filebench.h"
 #include "multi_client_sync.h"
-#if 0
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -38,7 +37,6 @@
 static int mc_sync_sock_id;
 static char this_client_name[MCS_NAMELENGTH];
 
-//XXX: We do not support it so far 
 /*
  * Open a socket to the master synchronization host
  */
@@ -47,9 +45,9 @@ mc_sync_open_sock(char *master_name, int master_port, char *my_name)
 {
 	struct sockaddr_in client_in;
 	struct sockaddr_in master_in;
-	struct hostent master_info;
-	int error_num;
-	char buffer[MCS_MSGLENGTH];
+	struct hostent *master_info;
+	//int error_num;
+	//char buffer[MCS_MSGLENGTH];
 
 	(void) strncpy(this_client_name, my_name, MCS_NAMELENGTH);
 	if ((mc_sync_sock_id = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
@@ -67,15 +65,19 @@ mc_sync_open_sock(char *master_name, int master_port, char *my_name)
 		return (FILEBENCH_ERROR);
 	}
 
+	master_info = gethostbyname(master_name);
+
+	/*
 	if (gethostbyname_r(master_name, &master_info, buffer, MCS_MSGLENGTH,
 	    &error_num) == NULL) {
 		filebench_log(LOG_ERROR, "could not locate sync master");
 		return (FILEBENCH_ERROR);
 	}
+	*/
 
 	master_in.sin_family = AF_INET;
 	master_in.sin_port = htons((uint16_t)master_port);
-	(void) memcpy(&master_in.sin_addr.s_addr, *master_info.h_addr_list,
+	(void) memcpy(&master_in.sin_addr.s_addr, *(master_info->h_addr_list),
 	    sizeof (master_in.sin_addr.s_addr));
 
 	if (connect(mc_sync_sock_id, (struct sockaddr *)&master_in,
@@ -110,14 +112,4 @@ mc_sync_synchronize(int sync_point)
 
 	filebench_log(LOG_INFO, "sync point %d succeeded!\n", sync_point);
 	return (FILEBENCH_OK);
-}
-#endif
-
-int mc_sync_open_sock(char *master_name, int master_port, char *my_name)
-{
-	return FILEBENCH_ERROR;
-}
-
-int mc_sync_synchronize(int sync_point){
-	return FILEBENCH_ERROR;
 }
