@@ -1660,24 +1660,21 @@ fileset_define(avd_t name)
 {
 	fileset_t *fileset;
 
-	if (name == NULL)
-		return (NULL);
-
-	if ((fileset = (fileset_t *)ipc_malloc(FILEBENCH_FILESET)) == NULL) {
-		filebench_log(LOG_ERROR,
-		    "fileset_define: Can't malloc fileset");
-		return (NULL);
+	fileset = (fileset_t *)ipc_malloc(FILEBENCH_FILESET);
+	if (!fileset) {
+		filebench_log(LOG_ERROR, "can't allocate fileset %s",
+		    		avd_get_str(name));
+		return NULL;
 	}
 
 	filebench_log(LOG_DEBUG_IMPL,
-	    "Defining file %s", avd_get_str(name));
+		"defining file[set] %s", avd_get_str(name));
 
-	(void) ipc_mutex_lock(&filebench_shm->shm_fileset_lock);
-
-	fileset->fs_dirgamma = avd_int_alloc(1500);
-	fileset->fs_histo_id = -1;
+	fileset->fs_name = name;
 
 	/* Add fileset to global list */
+	(void)ipc_mutex_lock(&filebench_shm->shm_fileset_lock);
+
 	if (filebench_shm->shm_filesetlist == NULL) {
 		filebench_shm->shm_filesetlist = fileset;
 		fileset->fs_next = NULL;
@@ -1686,11 +1683,9 @@ fileset_define(avd_t name)
 		filebench_shm->shm_filesetlist = fileset;
 	}
 
-	(void) ipc_mutex_unlock(&filebench_shm->shm_fileset_lock);
+	(void)ipc_mutex_unlock(&filebench_shm->shm_fileset_lock);
 
-	fileset->fs_name = name;
-
-	return (fileset);
+	return fileset;
 }
 
 /*

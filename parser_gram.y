@@ -2323,8 +2323,8 @@ static fileset_t *
 parser_fileset_define_common(cmd_t *cmd)
 {
 	fileset_t *fileset;
-	avd_t name;
 	attr_t *attr;
+	avd_t name;
 
 	/*
 	 * Make sure all plugin flowops are initialized.
@@ -2347,6 +2347,7 @@ parser_fileset_define_common(cmd_t *cmd)
 		    avd_get_str(name));
 		return (NULL);
 	}
+
 
 	if ((attr = get_attr(cmd, FSA_PATH)))  {
 		fileset->fs_path = attr->attr_avd;
@@ -2472,7 +2473,8 @@ parser_fileset_define(cmd_t *cmd)
 	fileset_t *fileset;
 	attr_t *attr;
 
-	if ((fileset = parser_fileset_define_common(cmd)) == NULL) {
+	fileset = parser_fileset_define_common(cmd);
+	if (!fileset) {
 		filebench_log(LOG_ERROR,
 		    "define fileset: failed to instantiate fileset");
 		filebench_shutdown(1);

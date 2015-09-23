@@ -141,7 +141,6 @@ typedef struct fileset {
 						/* directory to select */
 	uint_t		fs_leafdir_nerotor;	/* Ptr to next non-existing */
 	int		*fs_filehistop;		/* Ptr to access histogram */
-	int		fs_histo_id;	/* shared memory id for filehisto */
 	pthread_mutex_t	fs_histo_lock;	/* lock for incr of histo */
 } fileset_t;
 
