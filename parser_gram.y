@@ -68,9 +68,6 @@ static cmd_t *alloc_cmd(void);
 static attr_t *alloc_attr(void);
 static attr_t *alloc_lvar_attr(var_t *var);
 static attr_t *get_attr(cmd_t *cmd, int64_t name);
-static attr_t *get_attr_fileset(cmd_t *cmd, int64_t name);
-static attr_t *get_attr_integer(cmd_t *cmd, int64_t name);
-static attr_t *get_attr_bool(cmd_t *cmd, int64_t name);
 static void get_attr_lvars(cmd_t *cmd, flowop_t *flowop);
 static list_t *alloc_list();
 static probtabent_t *alloc_probtabent(void);
@@ -118,7 +115,6 @@ static void parser_enable_lathist(cmd_t *cmd);
 	int64_t		 ival;
 	unsigned char	 bval;
 	char *		 sval;
-	fs_u		 val;
 	avd_t		 avd;
 	cmd_t		*cmd;
 	attr_t		*attr;
@@ -155,10 +151,7 @@ static void parser_enable_lathist(cmd_t *cmd);
 
 %type <ival> FSV_VAL_POSINT FSV_VAL_NEGINT
 %type <bval> FSV_VAL_BOOLEAN
-%type <sval> FSV_STRING
-%type <sval> FSV_WHITESTRING
-%type <sval> FSV_VARIABLE
-%type <sval> FSK_ASSIGN
+%type <sval> FSV_STRING FSV_WHITESTRING FSV_VARIABLE FSK_ASSIGN
 
 %type <ival> FSC_DEFINE FSC_SET FSC_RUN FSC_ENABLE FSC_PSRUN
 %type <ival> FSC_DOMULTISYNC
@@ -759,6 +752,7 @@ file_attr_op: attrs_define_file FSK_ASSIGN attr_value
 		YYERROR;
 
 	$$->attr_name = $1;
+	$$->attr_avd = avd_bool_alloc(TRUE);
 };
 
 fileset_attr_op: attrs_define_fileset FSK_ASSIGN attr_value
@@ -773,6 +767,7 @@ fileset_attr_op: attrs_define_fileset FSK_ASSIGN attr_value
 		YYERROR;
 
 	$$->attr_name = $1;
+	$$->attr_avd = avd_bool_alloc(TRUE);
 };
 
 /* attribute parsing for random variables */
@@ -822,6 +817,7 @@ randvar_attr_op: randvar_attr_name FSK_ASSIGN attr_value
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
 	$$->attr_name = $1;
+	$$->attr_avd = avd_bool_alloc(TRUE);
 }
 | FSA_TYPE FSK_ASSIGN randvar_attr_typop
 {
@@ -891,6 +887,7 @@ p_attr_op: attrs_define_proc FSK_ASSIGN attr_value
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
 	$$->attr_name = $1;
+	$$->attr_avd = avd_bool_alloc(TRUE);
 };
 
 /* attribute parsing thread options */
@@ -922,6 +919,7 @@ t_attr_op: attrs_define_thread FSK_ASSIGN attr_value
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
 	$$->attr_name = $1;
+	$$->attr_avd = avd_bool_alloc(TRUE);
 };
 
 /* attribute parsing for flowops */
@@ -966,6 +964,7 @@ fo_attr_op: attrs_flowop FSK_ASSIGN attr_value
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
 	$$->attr_name = $1;
+	$$->attr_avd = avd_bool_alloc(TRUE);
 };
 
 /* attribute parsing for Event Generator */
@@ -997,6 +996,7 @@ ev_attr_op: attrs_eventgen FSK_ASSIGN attr_value
 	if (($$ = alloc_attr()) == NULL)
 		YYERROR;
 	$$->attr_name = $1;
+	$$->attr_avd = avd_bool_alloc(TRUE);
 };
 
 /* attribute parsing for enable multiple client command */
@@ -1798,7 +1798,7 @@ parser_eventgen(cmd_t *cmd)
 	attr_t *attr;
 
 	/* Get the rate from attribute */
-	if ((attr = get_attr_integer(cmd, FSA_RATE))) {
+	if ((attr = get_attr(cmd, FSA_RATE))) {
 		if (attr->attr_avd) {
 			eventgen_setrate(attr->attr_avd);
 		}
@@ -1852,7 +1852,7 @@ parser_proc_define(cmd_t *cmd)
 	}
 
 	/* Get the memory size from attribute */
-	if ((attr = get_attr_integer(cmd, FSA_INSTANCES))) {
+	if ((attr = get_attr(cmd, FSA_INSTANCES))) {
 		if (AVD_IS_RANDOM(attr->attr_avd)) {
 			filebench_log(LOG_ERROR,
 			    "proc_define: Instances attr cannot be random");
@@ -1877,7 +1877,7 @@ parser_proc_define(cmd_t *cmd)
 	}
 
 	/* Get the pri from attribute */
-	if ((attr = get_attr_integer(cmd, FSA_NICE))) {
+	if ((attr = get_attr(cmd, FSA_NICE))) {
 		if (AVD_IS_RANDOM(attr->attr_avd)) {
 			filebench_log(LOG_ERROR,
 			    "proc_define: priority cannot be random");
@@ -1929,19 +1929,19 @@ thread_define(cmd_t *cmd, procflow_t *procflow, int procinstances)
 	}
 
 	/* Get the number of instances from attribute */
-	if ((attr = get_attr_integer(cmd, FSA_INSTANCES))) {
+	if ((attr = get_attr(cmd, FSA_INSTANCES))) {
 		instances = attr->attr_avd;
 	} else
 		instances = avd_int_alloc(1);
 
 	/* Get the memory size from attribute */
-	if ((attr = get_attr_integer(cmd, FSA_MEMSIZE))) {
+	if ((attr = get_attr(cmd, FSA_MEMSIZE))) {
 		template.tf_memsize = attr->attr_avd;
 	} else
 		template.tf_memsize = avd_int_alloc(0);
 
 	/* Get ioprio parameters from attribute */
-	if ((attr = get_attr_integer(cmd, FSA_IOPRIO))) {
+	if ((attr = get_attr(cmd, FSA_IOPRIO))) {
 		template.tf_ioprio = attr->attr_avd;
 	} else
 		template.tf_ioprio = avd_int_alloc(8);
@@ -1988,25 +1988,25 @@ parser_flowop_get_attrs(cmd_t *cmd, flowop_t *flowop)
 	}
 
 	/* Get the iosize of the op */
-	if ((attr = get_attr_integer(cmd, FSA_IOSIZE)))
+	if ((attr = get_attr(cmd, FSA_IOSIZE)))
 		flowop->fo_iosize = attr->attr_avd;
 	else
 		flowop->fo_iosize = avd_int_alloc(0);
 
 	/* Get the working set size of the op */
-	if ((attr = get_attr_integer(cmd, FSA_WSS)))
+	if ((attr = get_attr(cmd, FSA_WSS)))
 		flowop->fo_wss = attr->attr_avd;
 	else
 		flowop->fo_wss = avd_int_alloc(0);
 
 	/* Random I/O? */
-	if ((attr = get_attr_bool(cmd, FSA_RANDOM)))
+	if ((attr = get_attr(cmd, FSA_RANDOM)))
 		flowop->fo_random = attr->attr_avd;
 	else
 		flowop->fo_random = avd_bool_alloc(FALSE);
 
 	/* Sync I/O? */
-	if ((attr = get_attr_bool(cmd, FSA_DSYNC)))
+	if ((attr = get_attr(cmd, FSA_DSYNC)))
 		flowop->fo_dsync = attr->attr_avd;
 	else
 		flowop->fo_dsync = avd_bool_alloc(FALSE);
@@ -2017,13 +2017,13 @@ parser_flowop_get_attrs(cmd_t *cmd, flowop_t *flowop)
 		    avd_get_str(attr->attr_avd));
 
 	/* Value */
-	if ((attr = get_attr_integer(cmd, FSA_VALUE)))
+	if ((attr = get_attr(cmd, FSA_VALUE)))
 		flowop->fo_value = attr->attr_avd;
 	else
 		flowop->fo_value = avd_int_alloc(0);
 
 	/* FD */
-	if ((attr = get_attr_integer(cmd, FSA_FD))) {
+	if ((attr = get_attr(cmd, FSA_FD))) {
 		flowop->fo_fdnumber = avd_get_int(attr->attr_avd);
 		if (flowop->fo_filename != NULL)
 			filebench_log(LOG_DEBUG_SCRIPT, "It is not "
@@ -2032,29 +2032,29 @@ parser_flowop_get_attrs(cmd_t *cmd, flowop_t *flowop)
 	}
 
 	/* Rotatefd? */
-	if ((attr = get_attr_bool(cmd, FSA_ROTATEFD)))
+	if ((attr = get_attr(cmd, FSA_ROTATEFD)))
 		flowop->fo_rotatefd = attr->attr_avd;
 	else
 		flowop->fo_rotatefd = avd_bool_alloc(FALSE);
 
 	/* SRC FD, for copies etc... */
-	if ((attr = get_attr_integer(cmd, FSA_SRCFD)))
+	if ((attr = get_attr(cmd, FSA_SRCFD)))
 		flowop->fo_srcfdnumber = avd_get_int(attr->attr_avd);
 
 	/* Blocking operation? */
-	if ((attr = get_attr_bool(cmd, FSA_BLOCKING)))
+	if ((attr = get_attr(cmd, FSA_BLOCKING)))
 		flowop->fo_blocking = attr->attr_avd;
 	else
 		flowop->fo_blocking = avd_bool_alloc(FALSE);
 
 	/* Direct I/O Operation */
-	if ((attr = get_attr_bool(cmd, FSA_DIRECTIO)))
+	if ((attr = get_attr(cmd, FSA_DIRECTIO)))
 		flowop->fo_directio = attr->attr_avd;
 	else
 		flowop->fo_directio = avd_bool_alloc(FALSE);
 
 	/* Highwater mark */
-	if ((attr = get_attr_integer(cmd, FSA_HIGHWATER))) {
+	if ((attr = get_attr(cmd, FSA_HIGHWATER))) {
 		flowop->fo_highwater = attr->attr_avd;
 		if (AVD_IS_RANDOM(attr->attr_avd)) {
 			filebench_log(LOG_ERROR,
@@ -2066,13 +2066,13 @@ parser_flowop_get_attrs(cmd_t *cmd, flowop_t *flowop)
 	}
 
 	/* find file or leaf directory by index number */
-	if ((attr = get_attr_integer(cmd, FSA_INDEXED)))
+	if ((attr = get_attr(cmd, FSA_INDEXED)))
 		flowop->fo_fileindex = attr->attr_avd;
 	else
 		flowop->fo_fileindex = NULL;
 
 	/* Read Ahead Diable */
-	if ((attr = get_attr_bool(cmd, FSA_NOREADAHEAD)))
+	if ((attr = get_attr(cmd, FSA_NOREADAHEAD)))
 		flowop->fo_noreadahead = attr->attr_avd;
 	else
 		flowop->fo_noreadahead = avd_bool_alloc(FALSE);
@@ -2261,7 +2261,7 @@ parser_flowop_define(cmd_t *cmd, threadflow_t *thread,
 	}
 
 	/* Iterations */
-	if ((attr = get_attr_integer(cmd, FSA_ITERS)))
+	if ((attr = get_attr(cmd, FSA_ITERS)))
 		flowop->fo_iters = attr->attr_avd;
 	else
 		flowop->fo_iters = avd_int_alloc(1);
@@ -2308,7 +2308,7 @@ parser_composite_flowop_define(cmd_t *cmd)
 	get_attr_lvars(cmd, flowop);
 
 	/* Iterations */
-	if ((attr = get_attr_integer(cmd, FSA_ITERS)))
+	if ((attr = get_attr(cmd, FSA_ITERS)))
 		flowop->fo_iters = attr->attr_avd;
 	else
 		flowop->fo_iters = avd_int_alloc(1);
@@ -2342,7 +2342,7 @@ parser_fileset_define_common(cmd_t *cmd)
 	flowop_plugin_flowinit();
 
 	/* Get the name of the file */
-	if ((attr = get_attr_fileset(cmd, FSA_NAME))) {
+	if ((attr = get_attr(cmd, FSA_NAME))) {
 		name = attr->attr_avd;
 	} else {
 		filebench_log(LOG_ERROR,
@@ -2366,39 +2366,40 @@ parser_fileset_define_common(cmd_t *cmd)
 	}
 
 	/* How much should we preallocate? */
-	if ((attr = get_attr_integer(cmd, FSA_PREALLOC)) &&
-	    attr->attr_avd) {
-		if (AVD_IS_RANDOM(attr->attr_avd)) {
+	attr = get_attr(cmd, FSA_PREALLOC);
+	if (attr) {
+		if (!AVD_IS_BOOL(attr->attr_avd) && !AVD_IS_INT(attr->attr_avd)) {
 			filebench_log(LOG_ERROR,
-			    "define fileset: Prealloc attr cannot be random");
+			    "prealloc attr can be bool or interger only");
 			filebench_shutdown(1);
 		}
-		fileset->fs_preallocpercent = attr->attr_avd;
-	} else if (attr && !attr->attr_avd) {
-		fileset->fs_preallocpercent = avd_int_alloc(100);
-	} else {
+
+		if (AVD_IS_BOOL(attr->attr_avd))
+			fileset->fs_preallocpercent = avd_int_alloc(100);
+		else
+			fileset->fs_preallocpercent = attr->attr_avd;
+	} else
 		fileset->fs_preallocpercent = avd_int_alloc(0);
-	}
 
 	/* Should we preallocate? */
-	if ((attr = get_attr_bool(cmd, FSA_PREALLOC)))
+	if ((attr = get_attr(cmd, FSA_PREALLOC)))
 		fileset->fs_prealloc = attr->attr_avd;
 	else
 		fileset->fs_prealloc = avd_bool_alloc(FALSE);
 
 	/* Should we prealloc in parallel? */
-	if ((attr = get_attr_bool(cmd, FSA_PARALLOC)))
+	if ((attr = get_attr(cmd, FSA_PARALLOC)))
 		fileset->fs_paralloc = attr->attr_avd;
 	else
 		fileset->fs_paralloc = avd_bool_alloc(FALSE);
 
 	/* Should we allow writes to the file? */
-	if ((attr = get_attr_bool(cmd, FSA_READONLY)))
+	if ((attr = get_attr(cmd, FSA_READONLY)))
 		fileset->fs_readonly = attr->attr_avd;
 	else
 		fileset->fs_readonly = avd_bool_alloc(FALSE);
 
-	if ((attr = get_attr_bool(cmd, FSA_WRITEONLY)))
+	if ((attr = get_attr(cmd, FSA_WRITEONLY)))
 		fileset->fs_writeonly = attr->attr_avd;
 	else
 		fileset->fs_writeonly = avd_bool_alloc(FALSE);
@@ -2411,25 +2412,25 @@ parser_fileset_define_common(cmd_t *cmd)
 	}
 
 	/* Should we reuse the existing file? */
-	if ((attr = get_attr_bool(cmd, FSA_REUSE)))
+	if ((attr = get_attr(cmd, FSA_REUSE)))
 		fileset->fs_reuse = attr->attr_avd;
 	else
 		fileset->fs_reuse = avd_bool_alloc(FALSE);
 
 	/* Should we check for files actual existance? */
-	if ((attr = get_attr_bool(cmd, FSA_TRUSTTREE)))
+	if ((attr = get_attr(cmd, FSA_TRUSTTREE)))
 		fileset->fs_trust_tree = attr->attr_avd;
 	else
 		fileset->fs_trust_tree = avd_bool_alloc(FALSE);
 
 	/* Should we leave in cache? */
-	if ((attr = get_attr_bool(cmd, FSA_CACHED)))
+	if ((attr = get_attr(cmd, FSA_CACHED)))
 		fileset->fs_cached = attr->attr_avd;
 	else
 		fileset->fs_cached = avd_bool_alloc(FALSE);
 
 	/* Get the mean or absolute size of the file */
-	if ((attr = get_attr_integer(cmd, FSA_SIZE)))
+	if ((attr = get_attr(cmd, FSA_SIZE)))
 		fileset->fs_size = attr->attr_avd;
 	else
 		fileset->fs_size = avd_int_alloc(0);
@@ -2491,21 +2492,21 @@ parser_fileset_define(cmd_t *cmd)
 	}
 
 	/* Get the number of files in the fileset */
-	if ((attr = get_attr_integer(cmd, FSA_ENTRIES))) {
+	if ((attr = get_attr(cmd, FSA_ENTRIES))) {
 		fileset->fs_entries = attr->attr_avd;
 	} else {
 		fileset->fs_entries = avd_int_alloc(0);
 	}
 
 	/* Get the number of leafdirs in the fileset */
-	if ((attr = get_attr_integer(cmd, FSA_LEAFDIRS))) {
+	if ((attr = get_attr(cmd, FSA_LEAFDIRS))) {
 		fileset->fs_leafdirs = attr->attr_avd;
 	} else {
 		fileset->fs_leafdirs = avd_int_alloc(0);
 	}
 
 	/* Get the mean dir width of the fileset */
-	if ((attr = get_attr_integer(cmd, FSA_DIRWIDTH))) {
+	if ((attr = get_attr(cmd, FSA_DIRWIDTH))) {
 		fileset->fs_dirwidth = attr->attr_avd;
 	} else {
 		filebench_log(LOG_ERROR, "Fileset has zero directory width");
@@ -2513,14 +2514,14 @@ parser_fileset_define(cmd_t *cmd)
 	}
 
 	/* Get the dir depth */
-	if ((attr = get_attr_integer(cmd, FSA_DIRDEPTHRV))) {
+	if ((attr = get_attr(cmd, FSA_DIRDEPTHRV))) {
 		fileset->fs_dirdepthrv = attr->attr_avd;
 	} else {
 		fileset->fs_dirdepthrv = NULL;
 	}
 
 	/* Get the gamma value for dir depth distributions */
-	if ((attr = get_attr_integer(cmd, FSA_DIRGAMMA))) {
+	if ((attr = get_attr(cmd, FSA_DIRGAMMA))) {
 		fileset->fs_dirgamma = attr->attr_avd;
 	} else
 		fileset->fs_dirgamma = avd_int_alloc(1500);
@@ -2923,7 +2924,7 @@ parser_var_assign_random(char *name, cmd_t *cmd)
 	rndp->rnd_type = 0;
 
 	/* Get the source of the random numbers */
-	if ((attr = get_attr_integer(cmd, FSA_RANDSRC))) {
+	if ((attr = get_attr(cmd, FSA_RANDSRC))) {
 		int randsrc = (int)avd_get_int(attr->attr_avd);
 
 		switch (randsrc) {
@@ -2940,13 +2941,13 @@ parser_var_assign_random(char *name, cmd_t *cmd)
 	}
 
 	/* Get the min value of the random distribution */
-	if ((attr = get_attr_integer(cmd, FSA_MIN)))
+	if ((attr = get_attr(cmd, FSA_MIN)))
 		rndp->rnd_min = attr->attr_avd;
 	else
 		rndp->rnd_min = avd_int_alloc(0);
 
 	/* Get the roundoff value for the random distribution */
-	if ((attr = get_attr_integer(cmd, FSA_ROUND)))
+	if ((attr = get_attr(cmd, FSA_ROUND)))
 		rndp->rnd_round = attr->attr_avd;
 	else
 		rndp->rnd_round = avd_int_alloc(0);
@@ -2984,19 +2985,19 @@ parser_var_assign_random(char *name, cmd_t *cmd)
 	}
 
 	/* Get the seed for the random variable */
-	if ((attr = get_attr_integer(cmd, FSA_RANDSEED)))
+	if ((attr = get_attr(cmd, FSA_RANDSEED)))
 		rndp->rnd_seed = attr->attr_avd;
 	else
 		rndp->rnd_seed = avd_int_alloc(0);
 
 	/* Get the gamma value of the random distribution */
-	if ((attr = get_attr_integer(cmd, FSA_RANDGAMMA)))
+	if ((attr = get_attr(cmd, FSA_RANDGAMMA)))
 		rndp->rnd_gamma = attr->attr_avd;
 	else
 		rndp->rnd_gamma = avd_int_alloc(1500);
 
 	/* Get the mean value of the random distribution */
-	if ((attr = get_attr_integer(cmd, FSA_RANDMEAN))) {
+	if ((attr = get_attr(cmd, FSA_RANDMEAN))) {
 		rndp->rnd_mean = attr->attr_avd;
 	} else if ((rndp->rnd_type & RAND_TYPE_MASK) == RAND_TYPE_GAMMA) {
 		rndp->rnd_mean = NULL;
@@ -3083,46 +3084,6 @@ alloc_lvar_attr(var_t *var)
 	return (attr);
 }
 
-
-/*
- * Searches the attribute list for the command for the named attribute type.
- * The attribute list is created by the parser from the list of attributes
- * supplied with certain commands, such as the define and flowop commands.
- * Returns a pointer to the attribute structure if the named attribute is
- * found, otherwise returns NULL. If the attribute includes a parameter list,
- * the list is converted to a string and stored in the attr_avd field of
- * the returned attr_t struct.
- */
-static attr_t *
-get_attr_fileset(cmd_t *cmd, int64_t name)
-{
-	attr_t *attr;
-	attr_t *rtn = NULL;
-
-	for (attr = cmd->cmd_attr_list; attr != NULL;
-	    attr = attr->attr_next) {
-		filebench_log(LOG_DEBUG_IMPL,
-		    "attr %d = %d %llx?",
-		    attr->attr_name,
-		    name,
-		    attr->attr_avd);
-
-		if (attr->attr_name == name)
-			rtn = attr;
-	}
-
-	if (rtn == NULL)
-		return (NULL);
-
-	if (rtn->attr_param_list) {
-		filebench_log(LOG_DEBUG_SCRIPT, "attr is param list");
-		rtn->attr_avd = parser_list2varstring(rtn->attr_param_list);
-	}
-
-	return (rtn);
-}
-
-
 /*
  * Searches the attribute list for the command for the named attribute type.
  * The attribute list is created by the parser from the list of attributes
@@ -3137,10 +3098,10 @@ get_attr(cmd_t *cmd, int64_t name)
 {
 	attr_t *attr;
 	attr_t *rtn = NULL;
-	char *string;
 
 	for (attr = cmd->cmd_attr_list; attr != NULL;
 	    attr = attr->attr_next) {
+
 		filebench_log(LOG_DEBUG_IMPL,
 		    "attr %d = %d %llx?",
 		    attr->attr_name,
@@ -3151,85 +3112,7 @@ get_attr(cmd_t *cmd, int64_t name)
 			rtn = attr;
 	}
 
-	if (rtn == NULL)
-		return (NULL);
-
-	if (rtn->attr_param_list) {
-		filebench_log(LOG_DEBUG_SCRIPT, "attr is param list");
-		string = parser_list2string(rtn->attr_param_list);
-		if (string != NULL) {
-			rtn->attr_avd = avd_str_alloc(string);
-			filebench_log(LOG_DEBUG_SCRIPT,
-			    "attr string %s", string);
-		}
-	}
-
-	return (rtn);
-}
-
-/*
- * Similar to get_attr, but converts the parameter string supplied with the
- * named attribute to an integer and stores the integer in the attr_avd
- * portion of the returned attr_t struct.
- */
-static attr_t *
-get_attr_integer(cmd_t *cmd, int64_t name)
-{
-	attr_t *attr;
-	attr_t *rtn = NULL;
-
-	for (attr = cmd->cmd_attr_list; attr != NULL;
-	    attr = attr->attr_next) {
-		if (attr->attr_name == name)
-			rtn = attr;
-	}
-
-	if (rtn == NULL)
-		return (NULL);
-
-	if (rtn->attr_param_list)
-		rtn->attr_avd = parser_list2avd(rtn->attr_param_list);
-
-	return (rtn);
-}
-
-/*
- * Similar to get_attr, but converts the parameter string supplied with the
- * named attribute to an integer and stores the integer in the attr_avd
- * portion of the returned attr_t struct. If no parameter string is supplied
- * then it defaults to TRUE (1).
- */
-static attr_t *
-get_attr_bool(cmd_t *cmd, int64_t name)
-{
-	attr_t *attr;
-	attr_t *rtn = NULL;
-
-	for (attr = cmd->cmd_attr_list; attr != NULL;
-	    attr = attr->attr_next) {
-		if (attr->attr_name == name)
-			rtn = attr;
-	}
-
-	if (rtn == NULL)
-		return (NULL);
-
-	if (rtn->attr_param_list) {
-		rtn->attr_avd = parser_list2avd(rtn->attr_param_list);
-
-	} else if (rtn->attr_avd == NULL) {
-		rtn->attr_avd = avd_bool_alloc(TRUE);
-	}
-
-	/* boolean attributes cannot point to random variables */
-	if (AVD_IS_RANDOM(rtn->attr_avd)) {
-		filebench_log(LOG_ERROR,
-		    "define flowop: Boolean attr %s cannot be random", name);
-		filebench_shutdown(1);
-		return (NULL);
-	}
-
-	return (rtn);
+	return rtn;
 }
 
 /*

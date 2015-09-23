@@ -633,6 +633,9 @@ fileset_pick(fileset_t *fileset, int flags, int tid, int index)
 	/* see if we have to wait for available files or directories */
 	switch (flags & FILESET_PICKMASK) {
 	case FILESET_PICKFILE:
+
+		filebench_log(LOG_DEBUG_SCRIPT, "Picking file");
+
 		if (fileset->fs_filelist == NULL)
 			goto empty;
 
@@ -643,15 +646,21 @@ fileset_pick(fileset_t *fileset, int flags, int tid, int index)
 
 		max_entries = fileset->fs_constentries;
 		if (flags & FILESET_PICKUNIQUE) {
+			filebench_log(LOG_DEBUG_SCRIPT, "Picking unique");
 			atp = &fileset->fs_free_files;
 		} else if (flags & FILESET_PICKNOEXIST) {
+			filebench_log(LOG_DEBUG_SCRIPT, "Picking not existing");
 			atp = &fileset->fs_noex_files;
 		} else {
+			filebench_log(LOG_DEBUG_SCRIPT, "Picking existing");
 			atp = &fileset->fs_exist_files;
 		}
 		break;
 
 	case FILESET_PICKDIR:
+
+		filebench_log(LOG_DEBUG_SCRIPT, "Picking directory");
+
 		if (fileset->fs_dirlist == NULL)
 			goto empty;
 
@@ -665,6 +674,9 @@ fileset_pick(fileset_t *fileset, int flags, int tid, int index)
 		break;
 
 	case FILESET_PICKLEAFDIR:
+
+		filebench_log(LOG_DEBUG_SCRIPT, "Picking leaf directory");
+
 		if (fileset->fs_leafdirlist == NULL)
 			goto empty;
 
@@ -685,8 +697,10 @@ fileset_pick(fileset_t *fileset, int flags, int tid, int index)
 	}
 
 	/* see if asking for impossible */
-	if (avl_is_empty(atp))
+	if (avl_is_empty(atp)) {
+		filebench_log(LOG_DEBUG_SCRIPT, "atp is empty");
 		goto empty;
+	}
 
 	if (flags & FILESET_PICKUNIQUE) {
 		uint64_t  index64;

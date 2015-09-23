@@ -78,6 +78,10 @@ typedef struct avd {
 #define	AVD_IS_RANDOM(vp)	((vp) && ((vp)->avd_type == AVD_VARVAL_RANDOM))
 #define	AVD_IS_STRING(vp)	((vp) && (((vp)->avd_type == AVD_VAL_STR) || \
 				((vp)->avd_type == AVD_VARVAL_STR)))
+#define	AVD_IS_BOOL(vp)		((vp) && (((vp)->avd_type == AVD_VAL_BOOL) || \
+				((vp)->avd_type == AVD_VARVAL_BOOL)))
+#define	AVD_IS_INT(vp)		((vp) && (((vp)->avd_type == AVD_VAL_INT) || \
+				((vp)->avd_type == AVD_VARVAL_INT)))
 
 /* Variable Types */
 typedef enum var_type {

@@ -44,7 +44,6 @@ typedef struct attr {
 	int		 attr_name;
 	struct attr	*attr_next;
 	avd_t		 attr_avd;
-	list_t		*attr_param_list;
 	void		*attr_obj;
 } attr_t;
 
