@@ -2804,23 +2804,24 @@ parser_system(cmd_t *cmd)
 {
 	char *string;
 
-	if (cmd->cmd_param_list == NULL)
+	if (!cmd->cmd_param_list)
 		return;
 
 	string = parser_list2string(cmd->cmd_param_list);
 
-	if (string == NULL)
+	if (!string)
 		return;
 
-	filebench_log(LOG_VERBOSE,
-	    "Running '%s'", string);
+	filebench_log(LOG_VERBOSE, "Running '%s'", string);
 
 	if (system(string) < 0) {
 		filebench_log(LOG_ERROR,
 		    "system exec failed: %s",
 		    strerror(errno));
+		free(string);
 		filebench_shutdown(1);
 	}
+
 	free(string);
 }
 
