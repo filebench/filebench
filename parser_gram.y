@@ -428,7 +428,8 @@ FSC_SET FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
 }
 | FSC_SET FSV_VARIABLE FSK_ASSIGN FSK_QUOTE FSV_WHITESTRING FSK_QUOTE
 {
-	if (($$ = alloc_cmd()) == NULL)
+	$$ = alloc_cmd();
+	if (!$$)
 		YYERROR;
 
 	var_assign_string($2, $5);
@@ -1249,19 +1250,23 @@ attrs_define_comp:
 
 attr_value: FSV_STRING
 {
-	if (($$ = alloc_attr()) == NULL)
+	$$ = alloc_attr();
+	if (!$$)
 		YYERROR;
 	$$->attr_avd = avd_str_alloc($1);
 } | FSV_VAL_POSINT {
-	if (($$ = alloc_attr()) == NULL)
+	$$ = alloc_attr();
+	if (!$$)
 		YYERROR;
 	$$->attr_avd = avd_int_alloc($1);
 } | FSV_VAL_BOOLEAN {
-	if (($$ = alloc_attr()) == NULL)
+	$$ = alloc_attr();
+	if (!$$)
 		YYERROR;
 	$$->attr_avd = avd_bool_alloc($1);
 } | FSV_VARIABLE {
-	if (($$ = alloc_attr()) == NULL)
+	$$ = alloc_attr();
+	if (!$$)
 		YYERROR;
 	$$->attr_avd = avd_var_alloc($1);
 };
