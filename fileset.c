@@ -311,9 +311,6 @@ fileset_alloc_file(filesetentry_t *entry)
 			filebench_log(LOG_DEBUG_IMPL,
 			    "Reusing file %s", path);
 
-			if (!avd_get_bool(fileset->fs_cached))
-				(void) FB_FREEMEM(&fdesc, entry->fse_size);
-
 			(void) FB_CLOSE(&fdesc);
 
 			/* unbusy the allocated entry */
@@ -326,9 +323,6 @@ fileset_alloc_file(filesetentry_t *entry)
 			    "Truncating & re-using file %s", path);
 
 			(void) FB_FTRUNC(&fdesc, (off64_t)entry->fse_size);
-
-			if (!avd_get_bool(fileset->fs_cached))
-				(void) FB_FREEMEM(&fdesc, entry->fse_size);
 
 			(void) FB_CLOSE(&fdesc);
 
@@ -379,9 +373,6 @@ fileset_alloc_file(filesetentry_t *entry)
 		}
 		seek += wsize;
 	}
-
-	if (!avd_get_bool(fileset->fs_cached))
-		(void) FB_FREEMEM(&fdesc, entry->fse_size);
 
 	(void) FB_CLOSE(&fdesc);
 

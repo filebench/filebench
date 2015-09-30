@@ -138,7 +138,7 @@ static void parser_enable_lathist(cmd_t *cmd);
 %token FSK_IN FSK_QUOTE
 
 %token FSA_SIZE FSA_PREALLOC FSA_PARALLOC FSA_PATH FSA_REUSE
-%token FSA_MEMSIZE FSA_RATE FSA_CACHED FSA_READONLY FSA_TRUSTTREE
+%token FSA_MEMSIZE FSA_RATE FSA_READONLY FSA_TRUSTTREE
 %token FSA_IOSIZE FSA_FILENAME FSA_WSS FSA_NAME FSA_RANDOM FSA_INSTANCES
 %token FSA_DSYNC FSA_TARGET FSA_ITERS FSA_NICE FSA_VALUE FSA_BLOCKING
 %token FSA_HIGHWATER FSA_DIRECTIO FSA_DIRWIDTH FSA_FD FSA_SRCFD FSA_ROTATEFD
@@ -1048,7 +1048,6 @@ attrs_define_file:
 | FSA_PARALLOC { $$ = FSA_PARALLOC;}
 | FSA_REUSE { $$ = FSA_REUSE;}
 | FSA_READONLY { $$ = FSA_READONLY;}
-| FSA_CACHED { $$ = FSA_CACHED;}
 
 attrs_define_fileset:
   FSA_NAME { $$ = FSA_NAME;}
@@ -1063,7 +1062,6 @@ attrs_define_fileset:
 | FSA_READONLY { $$ = FSA_READONLY;}
 | FSA_TRUSTTREE { $$ = FSA_TRUSTTREE;}
 | FSA_DIRGAMMA { $$ = FSA_DIRGAMMA;}
-| FSA_CACHED { $$ = FSA_CACHED;}
 | FSA_LEAFDIRS { $$ = FSA_LEAFDIRS;};
 | FSA_WRITEONLY { $$ = FSA_WRITEONLY;}
 
@@ -2406,13 +2404,6 @@ parser_fileset_define_common(cmd_t *cmd)
 		fileset->fs_trust_tree = attr->attr_avd;
 	else
 		fileset->fs_trust_tree = avd_bool_alloc(FALSE);
-
-	/* Should we leave in cache? */
-	attr = get_attr(cmd, FSA_CACHED);
-	if (attr)
-		fileset->fs_cached = attr->attr_avd;
-	else
-		fileset->fs_cached = avd_bool_alloc(FALSE);
 
 	attr = get_attr(cmd, FSA_SIZE);
 	if (attr)

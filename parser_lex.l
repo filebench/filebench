@@ -93,7 +93,6 @@ cvar                    { return FSE_CVAR; }
 
 alldone                 { return FSA_ALLDONE; }
 blocking                { return FSA_BLOCKING; }
-cached                  { return FSA_CACHED; }
 client			{ return FSA_CLIENT; }
 dirwidth                { return FSA_DIRWIDTH; }
 dirdepthrv              { return FSA_DIRDEPTHRV; }

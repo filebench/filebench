@@ -98,7 +98,6 @@ typedef struct fileset {
 					/* to 0 for explicit depth */
 	avd_t		fs_create;	/* Attr */
 	avd_t		fs_paralloc;	/* Attr */
-	avd_t		fs_cached;	/* Attr */
 	avd_t		fs_reuse;	/* Attr */
 	avd_t		fs_readonly;	/* Attr */
 	avd_t		fs_writeonly;	/* Attr */
