@@ -997,6 +997,7 @@ fileset_create(fileset_t *fileset)
 	int randno;
 	int preallocated = 0;
 	int reusing;
+	int preallocpercent;
 
 	if ((fileset_path = avd_get_str(fileset->fs_path)) == NULL) {
 		filebench_log(LOG_ERROR, "%s path not set",
@@ -1047,7 +1048,7 @@ fileset_create(fileset_t *fileset)
 	}
 
 	/* make the filesets directory tree unless in reuse mode */
-	if (!reusing && (avd_get_bool(fileset->fs_prealloc))) {
+	if (!reusing && (avd_get_bool(fileset->fs_preallocpercent))) {
 		filebench_log(LOG_INFO,
 			"Pre-allocating directories in %s tree", fileset_name);
 
@@ -1062,8 +1063,15 @@ fileset_create(fileset_t *fileset)
 	filebench_log(LOG_INFO,
 		"Pre-allocating files in %s tree", fileset_name);
 
-	randno = ((RAND_MAX * (100
-	    - avd_get_int(fileset->fs_preallocpercent))) / 100);
+	if (AVD_IS_BOOL(fileset->fs_preallocpercent)) {
+		if (avd_get_bool(fileset->fs_preallocpercent))
+			preallocpercent = 100;
+		else
+			preallocpercent = 0;
+	} else
+		preallocpercent = avd_get_int(fileset->fs_preallocpercent);
+
+	randno = ((RAND_MAX * (100 - preallocpercent)) / 100);
 
 	/* alloc any files, as required */
 	fileset_pickreset(fileset, FILESET_PICKFILE);
@@ -1672,7 +1680,7 @@ exists:
  * define fileset name=drew4ever, entries=$nfiles
  */
 fileset_t *
-fileset_define(avd_t name)
+fileset_define(avd_t name, avd_t path)
 {
 	fileset_t *fileset;
 
@@ -1687,6 +1695,7 @@ fileset_define(avd_t name)
 		"defining file[set] %s", avd_get_str(name));
 
 	fileset->fs_name = name;
+	fileset->fs_path = path;
 
 	/* Add fileset to global list */
 	(void)ipc_mutex_lock(&filebench_shm->shm_fileset_lock);

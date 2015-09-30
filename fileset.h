@@ -97,7 +97,6 @@ typedef struct fileset {
 					/* (* 1000) defaults to 1500, set */
 					/* to 0 for explicit depth */
 	avd_t		fs_create;	/* Attr */
-	avd_t		fs_prealloc;	/* Attr */
 	avd_t		fs_paralloc;	/* Attr */
 	avd_t		fs_cached;	/* Attr */
 	avd_t		fs_reuse;	/* Attr */
@@ -149,7 +148,7 @@ int fileset_createsets();
 void fileset_delete_all_filesets(void);
 int fileset_openfile(fb_fdesc_t *fd, fileset_t *fileset,
     filesetentry_t *entry, int flag, int mode, int attrs);
-fileset_t *fileset_define(avd_t);
+fileset_t *fileset_define(avd_t name, avd_t path);
 fileset_t *fileset_find(char *name);
 filesetentry_t *fileset_pick(fileset_t *fileset, int flags, int tid,
     int index);

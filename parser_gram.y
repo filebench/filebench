@@ -2328,160 +2328,122 @@ parser_composite_flowop_define(cmd_t *cmd)
 
 
 /*
- * Calls fileset_define() to allocate a fileset with the supplied name and
- * initializes the fileset's pathname attribute, and optionally the
- * fileset_cached, fileset_reuse, fileset_prealloc and fileset_size attributes.
- *
- */
+ * First, we verify that mandatory attributes - name and path - are specified.
+ * Then allocate a fileset structure and setup its fields. Notice, at this
+ * point we should not verify if AVD type makes sense, because AVD type can
+ * change as variables are set to other values after fileset definition.
+*/
 static fileset_t *
 parser_fileset_define_common(cmd_t *cmd)
 {
 	fileset_t *fileset;
 	attr_t *attr;
 	avd_t name;
+	avd_t path;
 
 	/*
 	 * Make sure all plugin flowops are initialized.
-	 * Defaults to local fs for now
+	 * Defaults to local fs for now.
 	 */
 	flowop_plugin_flowinit();
 
-	/* Get the name of the file */
-	if ((attr = get_attr(cmd, FSA_NAME))) {
+	attr = get_attr(cmd, FSA_NAME);
+	if (attr)
 		name = attr->attr_avd;
-	} else {
-		filebench_log(LOG_ERROR,
-		    "define fileset: file or fileset specifies no name");
-		return (NULL);
+	else {
+		filebench_log(LOG_ERROR, "file[set] specifies no name");
+		return NULL;
 	}
 
-	if ((fileset = fileset_define(name)) == NULL) {
-		filebench_log(LOG_ERROR,
-		    "define file: failed to instantiate file %s\n",
-		    avd_get_str(name));
-		return (NULL);
+	attr = get_attr(cmd, FSA_PATH);
+	if (attr)
+		path = attr->attr_avd;
+	else {
+		filebench_log(LOG_ERROR, "file[set] specifies no path");
+		return NULL;
 	}
 
-
-	if ((attr = get_attr(cmd, FSA_PATH)))  {
-		fileset->fs_path = attr->attr_avd;
-	} else {
-		filebench_log(LOG_ERROR, "Cannot interpret path");
-		return (NULL);
+	fileset = fileset_define(name, path);
+	if (!fileset) {
+		filebench_log(LOG_ERROR, "failed to instantiate file[set] %s\n",
+		    		avd_get_str(name));
+		return NULL;
 	}
 
-	/* How much should we preallocate? */
 	attr = get_attr(cmd, FSA_PREALLOC);
-	if (attr) {
-		if (!AVD_IS_BOOL(attr->attr_avd) && !AVD_IS_INT(attr->attr_avd)) {
-			filebench_log(LOG_ERROR,
-			    "prealloc attr can be bool or interger only");
-			filebench_shutdown(1);
-		}
-
-		if (AVD_IS_BOOL(attr->attr_avd))
-			fileset->fs_preallocpercent = avd_int_alloc(100);
-		else
-			fileset->fs_preallocpercent = attr->attr_avd;
-	} else
+	if (attr)
+		fileset->fs_preallocpercent = attr->attr_avd;
+	else
 		fileset->fs_preallocpercent = avd_int_alloc(0);
 
-	/* Should we preallocate? */
-	if ((attr = get_attr(cmd, FSA_PREALLOC)))
-		fileset->fs_prealloc = attr->attr_avd;
-	else
-		fileset->fs_prealloc = avd_bool_alloc(FALSE);
-
-	/* Should we prealloc in parallel? */
-	if ((attr = get_attr(cmd, FSA_PARALLOC)))
+	attr = get_attr(cmd, FSA_PARALLOC);
+	if (attr)
 		fileset->fs_paralloc = attr->attr_avd;
 	else
 		fileset->fs_paralloc = avd_bool_alloc(FALSE);
 
-	/* Should we allow writes to the file? */
-	if ((attr = get_attr(cmd, FSA_READONLY)))
+	attr = get_attr(cmd, FSA_READONLY);
+	if (attr)
 		fileset->fs_readonly = attr->attr_avd;
 	else
 		fileset->fs_readonly = avd_bool_alloc(FALSE);
 
-	if ((attr = get_attr(cmd, FSA_WRITEONLY)))
+	attr = get_attr(cmd, FSA_WRITEONLY);
+	if (attr)
 		fileset->fs_writeonly = attr->attr_avd;
 	else
 		fileset->fs_writeonly = avd_bool_alloc(FALSE);
 
-	if ((avd_get_bool(fileset->fs_readonly) == TRUE) &&
-		(avd_get_bool(fileset->fs_writeonly) == TRUE)) {
-		filebench_log(LOG_ERROR, "fileset can't be read-only and "
-					"write-only at the same time!");
-		return NULL;
-	}
-
-	/* Should we reuse the existing file? */
-	if ((attr = get_attr(cmd, FSA_REUSE)))
+	attr = get_attr(cmd, FSA_REUSE);
+	if (attr)
 		fileset->fs_reuse = attr->attr_avd;
 	else
 		fileset->fs_reuse = avd_bool_alloc(FALSE);
 
 	/* Should we check for files actual existance? */
-	if ((attr = get_attr(cmd, FSA_TRUSTTREE)))
+	attr = get_attr(cmd, FSA_TRUSTTREE);
+	if (attr )
 		fileset->fs_trust_tree = attr->attr_avd;
 	else
 		fileset->fs_trust_tree = avd_bool_alloc(FALSE);
 
 	/* Should we leave in cache? */
-	if ((attr = get_attr(cmd, FSA_CACHED)))
+	attr = get_attr(cmd, FSA_CACHED);
+	if (attr)
 		fileset->fs_cached = attr->attr_avd;
 	else
 		fileset->fs_cached = avd_bool_alloc(FALSE);
 
-	/* Get the mean or absolute size of the file */
-	if ((attr = get_attr(cmd, FSA_SIZE)))
+	attr = get_attr(cmd, FSA_SIZE);
+	if (attr)
 		fileset->fs_size = attr->attr_avd;
 	else
-		fileset->fs_size = avd_int_alloc(0);
+		fileset->fs_size = avd_int_alloc(1024);
 
-	return (fileset);
+	return fileset;
 }
 
-/*
- * Calls parser_fileset_define_common() to allocate a fileset with
- * one entry and optionally the fileset_prealloc. sets the fileset_entries,
- * fileset_dirwidth, fileset_dirgamma, and fileset_sizegamma attributes
- * to appropriate values for emulating the old "fileobj" entity
- */
 static void
 parser_file_define(cmd_t *cmd)
 {
 	fileset_t *fileset;
 
-	if ((fileset = parser_fileset_define_common(cmd)) == NULL) {
-		filebench_log(LOG_ERROR,
-		    "define file: failed to instantiate file");
+	fileset = parser_fileset_define_common(cmd);
+	if (!fileset) {
+		filebench_log(LOG_ERROR, "failed to instantiate file");
 		filebench_shutdown(1);
 		return;
 	}
 
 	/* fileset is emulating a single file */
 	fileset->fs_attrs = FILESET_IS_FILE;
-
-	/* Set the size of the fileset to 1 */
 	fileset->fs_entries = avd_int_alloc(1);
-
 	/* Set the mean dir width to more than 1 */
 	fileset->fs_dirwidth = avd_int_alloc(10);
-
-	/* Set the dir and size gammas to 0 */
 	fileset->fs_dirgamma = avd_int_alloc(0);
-
 	fileset->fs_leafdirs = avd_int_alloc(0);
 }
 
-/*
- * Calls parser_fileset_define_common() to allocate a fileset with the
- * supplied name and initializes the fileset's fileset_preallocpercent,
- * fileset_prealloc, fileset_entries, fileset_dirwidth, fileset_dirgamma,
- * and fileset_sizegamma attributes.
- */
 static void
 parser_fileset_define(cmd_t *cmd)
 {
@@ -2490,45 +2452,41 @@ parser_fileset_define(cmd_t *cmd)
 
 	fileset = parser_fileset_define_common(cmd);
 	if (!fileset) {
-		filebench_log(LOG_ERROR,
-		    "define fileset: failed to instantiate fileset");
+		filebench_log(LOG_ERROR, "failed to instantiate fileset");
 		filebench_shutdown(1);
 		return;
 	}
 
-	/* Get the number of files in the fileset */
-	if ((attr = get_attr(cmd, FSA_ENTRIES))) {
+	attr = get_attr(cmd, FSA_ENTRIES);
+	if (attr)
 		fileset->fs_entries = attr->attr_avd;
-	} else {
-		fileset->fs_entries = avd_int_alloc(0);
-	}
+	else
+		fileset->fs_entries = avd_int_alloc(1000);
 
-	/* Get the number of leafdirs in the fileset */
-	if ((attr = get_attr(cmd, FSA_LEAFDIRS))) {
+	attr = get_attr(cmd, FSA_LEAFDIRS);
+	if (attr)
 		fileset->fs_leafdirs = attr->attr_avd;
-	} else {
+	else
 		fileset->fs_leafdirs = avd_int_alloc(0);
-	}
 
-	/* Get the mean dir width of the fileset */
-	if ((attr = get_attr(cmd, FSA_DIRWIDTH))) {
+	attr = get_attr(cmd, FSA_DIRWIDTH);
+	if (attr)
 		fileset->fs_dirwidth = attr->attr_avd;
-	} else {
-		filebench_log(LOG_ERROR, "Fileset has zero directory width");
+	else {
+		filebench_log(LOG_ERROR, "Fileset has no directory width");
 		fileset->fs_dirwidth = avd_int_alloc(0);
 	}
 
-	/* Get the dir depth */
-	if ((attr = get_attr(cmd, FSA_DIRDEPTHRV))) {
+	attr = get_attr(cmd, FSA_DIRDEPTHRV);
+	if (attr)
 		fileset->fs_dirdepthrv = attr->attr_avd;
-	} else {
+	else
 		fileset->fs_dirdepthrv = NULL;
-	}
 
-	/* Get the gamma value for dir depth distributions */
-	if ((attr = get_attr(cmd, FSA_DIRGAMMA))) {
+	attr = get_attr(cmd, FSA_DIRGAMMA);
+	if (attr)
 		fileset->fs_dirgamma = attr->attr_avd;
-	} else
+	else
 		fileset->fs_dirgamma = avd_int_alloc(1500);
 }
 
