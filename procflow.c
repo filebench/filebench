@@ -286,8 +286,9 @@ procflow_exec(char *name, int instance)
 	    "nice = %llx", procflow->pf_nice);
 
 	proc_nice = avd_get_int(procflow->pf_nice);
-	filebench_log(LOG_DEBUG_IMPL, "Setting pri of %s-%d to %d",
-	    name, instance, nice(proc_nice + 10));
+	if (proc_nice)
+		filebench_log(LOG_DEBUG_IMPL, "Setting pri of %s-%d to %d",
+	    			name, instance, nice(proc_nice));
 
 	procflow->pf_running = 1;
 

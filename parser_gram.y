@@ -79,7 +79,7 @@ static void parser_flowop_list(cmd_t *);
 
 /* Define Commands */
 static void parser_proc_define(cmd_t *);
-static void thread_define(cmd_t *, procflow_t *, int instances);
+static void parser_thread_define(cmd_t *, procflow_t *);
 static void parser_flowop_define(cmd_t *, threadflow_t *, flowop_t **, int);
 static void parser_composite_flowop_define(cmd_t *);
 static void parser_file_define(cmd_t *);
@@ -576,7 +576,8 @@ thread_list: thread
 
 proc_define_command: FSC_DEFINE FSE_PROC p_attr_ops FSK_OPENLST thread_list FSK_CLOSELST
 {
-	if (($$ = alloc_cmd()) == NULL)
+	$$ = alloc_cmd();
+	if (!$$)
 		YYERROR;
 	$$->cmd = &parser_proc_define;
 	$$->cmd_list = $5;
@@ -859,7 +860,6 @@ probtabentry_list: probtabentry
 	$$ = $1;
 };
 
-/* attribute parsing for define process */
 p_attr_ops: p_attr_op
 {
 	$$ = $1;
@@ -885,7 +885,8 @@ p_attr_op: attrs_define_proc FSK_ASSIGN attr_value
 }
 | attrs_define_proc
 {
-	if (($$ = alloc_attr()) == NULL)
+	$$ = alloc_attr();
+	if (!$$)
 		YYERROR;
 	$$->attr_name = $1;
 	$$->attr_avd = avd_bool_alloc(TRUE);
@@ -1034,11 +1035,10 @@ multisync_op: FSA_VALUE FSK_ASSIGN attr_value
 /*
  * Attribute names
  */
-
 attrs_define_proc:
-  FSA_NICE { $$ = FSA_NICE;}
-| FSA_NAME { $$ = FSA_NAME;}
-| FSA_INSTANCES { $$ = FSA_INSTANCES;};
+  FSA_NAME { $$ = FSA_NAME;}
+| FSA_INSTANCES { $$ = FSA_INSTANCES;}
+| FSA_NICE { $$ = FSA_NICE;}
 
 attrs_define_file:
   FSA_NAME { $$ = FSA_NAME;}
@@ -1835,7 +1835,7 @@ parser_flowop_list(cmd_t *cmd)
  * one. An optional priority level attribute can be supplied and is stored in
  * pf_nice. Finally the routine loops through the list of inner commands, if
  * any, which are defines for threadflows, and passes them one at a time to
- * thread_define() to allocate threadflow entities for the process(es).
+ * parser_thread_define() to allocate threadflow entities for the process(es).
  */
 static void
 parser_proc_define(cmd_t *cmd)
@@ -1847,22 +1847,16 @@ parser_proc_define(cmd_t *cmd)
 	fbint_t instances;
 	cmd_t *inner_cmd;
 
-	/* Get the name of the process */
-	if ((attr = get_attr(cmd, FSA_NAME))) {
+	attr = get_attr(cmd, FSA_NAME);
+	if (attr)
 		name = avd_get_str(attr->attr_avd);
-	} else {
-		filebench_log(LOG_ERROR,
-		    "define proc: proc specifies no name");
+	else {
+		filebench_log(LOG_ERROR, "process specifies no name");
 		filebench_shutdown(1);
 	}
 
-	/* Get the memory size from attribute */
-	if ((attr = get_attr(cmd, FSA_INSTANCES))) {
-		if (AVD_IS_RANDOM(attr->attr_avd)) {
-			filebench_log(LOG_ERROR,
-			    "proc_define: Instances attr cannot be random");
-			filebench_shutdown(1);
-		}
+	attr = get_attr(cmd, FSA_INSTANCES);
+	if (attr) {
 		var_instances = attr->attr_avd;
 		instances = avd_get_int(var_instances);
 		filebench_log(LOG_DEBUG_IMPL,
@@ -1881,24 +1875,18 @@ parser_proc_define(cmd_t *cmd)
 		filebench_shutdown(1);
 	}
 
-	/* Get the pri from attribute */
-	if ((attr = get_attr(cmd, FSA_NICE))) {
-		if (AVD_IS_RANDOM(attr->attr_avd)) {
-			filebench_log(LOG_ERROR,
-			    "proc_define: priority cannot be random");
-			filebench_shutdown(1);
-		}
+	attr = get_attr(cmd, FSA_NICE);
+	if (attr) {
 		filebench_log(LOG_DEBUG_IMPL, "Setting pri = %llu",
-		    (u_longlong_t)avd_get_int(attr->attr_avd));
+			    (u_longlong_t)avd_get_int(attr->attr_avd));
 		procflow->pf_nice = attr->attr_avd;
 	} else
 		procflow->pf_nice = avd_int_alloc(0);
 
-
 	/* Create the list of threads for this process  */
 	for (inner_cmd = cmd->cmd_list; inner_cmd != NULL;
 	    inner_cmd = inner_cmd->cmd_next) {
-		thread_define(inner_cmd, procflow, instances);
+		parser_thread_define(inner_cmd, procflow);
 	}
 }
 
@@ -1913,7 +1901,7 @@ parser_proc_define(cmd_t *cmd)
  * parser_flowop_define() to allocate flowop entities for the threadflows.
  */
 static void
-thread_define(cmd_t *cmd, procflow_t *procflow, int procinstances)
+parser_thread_define(cmd_t *cmd, procflow_t *procflow)
 {
 	threadflow_t *threadflow, template;
 	attr_t *attr;
