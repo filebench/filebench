@@ -161,7 +161,7 @@ static void parser_enable_lathist(cmd_t *cmd);
 
 %type <cmd> command run_command list_command psrun_command
 %type <cmd> proc_define_command files_define_command
-%type <cmd> fo_define_command debug_command create_command
+%type <cmd> flowop_define_command debug_command create_command
 %type <cmd> sleep_command set_command
 %type <cmd> system_command flowop_command
 %type <cmd> eventgen_command quit_command flowop_list thread_list
@@ -204,7 +204,7 @@ commands: commands command
 command:
   proc_define_command
 | files_define_command
-| fo_define_command
+| flowop_define_command
 | debug_command
 | eventgen_command
 | create_command
@@ -582,7 +582,6 @@ proc_define_command: FSC_DEFINE FSE_PROC p_attr_ops FSK_OPENLST thread_list FSK_
 	$$->cmd = &parser_proc_define;
 	$$->cmd_list = $5;
 	$$->cmd_attr_list = $3;
-
 }
 
 files_define_command: FSC_DEFINE FSE_FILE file_attr_ops
@@ -1202,7 +1201,7 @@ comp_lvar_def: FSV_VARIABLE FSK_ASSIGN FSV_VAL_BOOLEAN
 		YYERROR;
 };
 
-fo_define_command: FSC_DEFINE FSE_FLOWOP comp_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
+flowop_define_command: FSC_DEFINE FSE_FLOWOP comp_attr_ops FSK_OPENLST flowop_list FSK_CLOSELST
 {
 	if (($$ = alloc_cmd()) == NULL)
 		YYERROR;
@@ -1210,7 +1209,7 @@ fo_define_command: FSC_DEFINE FSE_FLOWOP comp_attr_ops FSK_OPENLST flowop_list F
 	$$->cmd_list = $5;
 	$$->cmd_attr_list = $3;
 }
-| fo_define_command comp_attr_ops
+| flowop_define_command comp_attr_ops
 {
 	$1->cmd_attr_list = $2;
 };
