@@ -584,10 +584,6 @@ proc_define_command: FSC_DEFINE FSE_PROC p_attr_ops FSK_OPENLST thread_list FSK_
 	$$->cmd_attr_list = $3;
 
 }
-| proc_define_command p_attr_ops
-{
-	$1->cmd_attr_list = $2;
-};
 
 files_define_command: FSC_DEFINE FSE_FILE file_attr_ops
 {
