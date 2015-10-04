@@ -1863,7 +1863,8 @@ parser_proc_define(cmd_t *cmd)
 		instances = 1;
 	}
 
-	if ((procflow = procflow_define(name, NULL, var_instances)) == NULL) {
+	procflow = procflow_define(name, var_instances);
+	if (!procflow) {
 		filebench_log(LOG_ERROR,
 		    "Failed to instantiate %d %s process(es)\n",
 		    instances, name);

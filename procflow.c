@@ -759,14 +759,14 @@ procflow_define_common(procflow_t **list, char *name,
  * parser_proc_define().
  */
 procflow_t *
-procflow_define(char *name, procflow_t *inherit, avd_t instances)
+procflow_define(char *name, avd_t instances)
 {
 	procflow_t *procflow;
 
 	(void) ipc_mutex_lock(&filebench_shm->shm_procflow_lock);
 
 	procflow = procflow_define_common(&filebench_shm->shm_procflowlist,
-	    name, inherit, FLOW_MASTER);
+	    name, NULL, FLOW_MASTER);
 	procflow->pf_instances = instances;
 
 	(void) ipc_mutex_unlock(&filebench_shm->shm_procflow_lock);

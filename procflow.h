@@ -44,7 +44,7 @@ typedef struct procflow {
 	avd_t		pf_nice;
 } procflow_t;
 
-procflow_t *procflow_define(char *name, procflow_t *inherit, avd_t instances);
+procflow_t *procflow_define(char *name, avd_t instances);
 void proc_create(void);
 void procflow_shutdown(void);
 void	proc_shutdown(void);
