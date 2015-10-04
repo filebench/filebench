@@ -1880,10 +1880,9 @@ parser_proc_define(cmd_t *cmd)
 		procflow->pf_nice = avd_int_alloc(0);
 
 	/* Create the list of threads for this process  */
-	for (inner_cmd = cmd->cmd_list; inner_cmd != NULL;
-	    inner_cmd = inner_cmd->cmd_next) {
+	for (inner_cmd = cmd->cmd_list; inner_cmd;
+	    	inner_cmd = inner_cmd->cmd_next)
 		parser_thread_define(inner_cmd, procflow);
-	}
 }
 
 /*
@@ -1907,52 +1906,51 @@ parser_thread_define(cmd_t *cmd, procflow_t *procflow)
 
 	memset(&template, 0, sizeof (threadflow_t));
 
-	/* Get the name of the thread */
-	if ((attr = get_attr(cmd, FSA_NAME))) {
+	attr = get_attr(cmd, FSA_NAME);
+	if (attr)
 		name = avd_get_str(attr->attr_avd);
-	} else {
+	else {
 		filebench_log(LOG_ERROR,
-		    "define thread: thread in process %s specifies no name",
+		    "thread in process %s specifies no name",
 		    procflow->pf_name);
 		filebench_shutdown(1);
 	}
 
-	/* Get the number of instances from attribute */
-	if ((attr = get_attr(cmd, FSA_INSTANCES))) {
+	attr = get_attr(cmd, FSA_INSTANCES);
+	if (attr)
 		instances = attr->attr_avd;
-	} else
+	else
 		instances = avd_int_alloc(1);
 
-	/* Get the memory size from attribute */
-	if ((attr = get_attr(cmd, FSA_MEMSIZE))) {
+	attr = get_attr(cmd, FSA_MEMSIZE);
+	if (attr)
 		template.tf_memsize = attr->attr_avd;
-	} else
+	else /* XXX: really, memsize zero is default?.. */
 		template.tf_memsize = avd_int_alloc(0);
-
-	/* Get ioprio parameters from attribute */
-	if ((attr = get_attr(cmd, FSA_IOPRIO))) {
+	
+	attr = get_attr(cmd, FSA_IOPRIO);
+	if (attr)
 		template.tf_ioprio = attr->attr_avd;
-	} else
+	else /* XXX: really, ioprio is 8 by default?.. */
 		template.tf_ioprio = avd_int_alloc(8);
 
-	if ((threadflow = threadflow_define(procflow, name,
-	    &template, instances)) == NULL) {
+
+	threadflow = threadflow_define(procflow, name, &template, instances);
+	if (!threadflow) {
 		filebench_log(LOG_ERROR,
-		    "define thread: Failed to instantiate thread\n");
+		    "failed to instantiate thread\n");
 		filebench_shutdown(1);
 	}
 
-	/* Use ISM Memory? */
-	if ((attr = get_attr(cmd, FSA_USEISM))) {
+	attr = get_attr(cmd, FSA_USEISM);
+	if (attr)
 		threadflow->tf_attrs |= THREADFLOW_USEISM;
-	}
 
-	/* Create the list of flowops */
-	for (inner_cmd = cmd->cmd_list; inner_cmd != NULL;
-	    inner_cmd = inner_cmd->cmd_next) {
+	/* create the list of flowops */
+	for (inner_cmd = cmd->cmd_list; inner_cmd;
+	    inner_cmd = inner_cmd->cmd_next)
 		parser_flowop_define(inner_cmd, threadflow,
 		    &threadflow->tf_thrd_fops, FLOW_MASTER);
-	}
 }
 
 /*
