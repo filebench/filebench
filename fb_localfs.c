@@ -128,8 +128,9 @@ static flowop_proto_t fb_lfsflow_funcs[] = {
 #endif /* HAVE_AIO */
 
 /*
- * Initialize this processes I/O functions vector to point to
- * the vector of local file system I/O functions
+ * Initialize file system functions vector to point to the vector of local file
+ * system functions. This function will be called for the master process and
+ * every created worker process.
  */
 void
 fb_lfs_funcvecinit(void)
@@ -138,22 +139,14 @@ fb_lfs_funcvecinit(void)
 }
 
 /*
- * Initialize those flowops whose implementation is file system
- * specific.
+ * Initialize those flowops which implementation is file system specific. It is
+ * called only once in the master process.
  */
 void
-fb_lfs_flowinit(void)
+fb_lfs_newflowops(void)
 {
-	int nops;
-
-	/*
-	 * re-initialize the I/O functions vector while we are at
-	 * it as it may have been redefined since the process was
-	 * created, at least if this is the master processes
-	 */
-	fb_lfs_funcvecinit();
-
 #ifdef HAVE_AIO
+	int nops;
 	nops = sizeof (fb_lfsflow_funcs) / sizeof (flowop_proto_t);
 	flowop_add_from_proto(fb_lfsflow_funcs, nops);
 #endif /* HAVE_AIO */

@@ -1445,7 +1445,7 @@ worker_mode(struct fbparams *fbparams)
 	}
 
 	/* get correct function pointer for each working process */
-	filebench_plugin_funcvecinit();
+	flowop_init(0);
 
 	/* load custom variable libraries and revalidate handles */
 	ret = init_cvar_libraries();
@@ -1582,7 +1582,7 @@ master_mode(struct fbparams *fbparams) {
 	(void)strcpy(filebench_shm->shm_fscriptname,
 				fbparams->fscriptname);
 
-	flowop_init();
+	flowop_init(1);
 	eventgen_init();
 
 	/* Initialize custom variables. */
@@ -2321,12 +2321,6 @@ parser_fileset_define_common(cmd_t *cmd)
 	attr_t *attr;
 	avd_t name;
 	avd_t path;
-
-	/*
-	 * Make sure all plugin flowops are initialized.
-	 * Defaults to local fs for now.
-	 */
-	flowop_plugin_flowinit();
 
 	attr = get_attr(cmd, FSA_NAME);
 	if (attr)

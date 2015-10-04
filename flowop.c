@@ -667,43 +667,32 @@ flowop_start(threadflow_t *threadflow)
 	pthread_exit(&threadflow->tf_abort);
 }
 
-void flowoplib_flowinit(void);
-void fb_lfs_flowinit(void);
-
+ /*
+  * For master mode we add flowops from the generic library, flowops that are
+  * file system specific, and adjust the vector of functions used by the
+  * generic library.  For worker mode we only need to adjust the vector.
+  */
 void
-flowop_init(void)
+flowop_init(int ismaster)
 {
-	(void) pthread_mutex_init(&controlstats_lock,
-	    ipc_mutexattr(IPC_MUTEX_NORMAL));
-	flowoplib_flowinit();
-}
-
-static int plugin_flowinit_done = FALSE;
-
-/*
- * Initialize any "plug-in" flowops. Called when the first "create fileset"
- * command is encountered.
- */
-void
-flowop_plugin_flowinit(void)
-{
-	if (plugin_flowinit_done)
-		return;
-
-	plugin_flowinit_done = TRUE;
+	if (ismaster) {
+		(void) pthread_mutex_init(&controlstats_lock,
+	   			 ipc_mutexattr(IPC_MUTEX_NORMAL));
+		flowoplib_flowinit();
+	}
 
 	switch (filebench_shm->shm_filesys_type) {
 	case LOCAL_FS_PLUG:
-		fb_lfs_flowinit();
+		if (ismaster)
+			fb_lfs_newflowops();
+		fb_lfs_funcvecinit();
 		break;
-
 	case NFS3_PLUG:
 	case NFS4_PLUG:
 	case CIFS_PLUG:
 		break;
 	}
 }
-
 
 /*
  * Delete the designated flowop from the thread's flowop list.

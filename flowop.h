@@ -132,10 +132,9 @@ typedef struct flowop_proto {
 extern struct flowstats controlstats;
 extern pthread_mutex_t controlstats_lock;
 
-void flowop_init(void);
-void flowop_plugin_flowinit(void);
 flowop_t *flowop_define(threadflow_t *, char *name, flowop_t *inherit,
 		flowop_t **flowoplist_hdp, int instance, int type);
+
 flowop_t *flowop_find(char *name);
 flowop_t *flowop_find_one(char *name, int instance);
 flowop_t *flowop_find_from_list(char *name, flowop_t *list);
@@ -150,5 +149,11 @@ void flowop_beginop(threadflow_t *threadflow, flowop_t *flowop);
 void flowop_destruct_all_flows(threadflow_t *threadflow);
 flowop_t *flowop_new_composite_define(char *name);
 void flowop_printall(void);
+
+void flowop_init(int ismaster);
+
+/* Local file system specific */
+void fb_lfs_funcvecinit();
+void fb_lfs_newflowops();
 
 #endif	/* _FB_FLOWOP_H */
