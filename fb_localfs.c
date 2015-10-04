@@ -155,7 +155,7 @@ fb_lfs_flowinit(void)
 
 #ifdef HAVE_AIO
 	nops = sizeof (fb_lfsflow_funcs) / sizeof (flowop_proto_t);
-	flowop_flow_init(fb_lfsflow_funcs, nops);
+	flowop_add_from_proto(fb_lfsflow_funcs, nops);
 #endif /* HAVE_AIO */
 }
 

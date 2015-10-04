@@ -2212,7 +2212,6 @@ parser_inner_flowop_define(threadflow_t *thread, flowop_t *comp0_flow,
  */
 static void
 parser_flowop_define(cmd_t *cmd, threadflow_t *thread,
-
     flowop_t **flowoplist_hdp, int category)
 {
 	flowop_t *flowop, *flowop_type;

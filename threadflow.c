@@ -389,7 +389,7 @@ threadflow_define_common(procflow_t *procflow, char *name,
 		*threadlistp = threadflow;
 	}
 
-	return (threadflow);
+	return threadflow;
 }
 
 /*

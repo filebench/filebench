@@ -189,7 +189,7 @@ flowoplib_flowinit()
 {
 	int nops = sizeof (flowoplib_funcs) / sizeof (flowop_proto_t);
 
-	flowop_flow_init(flowoplib_funcs, nops);
+	flowop_add_from_proto(flowoplib_funcs, nops);
 }
 
 /*

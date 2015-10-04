@@ -1012,8 +1012,7 @@ flowop_find(char *name)
 
 	(void) ipc_mutex_unlock(&filebench_shm->shm_flowop_lock);
 
-
-	return (result);
+	return result;
 }
 
 /*
@@ -1254,33 +1253,34 @@ flowop_destruct_generic(flowop_t *flowop)
 
 
 /*
- * Loops through the supplied list of flowops and creates and initializes
- * a flowop for each one by calling flowop_define. As a side effect of
- * calling flowop define, the created flowops are placed on the
- * master flowop list. All created flowops are set to instance "0".
+ * Loops through the supplied list of flowop *prototypes*, creates
+ * corresponding flowops by calling flowop_define(), and initializes flowops.
+ * flowop_define() places flowops on the master flowop list.  All created
+ * flowops are set to instance FLOW_DEFINITION (0).
  */
 void
-flowop_flow_init(flowop_proto_t *list, int nops)
+flowop_add_from_proto(flowop_proto_t *list, int nops)
 {
 	int i;
 
 	for (i = 0; i < nops; i++) {
 		flowop_t *flowop;
-		flowop_proto_t *fl;
+		flowop_proto_t *flproto;
 
-		fl = &(list[i]);
+		flproto = &(list[i]);
 
-		if ((flowop = flowop_define(NULL,
-		    fl->fl_name, NULL, NULL, 0, fl->fl_type)) == 0) {
-			filebench_log(LOG_ERROR,
-			    "failed to create flowop %s\n",
-			    fl->fl_name);
+
+		flowop = flowop_define(NULL, flproto->fl_name, NULL,
+			NULL, FLOW_DEFINITION, flproto->fl_type);
+		if (!flowop) {
+			filebench_log(LOG_ERROR, "failed to create flowop %s\n",
+			  	  flproto->fl_name);
 			filebench_shutdown(1);
 		}
 
-		flowop->fo_func = fl->fl_func;
-		flowop->fo_init = fl->fl_init;
-		flowop->fo_destruct = fl->fl_destruct;
-		flowop->fo_attrs = fl->fl_attrs;
+		flowop->fo_func = flproto->fl_func;
+		flowop->fo_init = flproto->fl_init;
+		flowop->fo_destruct = flproto->fl_destruct;
+		flowop->fo_attrs = flproto->fl_attrs;
 	}
 }
