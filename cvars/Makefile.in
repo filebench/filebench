@@ -75,6 +75,9 @@ libcvar_exponential_la_LIBADD =
 am_libcvar_exponential_la_OBJECTS = cvar-exponential.lo \
 	$(am__objects_1)
 libcvar_exponential_la_OBJECTS = $(am_libcvar_exponential_la_OBJECTS)
+libcvar_gamma_la_LIBADD =
+am_libcvar_gamma_la_OBJECTS = cvar-gamma.lo $(am__objects_1)
+libcvar_gamma_la_OBJECTS = $(am_libcvar_gamma_la_OBJECTS)
 libcvar_lognormal_la_LIBADD =
 am_libcvar_lognormal_la_OBJECTS = cvar-lognormal.lo $(am__objects_1)
 libcvar_lognormal_la_OBJECTS = $(am_libcvar_lognormal_la_OBJECTS)
@@ -104,12 +107,12 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libcvar_erlang_la_SOURCES) \
-	$(libcvar_exponential_la_SOURCES) \
+	$(libcvar_exponential_la_SOURCES) $(libcvar_gamma_la_SOURCES) \
 	$(libcvar_lognormal_la_SOURCES) $(libcvar_normal_la_SOURCES) \
 	$(libcvar_triangular_la_SOURCES) $(libcvar_uniform_la_SOURCES) \
 	$(libcvar_weibull_la_SOURCES)
 DIST_SOURCES = $(libcvar_erlang_la_SOURCES) \
-	$(libcvar_exponential_la_SOURCES) \
+	$(libcvar_exponential_la_SOURCES) $(libcvar_gamma_la_SOURCES) \
 	$(libcvar_lognormal_la_SOURCES) $(libcvar_normal_la_SOURCES) \
 	$(libcvar_triangular_la_SOURCES) $(libcvar_uniform_la_SOURCES) \
 	$(libcvar_weibull_la_SOURCES)
@@ -239,7 +242,8 @@ lib_LTLIBRARIES = libcvar-erlang.la \
 		  libcvar-normal.la \
 		  libcvar-triangular.la \
 		  libcvar-uniform.la \
-		  libcvar-weibull.la
+		  libcvar-weibull.la \
+		  libcvar-gamma.la
 
 common_cvar_files = mtwist/mtwist.c mtwist/randistrs.c cvar_tokens.c
 libcvar_erlang_la_SOURCES = cvar-erlang.c $(common_cvar_files)
@@ -249,6 +253,7 @@ libcvar_normal_la_SOURCES = cvar-normal.c $(common_cvar_files)
 libcvar_triangular_la_SOURCES = cvar-triangular.c $(common_cvar_files)
 libcvar_uniform_la_SOURCES = cvar-uniform.c $(common_cvar_files)
 libcvar_weibull_la_SOURCES = cvar-weibull.c $(common_cvar_files)
+libcvar_gamma_la_SOURCES = cvar-gamma.c $(common_cvar_files)
 all: all-am
 
 .SUFFIXES:
@@ -318,6 +323,8 @@ libcvar-erlang.la: $(libcvar_erlang_la_OBJECTS) $(libcvar_erlang_la_DEPENDENCIES
 	$(LINK) -rpath $(libdir) $(libcvar_erlang_la_OBJECTS) $(libcvar_erlang_la_LIBADD) $(LIBS)
 libcvar-exponential.la: $(libcvar_exponential_la_OBJECTS) $(libcvar_exponential_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libcvar_exponential_la_OBJECTS) $(libcvar_exponential_la_LIBADD) $(LIBS)
+libcvar-gamma.la: $(libcvar_gamma_la_OBJECTS) $(libcvar_gamma_la_DEPENDENCIES) 
+	$(LINK) -rpath $(libdir) $(libcvar_gamma_la_OBJECTS) $(libcvar_gamma_la_LIBADD) $(LIBS)
 libcvar-lognormal.la: $(libcvar_lognormal_la_OBJECTS) $(libcvar_lognormal_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libcvar_lognormal_la_OBJECTS) $(libcvar_lognormal_la_LIBADD) $(LIBS)
 libcvar-normal.la: $(libcvar_normal_la_OBJECTS) $(libcvar_normal_la_DEPENDENCIES) 
@@ -337,6 +344,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cvar-erlang.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cvar-exponential.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cvar-gamma.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cvar-lognormal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cvar-normal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cvar-triangular.Plo@am__quote@
