@@ -19,10 +19,10 @@
 #define USAGE_LEN	2048
 static char usage[USAGE_LEN + 1];
 
-#define MEAN		"mean"
+#define MEAN	"mean"
 #define GAMMA	"gamma"
 
-#define MEAN_DEFAULT	4096
+#define MEAN_DEFAULT	4096.0
 #define GAMMA_DEFAULT 1.5
 
 typedef struct handle {
@@ -180,17 +180,16 @@ void *cvar_alloc_handle(const char *cvar_parameters,
 	} else
 		handle.gamma= GAMMA_DEFAULT;
 
+	if (!handle.gamma) {
+		cvar_log_error("Invalid parameter values: mean = %lf "
+				"and gamma = %lf. gamma must be greater "
+				"than 0", handle.mean, handle.gamma);
+		goto out;
+	}
+
 	handle.scaledmean = handle.mean / handle.gamma;
 
 	cvar_trace("mean = %lf, gamma = %lf", handle.mean, handle.gamma);
-
-	/* Validate parameters. */
-	/* XXX
-	if (handle.lower > handle.upper) {
-		cvar_log_error("Invalid parameter values: lower = %lf and upper = %lf. "
-				"upper must be greater than lower", handle.lower, handle.upper);
-	}
-	*/
 
 	t = unused_tokens(list_head);
 	if (t) {
