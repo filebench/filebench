@@ -25,10 +25,12 @@ int tokenize(const char *parameters, const char parameter_delimiter,
 	cvar_token_t *lhead, *prev, *curr;
 	int more_params;
 	int no_value;
-	int ret = -1;
+	int ret = 0;
 
 	if (!parameters)
 		goto out;
+
+	ret = -1;
 
 	lhead = prev = NULL;
 
