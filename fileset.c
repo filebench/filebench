@@ -962,19 +962,16 @@ fileset_unbusy(filesetentry_t *entry, int update_exist,
 }
 
 /*
- * Given a fileset "fileset", create the associated files as
- * specified in the attributes of the fileset. The fileset is
- * rooted in a directory whose pathname is in fileset_path. If the
- * directory exists, meaning that there is already a fileset,
- * and the fileset_reuse attribute is false, then remove it and all
- * its contained files and subdirectories. Next, the routine
- * creates a root directory for the fileset. All the file type
- * filesetentries are cycled through creating as needed
- * their containing subdirectory trees in the filesystem and
- * creating actual files for fileset_preallocpercent of them. The
- * created files are filled with fse_size bytes of unitialized
- * data. The routine returns FILEBENCH_ERROR on errors,
- * FILEBENCH_OK on success.
+ * Given a fileset "fileset", create the associated files as specified in the
+ * attributes of the fileset. The fileset is rooted in a directory whose
+ * pathname is in fileset_path. If the directory exists, meaning that there is
+ * already a fileset, and the fileset_reuse attribute is false, then remove it
+ * and all its contained files and subdirectories. Next, the routine creates a
+ * root directory for the fileset. All the file type filesetentries are cycled
+ * through creating as needed their containing subdirectory trees in the
+ * filesystem and creating actual files for fileset_preallocpercent of them.
+ * The created files are filled with fse_size bytes of unitialized data. The
+ * routine returns FILEBENCH_ERROR on errors, FILEBENCH_OK on success.
  */
 static int
 fileset_create(fileset_t *fileset)
@@ -990,21 +987,23 @@ fileset_create(fileset_t *fileset)
 	int reusing;
 	uint64_t preallocpercent;
 
-	if ((fileset_path = avd_get_str(fileset->fs_path)) == NULL) {
+	fileset_path = avd_get_str(fileset->fs_path);
+	if (!fileset_path) {
 		filebench_log(LOG_ERROR, "%s path not set",
 		    fileset_entity_name(fileset));
-		return (FILEBENCH_ERROR);
+		return FILEBENCH_ERROR;
 	}
 
-	if ((fileset_name = avd_get_str(fileset->fs_name)) == NULL) {
+	fileset_name = avd_get_str(fileset->fs_name);
+	if (!fileset_name) {
 		filebench_log(LOG_ERROR, "%s name not set",
 		    fileset_entity_name(fileset));
-		return (FILEBENCH_ERROR);
+		return FILEBENCH_ERROR;
 	}
 
 	/* treat raw device as special case */
 	if (fileset->fs_attrs & FILESET_IS_RAW_DEV)
-		return (FILEBENCH_OK);
+		return FILEBENCH_OK;
 
 	/* XXX Add check to see if there is enough space */
 
@@ -1016,7 +1015,6 @@ fileset_create(fileset_t *fileset)
 	/* if reusing and trusting to exist, just blindly reuse */
 	if (avd_get_bool(fileset->fs_trust_tree)) {
 		reusing = 1;
-
 	/* if exists and resusing, then don't create new */
 	} else if (((stat64(path, &sb) == 0)&& (strlen(path) > 3) &&
 	    (strlen(avd_get_str(fileset->fs_path)) > 2)) &&
@@ -1131,7 +1129,7 @@ fileset_create(fileset_t *fileset)
 
 		} else {
 			if (fileset_alloc_file(entry) == FILEBENCH_ERROR)
-				return (FILEBENCH_ERROR);
+				return FILEBENCH_ERROR;
 		}
 	}
 
@@ -1412,23 +1410,20 @@ fileset_populate_leafdir(fileset_t *fileset, filesetentry_t *parent, int serial)
 }
 
 /*
- * Creates a directory node in a fileset, by obtaining a
- * filesetentry entity for the node and initializing it
- * according to parameters of the fileset. It determines a
- * directory tree depth and directory width, optionally using
- * a gamma distribution. If its calculated depth is less then
- * its actual depth in the directory tree, it becomes a leaf
- * node and files itself with "width" number of file type
- * filesetentries, otherwise it files itself with "width"
- * number of directory type filesetentries, using recursive
- * calls to fileset_populate_subdir. The end result of the
- * initial call to this routine is a tree of directories of
- * random width and varying depth with sufficient leaf
- * directories to contain all required files.
- * Returns FILEBENCH_OK on success. Returns FILEBENCH_ERROR if ipc path
- * string memory cannot be allocated and returns the error code (currently
- * also FILEBENCH_ERROR) from calls to fileset_populate_file or recursive
- * calls to fileset_populate_subdir.
+ * Creates a directory node in a fileset, by obtaining a filesetentry entity
+ * for the node and initializing it according to parameters of the fileset. It
+ * determines a directory tree depth and directory width, optionally using a
+ * gamma distribution. If its calculated depth is less then its actual depth in
+ * the directory tree, it becomes a leaf node and files itself with "width"
+ * number of file type filesetentries, otherwise it files itself with "width"
+ * number of directory type filesetentries, using recursive calls to
+ * fileset_populate_subdir. The end result of the initial call to this routine
+ * is a tree of directories of random width and varying depth with sufficient
+ * leaf directories to contain all required files.  Returns FILEBENCH_OK on
+ * success. Returns FILEBENCH_ERROR if ipc path string memory cannot be
+ * allocated and returns the error code (currently also FILEBENCH_ERROR) from
+ * calls to fileset_populate_file or recursive calls to
+ * fileset_populate_subdir.
  */
 static int
 fileset_populate_subdir(fileset_t *fileset, filesetentry_t *parent,
@@ -1444,8 +1439,8 @@ fileset_populate_subdir(fileset_t *fileset, filesetentry_t *parent,
 	depth += 1;
 
 	/* Create dir node */
-	if ((entry = (filesetentry_t *)ipc_malloc(FILEBENCH_FILESETENTRY))
-	    == NULL) {
+	entry = (filesetentry_t *)ipc_malloc(FILEBENCH_FILESETENTRY);
+	if (!entry) {
 		filebench_log(LOG_ERROR,
 		    "fileset_populate_subdir: Can't malloc filesetentry");
 		return (FILEBENCH_ERROR);
@@ -1546,15 +1541,14 @@ fileset_populate_subdir(fileset_t *fileset, filesetentry_t *parent,
 }
 
 /*
- * Populates a fileset with files and subdirectory entries. Uses
- * the supplied fileset_dirwidth and fileset_entries (number of files) to
- * calculate the required fileset_meandepth (of subdirectories) and
- * initialize the fileset_meanwidth and fileset_meansize variables. Then
- * calls fileset_populate_subdir() to do the recursive
- * subdirectory entry creation and leaf file entry creation. All
- * of the above is skipped if the fileset has already been
- * populated. Returns 0 on success, or an error code from the
- * call to fileset_populate_subdir if that call fails.
+ * Populates a fileset with files and subdirectory entries. Uses the supplied
+ * fileset_dirwidth and fileset_entries (number of files) to calculate the
+ * required fileset_meandepth (of subdirectories) and initialize the
+ * fileset_meanwidth and fileset_meansize variables. Then calls
+ * fileset_populate_subdir() to do the recursive subdirectory entry creation
+ * and leaf file entry creation. All of the above is skipped if the fileset has
+ * already been populated. Returns 0 on success, or an error code from the call
+ * to fileset_populate_subdir if that call fails.
  */
 static int
 fileset_populate(fileset_t *fileset)
@@ -1657,7 +1651,7 @@ exists:
 		    (double)fileset->fs_bytes / 1024UL / 1024UL);
 	}
 
-	return (FILEBENCH_OK);
+	return FILEBENCH_OK;
 }
 
 /*
