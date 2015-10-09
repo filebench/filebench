@@ -26,12 +26,12 @@
 set $dir=/tmp
 set $nfiles=10000
 set $meandirwidth=20
-set $meanfilesize=128k
+set $filesize=cvar(type=cvar-gamma,parameters=mean:131072;gamma:1.5)
 set $nthreads=50
 set $iosize=1m
 set $meanappendsize=16k
 
-define fileset name=bigfileset,path=$dir,size=$meanfilesize,entries=$nfiles,dirwidth=$meandirwidth,prealloc=80
+define fileset name=bigfileset,path=$dir,size=$filesize,entries=$nfiles,dirwidth=$meandirwidth,prealloc=80
 
 define process name=filereader,instances=1
 {
@@ -52,3 +52,5 @@ define process name=filereader,instances=1
 }
 
 echo  "File-server Version 3.0 personality successfully loaded"
+
+run 60

@@ -26,12 +26,12 @@
 set $dir=/tmp
 set $nfiles=1000
 set $meandirwidth=1000000
-set $meanfilesize=16k
+set $filesize=cvar(type=cvar-gamma,parameters=mean:16384;gamma:1.5)
 set $nthreads=16
 set $iosize=1m
 set $meanappendsize=16k
 
-define fileset name=bigfileset,path=$dir,size=$meanfilesize,entries=$nfiles,dirwidth=$meandirwidth,prealloc=80
+define fileset name=bigfileset,path=$dir,size=$filesize,entries=$nfiles,dirwidth=$meandirwidth,prealloc=80
 
 define process name=filereader,instances=1
 {
@@ -54,3 +54,5 @@ define process name=filereader,instances=1
 }
 
 echo  "Varmail Version 3.0 personality successfully loaded"
+
+run 60
