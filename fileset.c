@@ -988,7 +988,7 @@ fileset_create(fileset_t *fileset)
 	int randno;
 	int preallocated = 0;
 	int reusing;
-	int preallocpercent;
+	uint64_t preallocpercent;
 
 	if ((fileset_path = avd_get_str(fileset->fs_path)) == NULL) {
 		filebench_log(LOG_ERROR, "%s path not set",
