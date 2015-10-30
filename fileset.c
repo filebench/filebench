@@ -65,8 +65,6 @@ static int filecreate_done;
  * instantiate all the files in the fileset before trying to use them.
  */
 
-static int fileset_checkraw(fileset_t *fileset);
-
 /* maximum parallel allocation control */
 #define	MAX_PARALLOC_THREADS 32
 
@@ -1699,6 +1697,53 @@ fileset_define(avd_t name, avd_t path)
 }
 
 /*
+ * checks to see if the path/name pair points to a raw device. If
+ * so it sets the raw device flag (FILESET_IS_RAW_DEV) and returns 1.
+ * If RAW is not defined, or it is not a raw device, it clears the
+ * raw device flag and returns 0.
+ */
+int
+fileset_checkraw(fileset_t *fileset)
+{
+	char path[MAXPATHLEN];
+	struct stat64 sb;
+	char *pathname;
+	char *setname;
+
+	fileset->fs_attrs &= (~FILESET_IS_RAW_DEV);
+
+	if ((pathname = avd_get_str(fileset->fs_path)) == NULL) {
+		filebench_log(LOG_ERROR, "%s path not set",
+		    fileset_entity_name(fileset));
+		filebench_shutdown(1);
+	}
+
+	if ((setname = avd_get_str(fileset->fs_name)) == NULL) {
+		filebench_log(LOG_ERROR, "%s name not set",
+		    fileset_entity_name(fileset));
+		filebench_shutdown(1);
+	}
+
+	(void) fb_strlcpy(path, pathname, MAXPATHLEN);
+	(void) fb_strlcat(path, "/", MAXPATHLEN);
+	(void) fb_strlcat(path, setname, MAXPATHLEN);
+	if ((stat64(path, &sb) == 0) &&
+	    ((sb.st_mode & S_IFMT) == S_IFBLK)) {
+		fileset->fs_attrs |= FILESET_IS_RAW_DEV;
+		if (!(fileset->fs_attrs & FILESET_IS_FILE)) {
+			filebench_log(LOG_ERROR,
+			    "WARNING Fileset %s/%s Cannot be RAW device",
+			    avd_get_str(fileset->fs_path),
+			    avd_get_str(fileset->fs_name));
+			filebench_shutdown(1);
+		}
+		return 1;
+	}
+
+	return 0;
+}
+
+/*
  * Calls fileset_populate() and fileset_create() for all filesets on the
  * fileset list. Returns when any of fileset_populate() or fileset_create()
  * fail.
@@ -1896,51 +1941,4 @@ fileset_print(fileset_t *fileset, int first)
 		    (u_longlong_t)fileset->fs_constentries);
 	}
 	return (FILEBENCH_OK);
-}
-
-/*
- * checks to see if the path/name pair points to a raw device. If
- * so it sets the raw device flag (FILESET_IS_RAW_DEV) and returns 1.
- * If RAW is not defined, or it is not a raw device, it clears the
- * raw device flag and returns 0.
- */
-int
-fileset_checkraw(fileset_t *fileset)
-{
-	char path[MAXPATHLEN];
-	struct stat64 sb;
-	char *pathname;
-	char *setname;
-
-	fileset->fs_attrs &= (~FILESET_IS_RAW_DEV);
-
-	if ((pathname = avd_get_str(fileset->fs_path)) == NULL) {
-		filebench_log(LOG_ERROR, "%s path not set",
-		    fileset_entity_name(fileset));
-		filebench_shutdown(1);
-	}
-
-	if ((setname = avd_get_str(fileset->fs_name)) == NULL) {
-		filebench_log(LOG_ERROR, "%s name not set",
-		    fileset_entity_name(fileset));
-		filebench_shutdown(1);
-	}
-
-	(void) fb_strlcpy(path, pathname, MAXPATHLEN);
-	(void) fb_strlcat(path, "/", MAXPATHLEN);
-	(void) fb_strlcat(path, setname, MAXPATHLEN);
-	if ((stat64(path, &sb) == 0) &&
-	    ((sb.st_mode & S_IFMT) == S_IFBLK)) {
-		fileset->fs_attrs |= FILESET_IS_RAW_DEV;
-		if (!(fileset->fs_attrs & FILESET_IS_FILE)) {
-			filebench_log(LOG_ERROR,
-			    "WARNING Fileset %s/%s Cannot be RAW device",
-			    avd_get_str(fileset->fs_path),
-			    avd_get_str(fileset->fs_name));
-			filebench_shutdown(1);
-		}
-		return 1;
-	}
-
-	return 0;
 }
