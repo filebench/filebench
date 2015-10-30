@@ -1,7 +1,7 @@
 ####
 #### Initialization stubs
 ####
-AC_INIT([filebench], [1.4.9.1])
+AC_INIT([filebench], [1.5.0.0])
 AM_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
