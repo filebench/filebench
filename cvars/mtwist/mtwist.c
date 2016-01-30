@@ -5,7 +5,7 @@
 #define ATTRIBUTE(attrs)
 #endif
 static char Rcs_Id[] ATTRIBUTE((used)) =
-    "$Id: mtwist.c,v 1.27 2012-12-31 22:22:03-08 geoff Exp $";
+    "$Id: mtwist.c,v 1.28 2014-01-23 21:11:42-08 geoff Exp $";
 #endif
 
 /*
@@ -48,7 +48,10 @@ static char Rcs_Id[] ATTRIBUTE((used)) =
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
  * $Log: mtwist.c,v $
- * Revision 1.27  2012-12-31 22:22:03-08  geoff
+ * Revision 1.28  2014-01-23 21:11:42-08  geoff
+ * Fix an obsolete gettimeofday call
+ *
+ * Revision 1.27  2013-06-12 23:22:03-07  geoff
  * Validity-check state pointer when saving.
  *
  * Revision 1.26  2013-01-01 01:18:52-08  geoff
@@ -531,7 +534,6 @@ static uint32_t mts_devseed(
     struct _timeb	tb;		/* Time of day (Windows mode) */
 #else /* WIN32 */
     struct timeval	tv;		/* Time of day */
-    struct timezone	tz;		/* Dummy for gettimeofday */
 #endif /* WIN32 */
 
     ranfile = fopen(seed_dev, "rb");
@@ -570,7 +572,7 @@ static uint32_t mts_devseed(
 #ifdef WIN32
     (void) _ftime (&tb);
 #else /* WIN32 */
-    (void) gettimeofday (&tv, &tz);
+    (void) gettimeofday (&tv, NULL);
 #endif /* WIN32 */
 
     /*
