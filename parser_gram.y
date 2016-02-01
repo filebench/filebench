@@ -1249,6 +1249,11 @@ attr_value: FSV_STRING
 	if (!$$)
 		YYERROR;
 	$$->attr_avd = avd_str_alloc($1);
+} | FSK_QUOTE FSV_WHITESTRING FSK_QUOTE {
+	$$ = alloc_attr();
+	if (!$$)
+		YYERROR;
+	$$->attr_avd = avd_str_alloc($2);
 } | FSV_VAL_POSINT {
 	$$ = alloc_attr();
 	if (!$$)
