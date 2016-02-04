@@ -191,17 +191,8 @@
 /* Define if you have pread64 is defined. */
 #undef HAVE_PREAD64
 
-/* Define to 1 if you have the <procfs.h> header file. */
-#undef HAVE_PROCFS_H
-
 /* Define if you have POSIX process scope threads */
 #undef HAVE_PROCSCOPE_PTHREADS
-
-/* Define if you have procfs with PIS/lwp dir */
-#undef HAVE_PROC_PID_LWP
-
-/* checking if you have /proc/<pid>/stat */
-#undef HAVE_PROC_PID_STAT
 
 /* Checking if you have /proc/stat */
 #undef HAVE_PROC_STAT

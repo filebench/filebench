@@ -274,17 +274,9 @@ fatal:
 
 	} else if (filebench_shm->shm_debug_level > LOG_INFO) {
 		if (level < LOG_INFO)
-#ifdef HAVE_PROC_PID_STAT
-			(void) fprintf(stderr, "%5d: ", (int)gettid());
-#else
 			(void) fprintf(stderr, "%5d: ", (int)my_pid);
-#endif
 		else
-#ifdef HAVE_PROC_PID_STAT
-			(void) fprintf(stdout, "%5d: ", (int)gettid());
-#else
 			(void) fprintf(stdout, "%5d: ", (int)my_pid);
-#endif
 	}
 
 	if (level < LOG_INFO) {

@@ -67,9 +67,6 @@ function */
 #ifdef HAVE_AIO
 #include <aio.h>
 #endif
-#ifdef HAVE_PROC_PID_LWP
-#include <procfs.h>
-#endif
 #include <dirent.h>
 
 /* Defining our internal types */
@@ -159,11 +156,6 @@ void filebench_plugin_funcvecinit(void);
 #else
 #define	fb_random fb_random32
 #define	FILEBENCH_RANDMAX FILEBENCH_RANDMAX32
-#endif
-
-#ifdef HAVE_PROC_PID_STAT
-#include <asm/unistd.h>
-#define gettid() syscall(__NR_gettid)
 #endif
 
 #ifndef HAVE_SIGIGNORE

@@ -41,13 +41,6 @@ AC_CHECK_HEADERS([sys/socket.h])
 AC_CHECK_HEADERS([sys/statvfs.h])
 AC_CHECK_HEADERS([sys/time.h]) 
 AC_CHECK_HEADERS([sys/personality.h]) 
-# We use HAVE_PROC_PID_LWP to use /proc/<PID>/lwp/ for per-thread time accounting
-# XXX: Seems that it works only on Solaris, check it later. Also, the
-# name and the method for configuring this is not the best.
-AC_CHECK_HEADERS(
-	[procfs.h],
-	[AC_DEFINE(HAVE_PROC_PID_LWP, 1, [Define if you have procfs with PIS/lwp dir])]
-	)
 
 ####
 #### Check for more sophisticated headers
@@ -211,15 +204,6 @@ AC_CHECK_FILE(
 	[/proc/stat],
 	[AC_DEFINE(HAVE_PROC_STAT, 1, [Checking if you have /proc/stat])]
 )
-
-# this checks if stat file is present ins /proc/<pid> directory. This file is
-# used to get per thread per operation CPU usage statistics on Linux
-# distributions. To facilitate this check,we are checking if stat file exists
-# for /proc/1 directory
-AC_CHECK_FILE(
-	[/proc/1/stat],
-	[AC_DEFINE(HAVE_PROC_PID_STAT, 1, [checking if you have /proc/<pid>/stat])]
-	)
 
 # Increase the  maximum size of a shared memory segment through 
 # /proc/sys/kernel/shmmax, if this file exists.

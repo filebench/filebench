@@ -69,9 +69,6 @@ typedef struct flowop {
 	avd_t		fo_fileindex;	/* Attr */
 	avd_t		fo_noreadahead; /* Attr */
 	struct flowstats	fo_stats;	/* Flow statistics */
-#ifdef HAVE_PROC_PID_STAT
-	hrtime_t	fo_start_usage;	/* record CPU usage values for each flowop at the start of flowop */	
-#endif
 	pthread_cond_t	fo_cv;		/* Block/wakeup cv */
 	pthread_mutex_t	fo_lock;	/* Mutex around flowop */
 	void		*fo_private;	/* Flowop private scratch pad area */

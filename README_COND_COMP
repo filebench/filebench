@@ -146,14 +146,6 @@ HAVE_PROCSCOPE_PTHREADS
 
 	If you have POSIX process scope threads, use them.
 
-HAVE_PROC_PID_LWP
-
-	On Solaris, /proc/<pid>/lwp/ subdirectory allows to pull out
-	per-thread CPU usage statistics. If possible, we use it. 
-	On Linux, /proc/<pid>/stat is used (see HAVE_PROC_PID_STAT).
-	We also use this parameter to determine if we can utilize gettid()
-	syscall.
-
 HAVE_PROC_STAT
 
 	If /proc/stat file is available (usually only on Linux), Filebench 

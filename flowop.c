@@ -132,63 +132,11 @@ flowop_printall(void)
 #define	TIMESPEC_TO_HRTIME(s, e) (((e.tv_sec - s.tv_sec) * 1000000000LL) + \
 					(e.tv_nsec - s.tv_nsec))
 /*
- * Puts current high resolution time in start time entry
- * for threadflow and may also calculate running filebench
- * overhead statistics.
+ * Puts current high-resolution time in start time entry for threadflow.
  */
 void
 flowop_beginop(threadflow_t *threadflow, flowop_t *flowop)
 {
-#ifdef HAVE_PROC_PID_LWP
-	if ((filebench_shm->shm_mmode & FILEBENCH_MODE_NOUSAGE) == 0) {
-		if (threadflow->tf_lwpusagefd == 0) {
-			char procname[128];
-
-			(void) snprintf(procname, sizeof (procname),
-			    "/proc/%d/lwp/%d/lwpusage", (int)my_pid, _lwp_self());
-			threadflow->tf_lwpusagefd = open(procname, O_RDONLY);
-		}
-
-		(void) pread(threadflow->tf_lwpusagefd,
-		    &threadflow->tf_susage,
-		    sizeof (struct prusage), 0);
-
-		/* Compute overhead time in this thread around op */
-		if (threadflow->tf_eusage.pr_stime.tv_nsec) {
-			flowop->fo_stats.fs_mstate[FLOW_MSTATE_OHEAD] +=
-			    TIMESPEC_TO_HRTIME(threadflow->tf_eusage.pr_utime,
-			    threadflow->tf_susage.pr_utime) +
-			    TIMESPEC_TO_HRTIME(threadflow->tf_eusage.pr_ttime,
-			    threadflow->tf_susage.pr_ttime) +
-			    TIMESPEC_TO_HRTIME(threadflow->tf_eusage.pr_stime,
-			    threadflow->tf_susage.pr_stime);
-		}
-	}
-#elif defined(HAVE_PROC_PID_STAT)
-	int tid;
-	char fname[128], dummy_str[64];
-	unsigned long utime, stime;
-	FILE *filep;
-	int ret;
-	
-	tid = gettid();
-	filebench_log(LOG_DEBUG_SCRIPT, "proc/pid/stat called ==> tid = %d", tid);
-	sprintf(fname,"/proc/%d/stat", tid);
-	filep = fopen(fname, "r");
-	if (filep) {
-			ret = fscanf(filep, "%s %s %s %s %s %s %s %s %s %s %s %s %s %lu %lu", \
-			dummy_str, dummy_str, dummy_str,  dummy_str,
-			dummy_str, dummy_str, dummy_str, dummy_str,
-			dummy_str, dummy_str, dummy_str, dummy_str,
-			dummy_str, &utime, &stime);
-		flowop->fo_start_usage = (utime + stime) * 10000000;
-		fclose(filep);
-	
-	} else {
-		filebench_log(LOG_ERROR, "Unable to open proc/<pid>/stat file for given thread (errno=%d)", errno);
-	}
-#endif
-
 	/* Start of op for this thread */
 	threadflow->tf_stime = gethrtime();
 }
@@ -223,9 +171,6 @@ void
 flowop_endop(threadflow_t *threadflow, flowop_t *flowop, int64_t bytes)
 {
 	unsigned long long ll_delay;
-#if defined(HAVE_PROC_PID_LWP) || defined(HAVE_PROC_PID_STAT)
-	hrtime_t t = 0;
-#endif
 
 	ll_delay = (gethrtime() - threadflow->tf_stime);
 
@@ -237,61 +182,6 @@ flowop_endop(threadflow_t *threadflow, flowop_t *flowop, int64_t bytes)
 		flowop->fo_stats.fs_maxlat = ll_delay;
 
 	flowop->fo_stats.fs_mstate[FLOW_MSTATE_LAT] += ll_delay;
-#ifdef HAVE_PROC_PID_LWP
-	if ((filebench_shm->shm_mmode & FILEBENCH_MODE_NOUSAGE) == 0) {
-		if ((pread(threadflow->tf_lwpusagefd, &threadflow->tf_eusage,
-		    sizeof (struct prusage), 0)) != sizeof (struct prusage))
-			filebench_log(LOG_ERROR, "cannot read /proc");
-
-		t =
-		    TIMESPEC_TO_HRTIME(threadflow->tf_susage.pr_utime,
-		    threadflow->tf_eusage.pr_utime) +
-		    TIMESPEC_TO_HRTIME(threadflow->tf_susage.pr_ttime,
-		    threadflow->tf_eusage.pr_ttime) +
-		    TIMESPEC_TO_HRTIME(threadflow->tf_susage.pr_stime,
-		    threadflow->tf_eusage.pr_stime);
-		flowop->fo_stats.fs_mstate[FLOW_MSTATE_CPU] += t;
-
-		flowop->fo_stats.fs_mstate[FLOW_MSTATE_WAIT] +=
-		    TIMESPEC_TO_HRTIME(threadflow->tf_susage.pr_tftime,
-		    threadflow->tf_eusage.pr_tftime) +
-		    TIMESPEC_TO_HRTIME(threadflow->tf_susage.pr_dftime,
-		    threadflow->tf_eusage.pr_dftime) +
-		    TIMESPEC_TO_HRTIME(threadflow->tf_susage.pr_kftime,
-		    threadflow->tf_eusage.pr_kftime) +
-		    TIMESPEC_TO_HRTIME(threadflow->tf_susage.pr_kftime,
-		    threadflow->tf_eusage.pr_kftime) +
-		    TIMESPEC_TO_HRTIME(threadflow->tf_susage.pr_slptime,
-		    threadflow->tf_eusage.pr_slptime);
-	}
-#elif defined(HAVE_PROC_PID_STAT)
-	int tid;
-	char fname[128], dummy_str[64];
-	unsigned long utime, stime;
-	FILE *filep;
-	int ret;
-
-	if ((filebench_shm->shm_mmode & FILEBENCH_MODE_NOUSAGE) == 0) {
-		tid = gettid();
-		filebench_log(LOG_DEBUG_SCRIPT, "proc/pid/stat called ==> tid = %d", tid);
-		sprintf(fname,"/proc/%d/stat", tid);
-		filep = fopen(fname, "r");
-		if (filep) {
-				ret = fscanf(filep, "%s %s %s %s %s %s %s %s %s %s %s %s %s %lu %lu", \
-				dummy_str, dummy_str, dummy_str,  dummy_str,
-				dummy_str, dummy_str, dummy_str, dummy_str,
-				dummy_str, dummy_str, dummy_str, dummy_str,
-				dummy_str, &utime, &stime);
-			t = utime + stime;
-			t = (t * 10000000) - flowop->fo_start_usage;
-			flowop->fo_stats.fs_mstate[FLOW_MSTATE_CPU] += t;
-			fclose(filep);
-		} else {
-			filebench_log(LOG_ERROR, "Unable to open proc/<pid>/stat file for given thread (errno=%d)", errno);
-		}
-
-	}
-#endif
 	flowop->fo_stats.fs_count++;
 	flowop->fo_stats.fs_bytes += bytes;
 	(void) ipc_mutex_lock(&controlstats_lock);
@@ -446,18 +336,6 @@ flowop_start(threadflow_t *threadflow)
 	int ret = FILEBENCH_OK;
 
 	set_thread_ioprio(threadflow);
-
-#ifdef HAVE_PROC_PID_LWP
-	char procname[128];
-	long ctl[2] = {PCSET, PR_MSACCT};
-	int pfd;
-
-	(void) snprintf(procname, sizeof (procname),
-	    "/proc/%d/lwp/%d/lwpctl", (int)my_pid, _lwp_self());
-	pfd = open(procname, O_WRONLY);
-	(void) pwrite(pfd, &ctl, sizeof (ctl), 0);
-	(void) close(pfd);
-#endif
 
 	(void) ipc_mutex_lock(&controlstats_lock);
 	if (!controlstats_zeroed) {
@@ -737,12 +615,6 @@ flowop_delete(flowop_t **flowoplist, flowop_t *flowop)
 			entry = entry->fo_exec_next;
 		}
 	}
-
-#ifdef HAVE_PROC_PID_LWP
-	/* Close /proc stats */
-	if (flowop->fo_thread)
-		(void) close(flowop->fo_thread->tf_lwpusagefd);
-#endif
 
 	/* Delete from global list */
 	entry = filebench_shm->shm_flowoplist;
