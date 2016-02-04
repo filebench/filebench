@@ -60,7 +60,7 @@ am_filebench_OBJECTS = eventgen.$(OBJEXT) fb_avl.$(OBJEXT) \
 	parser_gram.$(OBJEXT) parser_lex.$(OBJEXT) procflow.$(OBJEXT) \
 	stats.$(OBJEXT) threadflow.$(OBJEXT) utils.$(OBJEXT) \
 	vars.$(OBJEXT) ioprio.$(OBJEXT) fb_cvar.$(OBJEXT) \
-	aslr.$(OBJEXT)
+	aslr.$(OBJEXT) mtwist.$(OBJEXT)
 filebench_OBJECTS = $(am_filebench_OBJECTS)
 filebench_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -266,7 +266,8 @@ filebench_SOURCES = eventgen.c fb_avl.c fb_localfs.c \
 		    ipc.h   multi_client_sync.h  parsertypes.h  stats.h \
 		    utils.h config.h fb_avl.h filebench.h flowop.h gamma_dist.h \
 		    misc.h procflow.h threadflow.h vars.h ioprio.h flag.h \
-		    fb_cvar.c fb_cvar.h aslr.c aslr.h
+		    fb_cvar.c fb_cvar.h aslr.c aslr.h \
+		    cvars/mtwist/mtwist.c cvars/mtwist/mtwist.h
 
 EXTRA_DIST = LICENSE
 AM_YFLAGS = -d
@@ -399,6 +400,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ioprio.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/misc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mtwist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multi_client_sync.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser_gram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parser_lex.Po@am__quote@
@@ -428,6 +430,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+mtwist.o: cvars/mtwist/mtwist.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mtwist.o -MD -MP -MF $(DEPDIR)/mtwist.Tpo -c -o mtwist.o `test -f 'cvars/mtwist/mtwist.c' || echo '$(srcdir)/'`cvars/mtwist/mtwist.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/mtwist.Tpo $(DEPDIR)/mtwist.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cvars/mtwist/mtwist.c' object='mtwist.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mtwist.o `test -f 'cvars/mtwist/mtwist.c' || echo '$(srcdir)/'`cvars/mtwist/mtwist.c
+
+mtwist.obj: cvars/mtwist/mtwist.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mtwist.obj -MD -MP -MF $(DEPDIR)/mtwist.Tpo -c -o mtwist.obj `if test -f 'cvars/mtwist/mtwist.c'; then $(CYGPATH_W) 'cvars/mtwist/mtwist.c'; else $(CYGPATH_W) '$(srcdir)/cvars/mtwist/mtwist.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/mtwist.Tpo $(DEPDIR)/mtwist.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cvars/mtwist/mtwist.c' object='mtwist.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mtwist.obj `if test -f 'cvars/mtwist/mtwist.c'; then $(CYGPATH_W) 'cvars/mtwist/mtwist.c'; else $(CYGPATH_W) '$(srcdir)/cvars/mtwist/mtwist.c'; fi`
 
 .l.c:
 	$(am__skiplex) $(SHELL) $(YLWRAP) $< $(LEX_OUTPUT_ROOT).c $@ -- $(LEXCOMPILE)

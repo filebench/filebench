@@ -31,43 +31,21 @@
 #include "filebench.h"
 #include "ipc.h"
 #include "gamma_dist.h"
-
-static int urandomfd;
-
-/****************************************
- *					*
- * /dev/urandom related functions	*
- *					*
- ****************************************/
+#include "cvars/mtwist/mtwist.h"
 
 /*
- * Initialize the urandom random number source
+ * Generates a 64-bit random number using mtwist or from a provided random
+ * variable "avd".
+ *
+ * Returned random number "randp" is clipped by the "max" value and rounded off
+ * by the "round" value.  Returns 0 on success, shuts down Filebench on
+ * failure.
  */
 void
-fb_urandom_init(void)
-{
-	urandomfd = open("/dev/urandom", O_RDONLY);
-	if (urandomfd < 0) {
-		filebench_log(LOG_ERROR, "open /dev/urandom failed: %s",
-		    strerror(errno));
-		filebench_shutdown(1);
-	}
-}
-
-/*
- * Reads a 64 bit random number from the /dev/urandom file,
- * or from a provided random variable "avd".
- * Returned random number "randp" is clipped by the "max" value and
- * rounded off by the "round" value.
- * Returns 0 on success, shuts down Filebench on failure
- */
-void
-fb_urandom64(uint64_t *randp,
-	 uint64_t max, uint64_t round, avd_t avd)
+fb_random64(uint64_t *randp, uint64_t max, uint64_t round, avd_t avd)
 {
 	double random_normalized;
-	uint64_t random;
-	int ret;
+	uint64_t random = 0;
 
 	if (avd) {
 		/* get it from the random variable */
@@ -82,14 +60,7 @@ fb_urandom64(uint64_t *randp,
 			random = avd_get_int(avd);
 		}
 	} else {
-		/* get it from the /dev/urandom */
-		ret = read(urandomfd, &random, sizeof(random));
-		if (ret != sizeof(random)) {
-			filebench_log(LOG_ERROR, "filebench_randomno64: "
-					"read from /dev/urandom failed");
-			filebench_shutdown(1);
-			/* NOT REACHABLE */
-		}
+		random = mt_llrand();
 	}
 
 	/*
@@ -115,13 +86,14 @@ fb_urandom64(uint64_t *randp,
 /*
  * Same as filebench_randomno64, but for 32 bit integers.
  */
+
 void
-fb_urandom32(uint32_t *randp,
+fb_random32(uint32_t *randp,
 		uint32_t max, uint32_t round, avd_t avd)
 {
 	uint64_t rand64;
 
-	fb_urandom64(&rand64, max, round, avd);
+	fb_random64(&rand64, max, round, avd);
 
 	/* rand64 always fits uint32, since "max" above was 32 bit */
 	*randp = (uint32_t)rand64;
@@ -130,12 +102,12 @@ fb_urandom32(uint32_t *randp,
 /*
  * Same as filebench_randomno64, but for probability [0-1].
  */
-double
-fb_urandom_probability()
+static double
+fb_random_probability()
 {
 	uint64_t randnum;
 
-	fb_urandom64(&randnum, UINT64_MAX, 0, NULL);
+	fb_random64(&randnum, UINT64_MAX, 0, NULL);
 
 	/* convert to 0-1 probability */
 	return (double)randnum / (double)(UINT64_MAX);
@@ -154,9 +126,9 @@ fb_rand_src_rand48(unsigned short *xi)
 }
 
 static double
-fb_rand_src_urandom(unsigned short *xi)
+fb_rand_src_random(unsigned short *xi)
 {
-	return fb_urandom_probability();
+	return fb_random_probability();
 }
 
 /*
@@ -331,7 +303,7 @@ randdist_init(randdist_t *rndp)
 		rndp->rnd_src = fb_rand_src_rand48;
 		rand_seed_set(rndp);
 	} else {
-		rndp->rnd_src = fb_rand_src_urandom;
+		rndp->rnd_src = fb_rand_src_random;
 	}
 
 	/* any random distribution table to convert? */

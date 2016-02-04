@@ -704,7 +704,7 @@ fileset_pick(fileset_t *fileset, int flags, int tid, int index)
 		if (index) {
 			index64 = index;
 		} else {
-			fb_urandom64(&index64, max_entries, 0, NULL);
+			fb_random64(&index64, max_entries, 0, NULL);
 		}
 
 		entry = fileset_find_entry(atp, (int)index64);

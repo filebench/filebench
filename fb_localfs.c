@@ -313,7 +313,7 @@ fb_lfsflow_aiowrite(threadflow_t *threadflow, flowop_t *flowop)
 			return (FILEBENCH_ERROR);
 		}
 
-		fb_urandom64(&fileoffset, wss, iosize, NULL);
+		fb_random64(&fileoffset, wss, iosize, NULL);
 
 		aiolist = aio_allocate(flowop);
 		aiolist->al_type = AL_WRITE;

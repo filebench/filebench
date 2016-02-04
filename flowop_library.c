@@ -464,7 +464,7 @@ flowoplib_iobufsetup(threadflow_t *threadflow, flowop_t *flowop,
 			return (FILEBENCH_ERROR);
 		}
 
-		fb_urandom(&memoffset, memsize, iosize, NULL);
+		fb_random(&memoffset, memsize, iosize, NULL);
 		*iobufp = threadflow->tf_mem + memoffset;
 
 	} else {
@@ -559,7 +559,7 @@ flowoplib_read(threadflow_t *threadflow, flowop_t *flowop)
 		}
 
 		/* select randomly */
-		fb_urandom64(&fileoffset, wss, iosize, NULL);
+		fb_random64(&fileoffset, wss, iosize, NULL);
 
 		(void) flowop_beginop(threadflow, flowop);
 		if ((ret = FB_PREAD(fdesc, iobuf,
@@ -2318,7 +2318,7 @@ flowoplib_write(threadflow_t *threadflow, flowop_t *flowop)
 		}
 
 		/* select randomly */
-		fb_urandom64(&fileoffset, wss, iosize, NULL);
+		fb_random64(&fileoffset, wss, iosize, NULL);
 
 		flowop_beginop(threadflow, flowop);
 		if (FB_PWRITE(fdesc, iobuf,
@@ -2504,7 +2504,7 @@ flowoplib_appendfilerand(threadflow_t *threadflow, flowop_t *flowop)
 		return (FILEBENCH_ERROR);
 	}
 
-	fb_urandom64(&appendsize, iosize, 1LL, NULL);
+	fb_random64(&appendsize, iosize, 1LL, NULL);
 
 	/* skip if attempting zero length append */
 	if (appendsize == 0) {

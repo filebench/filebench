@@ -95,10 +95,8 @@ typedef struct randdist {
 #define	RAND_PARAM_ROUND	7
 
 /* Function declarations */
-extern void fb_urandom_init(void);
-extern void fb_urandom64(uint64_t *, uint64_t, uint64_t, avd_t);
-extern void fb_urandom32(uint32_t *, uint32_t, uint32_t, avd_t);
-extern double fb_urandom_probability();
+extern void fb_random64(uint64_t *, uint64_t, uint64_t, avd_t);
+extern void fb_random32(uint32_t *, uint32_t, uint32_t, avd_t);
 
 extern randdist_t *randdist_alloc(void);
 extern void randdist_init(randdist_t *rndp);

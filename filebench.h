@@ -154,10 +154,10 @@ void filebench_plugin_funcvecinit(void);
 #define	FILEBENCH_RANDMAX32 UINT32_MAX
 
 #if defined(_LP64) || (__WORDSIZE == 64)
-#define	fb_urandom fb_urandom64
+#define	fb_random fb_random64
 #define	FILEBENCH_RANDMAX FILEBENCH_RANDMAX64
 #else
-#define	fb_urandom fb_urandom32
+#define	fb_random fb_random32
 #define	FILEBENCH_RANDMAX FILEBENCH_RANDMAX32
 #endif
 
