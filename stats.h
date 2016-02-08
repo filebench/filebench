@@ -28,19 +28,13 @@
 
 #include "filebench.h"
 
-var_t *stats_findvar(var_t *var, char *name);
 void stats_init(void);
 void stats_clear(void);
 void stats_snap(void);
-void stats_dump(char *filename);
-void stats_xmldump(char *filename);
-void stats_multidump(char *filename);
 
 #ifndef HAVE_GETHRTIME
 typedef uint64_t hrtime_t;
 #endif
-
-#define	STATS_VAR "stats."
 
 #define	FLOW_MSTATES 4
 #define	FLOW_MSTATE_LAT 0	/* Total service time of op */
