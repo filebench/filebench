@@ -30,10 +30,6 @@
 
 #include "filebench.h"
 
-#define	DATE_VAR "date"
-#define	SCRIPT_VAR "scriptname"
-#define	HOST_VAR "hostname"
-
 #define	FSECS (double)1000000000.0
 
 #define	LOG_ERROR 0	/* a major error */
@@ -46,10 +42,6 @@
 #define	LOG_DEBUG_NEVER 10
 #define	LOG_FATAL 999	/* really bad error, shut down */
 #define	LOG_DUMP 1001
-
-var_t *date_var(var_t *var);
-var_t *script_var(var_t *var);
-var_t *host_var(var_t *var);
 
 hrtime_t gethrtime(void);
 void clock_init();

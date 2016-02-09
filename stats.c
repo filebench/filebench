@@ -323,7 +323,7 @@ stats_snap(void)
 	flowop_t *flowop;
 	char *str;
 
-	if (globalstats == NULL) {
+	if (!globalstats) {
 		filebench_log(LOG_ERROR,
 		    "'stats snap' called before 'stats clear'");
 		return;
