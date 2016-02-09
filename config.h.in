@@ -409,9 +409,6 @@
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
 
-/* Define if you want support for RDTSC. */
-#undef USE_RDTSC
-
 /* Define if you want support for system() */
 #undef USE_SYSTEM
 

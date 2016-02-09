@@ -122,18 +122,6 @@ AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
-# If user specifies (vid --enable-rdtsc=yes),
-# we can use RDTSC instruction for monitoring the time.
-AC_MSG_CHECKING(whether to enable the use of rdtsc)
-rdtsc_default="no"
-AC_ARG_ENABLE(rdtsc, [  --enable-rdtsc=[no/yes] Enable timing to use RDTSC Linux Specific
-		[default=$rdtsc_default]],, enable_rdtsc=$rdtsc_default)
-if test "x$enable_rdtsc" = "xyes"; then
-	AC_DEFINE(USE_RDTSC,1,[ Define if you want support for RDTSC. ])
-	AC_MSG_RESULT(yes)
-else
-	AC_MSG_RESULT(no)
-fi
 # If user specifies (via --use-system=yes),
 # we can use system() instead of execlp().
 AC_MSG_CHECKING(whether to use system())

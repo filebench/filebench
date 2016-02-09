@@ -1617,7 +1617,6 @@ init_common()
 	disable_aslr();
 	my_pid = getpid();
 	fb_set_rlimit();
-	clock_init();
 }
 
 /*

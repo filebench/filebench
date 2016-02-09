@@ -7,13 +7,11 @@
 #include <stdint.h>
 #endif
 
-#define	FSECS (double)1000000000.0
-
 #ifndef HAVE_GETHRTIME
 typedef uint64_t hrtime_t;
+hrtime_t gethrtime(void);
 #endif
 
-hrtime_t gethrtime(void);
-void clock_init();
+#define	FSECS (double)1000000000.0
 
 #endif	/* _FBTIME_H*/

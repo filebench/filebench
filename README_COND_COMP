@@ -95,9 +95,8 @@ HAVE_FTRUNCATE64
 
 HAVE_GETHRTIME
 
-	If gethrtime() function is not available (only on Solaris),
-	use either gettimeofdate() or  RDTSC instruction (if USE_RDTSC
-	is defined during compilation, see below).
+	If gethrtime() function is not available (which is
+	only available on Solaris) use regular gettimeofdate().
 
 HAVE_LSEEK64
 
@@ -245,12 +244,6 @@ __STDC__
 
 	Used only to figure out how to handle functions with
 	variable number of arguments (filebench_log()).
-
-USE_RDTSC
-
-	On non-Solaris platforms, use RDTSC instruction instead of 
-	gettimeofday() to get high resolution time.  Enabled
-	by configure with --enable-rdtsc parameter.
 
 USE_SYSTEM
 
