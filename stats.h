@@ -27,14 +27,11 @@
 #define	_FB_STATS_H
 
 #include "filebench.h"
+#include "fbtime.h"
 
 void stats_init(void);
 void stats_clear(void);
 void stats_snap(void);
-
-#ifndef HAVE_GETHRTIME
-typedef uint64_t hrtime_t;
-#endif
 
 #define	FLOW_MSTATES 4
 #define	FLOW_MSTATE_LAT 0	/* Total service time of op */

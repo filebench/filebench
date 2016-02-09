@@ -28,10 +28,6 @@
 
 #pragma ident	"%Z%%M%	%I%	%E% SMI"
 
-#include "filebench.h"
-
-#define	FSECS (double)1000000000.0
-
 #define	LOG_ERROR 0	/* a major error */
 #define	LOG_ERROR1 1	/* also major error, but turn off error reporting */
 			/* for now */
@@ -42,8 +38,5 @@
 #define	LOG_DEBUG_NEVER 10
 #define	LOG_FATAL 999	/* really bad error, shut down */
 #define	LOG_DUMP 1001
-
-hrtime_t gethrtime(void);
-void clock_init();
 
 #endif	/* _FB_MISC_H */

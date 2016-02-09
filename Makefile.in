@@ -59,8 +59,8 @@ am_filebench_OBJECTS = eventgen.$(OBJEXT) fb_avl.$(OBJEXT) \
 	ipc.$(OBJEXT) misc.$(OBJEXT) multi_client_sync.$(OBJEXT) \
 	parser_gram.$(OBJEXT) parser_lex.$(OBJEXT) procflow.$(OBJEXT) \
 	stats.$(OBJEXT) threadflow.$(OBJEXT) utils.$(OBJEXT) \
-	vars.$(OBJEXT) ioprio.$(OBJEXT) fb_cvar.$(OBJEXT) \
-	aslr.$(OBJEXT) mtwist.$(OBJEXT)
+	vars.$(OBJEXT) ioprio.$(OBJEXT) fbtime.$(OBJEXT) \
+	fb_cvar.$(OBJEXT) aslr.$(OBJEXT) mtwist.$(OBJEXT)
 filebench_OBJECTS = $(am_filebench_OBJECTS)
 filebench_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -266,6 +266,7 @@ filebench_SOURCES = eventgen.c fb_avl.c fb_localfs.c \
 		    ipc.h   multi_client_sync.h  parsertypes.h  stats.h \
 		    utils.h config.h fb_avl.h filebench.h flowop.h gamma_dist.h \
 		    misc.h procflow.h threadflow.h vars.h ioprio.h flag.h \
+		    fbtime.c fbtime.h \
 		    fb_cvar.c fb_cvar.h aslr.c aslr.h \
 		    cvars/mtwist/mtwist.c cvars/mtwist/mtwist.h
 
@@ -393,6 +394,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fb_cvar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fb_localfs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fb_random.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fbtime.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flowop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flowop_library.Po@am__quote@

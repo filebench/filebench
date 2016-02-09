@@ -34,6 +34,7 @@
 #include "flowop.h"
 #include "vars.h"
 #include "stats.h"
+#include "fbtime.h"
 
 /*
  * A set of routines for collecting and dumping various filebench
