@@ -323,6 +323,7 @@ stats_snap(void)
 	hrtime_t orig_starttime;
 	flowop_t *flowop;
 	char *str;
+	double total_time_sec;
 
 	if (!globalstats) {
 		filebench_log(LOG_ERROR,
@@ -337,9 +338,6 @@ stats_snap(void)
 		return;
 	}
 
-	filebench_log(LOG_DEBUG_SCRIPT, "Stats period = %ds",
-	    (globalstats->fs_etime - globalstats->fs_stime) / 1000000000);
-
 	/* Freeze statistics during update */
 	filebench_shm->shm_bequiet = 1;
 
@@ -352,6 +350,11 @@ stats_snap(void)
 	(void) memset(globalstats, 0, FLOW_TYPES * sizeof(struct flowstats));
 	globalstats->fs_stime = orig_starttime;
 	globalstats->fs_etime = gethrtime();
+
+	total_time_sec = (globalstats->fs_etime -
+			globalstats->fs_stime) / SEC2NS_FLOAT;
+	filebench_log(LOG_DEBUG_SCRIPT, "Stats period = %.0f sec",
+			total_time_sec);
 
 	/* Similarly we blank the master flowop statistics */
 	flowop = filebench_shm->shm_flowoplist;
@@ -388,15 +391,13 @@ stats_snap(void)
 		}
 
 		filebench_log(LOG_DEBUG_SCRIPT,
-		    "flowop %-20s-%4d  - %5d ops, %5.1lf, ops/s %5.1lfmb/s "
+		    "flowop %-20s-%4d  - %5d ops %5.1lf ops/sec %5.1lfmb/s "
 		    "%8.3fms/op",
 		    flowop->fo_name,
 		    flowop->fo_instance,
 		    flowop->fo_stats.fs_count,
-		    flowop->fo_stats.fs_count /
-		    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
-		    (flowop->fo_stats.fs_bytes / (1024 * 1024)) /
-		    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
+		    flowop->fo_stats.fs_count / total_time_sec,
+		    (flowop->fo_stats.fs_bytes / MB_FLOAT) / total_time_sec,
 		    flowop->fo_stats.fs_count ?
 		    flowop->fo_stats.fs_mstate[FLOW_MSTATE_LAT] /
 		    (flowop->fo_stats.fs_count * 1000000.0) : 0);
@@ -439,10 +440,8 @@ stats_snap(void)
 		    "%5.1lfmb/s %8.1fms/op %8.0fus/op-cpu",
 		    flowop->fo_name,
 		    flowop->fo_stats.fs_count,
-		    flowop->fo_stats.fs_count /
-		    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
-		    (flowop->fo_stats.fs_bytes / (1024 * 1024)) /
-		    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
+		    flowop->fo_stats.fs_count / total_time_sec,
+		    (flowop->fo_stats.fs_bytes / MB_FLOAT) / total_time_sec,
 		    flowop->fo_stats.fs_count ?
 		    flowop->fo_stats.fs_mstate[FLOW_MSTATE_LAT] /
 		    (flowop->fo_stats.fs_count * 1000000.0) : 0,
@@ -481,14 +480,11 @@ stats_snap(void)
 	    "IO Summary: %5d ops, %5.3lf ops/s, (%0.0lf/%0.0lf r/w), "
 	    "%5.1lfmb/s, %6.0fus cpu/op, %5.1fms latency",
 	    iostat->fs_count + aiostat->fs_count,
-	    (iostat->fs_count + aiostat->fs_count) /
-	    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
-	    (iostat->fs_rcount + aiostat->fs_rcount) /
-	    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
-	    (iostat->fs_wcount + aiostat->fs_wcount) /
-	    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
-	    ((iostat->fs_bytes + aiostat->fs_bytes) / (1024 * 1024)) /
-	    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
+	    (iostat->fs_count + aiostat->fs_count) / total_time_sec,
+	    (iostat->fs_rcount + aiostat->fs_rcount) / total_time_sec,
+	    (iostat->fs_wcount + aiostat->fs_wcount) / total_time_sec,
+	    ((iostat->fs_bytes + aiostat->fs_bytes) / MB_FLOAT)
+						/ total_time_sec,
 	    (iostat->fs_rcount + iostat->fs_wcount +
 	    aiostat->fs_rcount + aiostat->fs_wcount) ?
 	    (iostat->fs_syscpu / 1000.0) /

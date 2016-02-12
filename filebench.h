@@ -172,6 +172,10 @@ static inline int sigignore(int sig) {
 #define	MB (KB * KB)
 #define	GB (KB * MB)
 
+#define	KB_FLOAT ((double)1024.0)
+#define	MB_FLOAT (KB_FLOAT * KB_FLOAT)
+#define	GB_FLOAT (KB_FLOAT * MB_FLOAT)
+
 #define	MMAP_SIZE	(1024UL * 1024UL * 1024UL)
 
 #define	FILEBENCH_VERSION	VERSION
