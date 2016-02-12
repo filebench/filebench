@@ -348,7 +348,7 @@ stats_snap(void)
 		    (flowop->fo_stats.fs_bytes / MB_FLOAT) / total_time_sec,
 		    flowop->fo_stats.fs_count ?
 		    flowop->fo_stats.fs_total_lat /
-		    (flowop->fo_stats.fs_count * 1000000.0) : 0);
+		    (flowop->fo_stats.fs_count * SEC2MS_FLOAT) : 0);
 
 		flowop = flowop->fo_next;
 
@@ -379,12 +379,12 @@ stats_snap(void)
 		    (flowop->fo_stats.fs_bytes / MB_FLOAT) / total_time_sec,
 		    flowop->fo_stats.fs_count ?
 		    flowop->fo_stats.fs_total_lat /
-		    (flowop->fo_stats.fs_count * 1000000.0) : 0);
+		    (flowop->fo_stats.fs_count * SEC2MS_FLOAT) : 0);
 		(void) strcat(str, line);
 
-		(void) snprintf(line, sizeof(line)," [%llums - %llums]",
-			flowop->fo_stats.fs_minlat / 1000000,
-			flowop->fo_stats.fs_maxlat / 1000000);
+		(void) snprintf(line, sizeof(line)," [%.2fms - %5.2fms]",
+			flowop->fo_stats.fs_minlat / SEC2MS_FLOAT,
+			flowop->fo_stats.fs_maxlat / SEC2MS_FLOAT);
 		(void) strcat(str, line);
 
 		if (filebench_shm->lathist_enabled) {
@@ -409,7 +409,7 @@ stats_snap(void)
 	free(str);
 
 	filebench_log(LOG_INFO,
-	    "IO Summary: %5d ops, %5.3lf ops/s, (%0.0lf/%0.0lf r/w), "
+	    "IO Summary: %5d ops, %5.3lf ops/s, %0.0lf/%0.0lf rd/wr, "
 	    "%5.1lfmb/s, %6.0fus cpu/op, %5.1fms latency",
 	    iostat->fs_count + aiostat->fs_count,
 	    (iostat->fs_count + aiostat->fs_count) / total_time_sec,
@@ -424,7 +424,7 @@ stats_snap(void)
 	    aiostat->fs_rcount + aiostat->fs_wcount) : 0,
 	    (iostat->fs_rcount + iostat->fs_wcount) ?
 	    iostat->fs_total_lat /
-	    ((iostat->fs_rcount + iostat->fs_wcount) * 1000000.0) : 0);
+	    ((iostat->fs_rcount + iostat->fs_wcount) * SEC2MS_FLOAT) : 0);
 
 	filebench_shm->shm_bequiet = 0;
 }
