@@ -29,7 +29,6 @@
 #include "filebench.h"
 #include "fbtime.h"
 
-void stats_init(void);
 void stats_clear(void);
 void stats_snap(void);
 
@@ -56,8 +55,6 @@ struct flowstats {
 	 * stats_clear() to stats_snap() */
 	hrtime_t	fs_stime;
 	hrtime_t	fs_etime;
-
-	hrtime_t	fs_syscpu;	/* System wide cpu, global only */
 };
 
 #define	IS_FLOW_IOP(x) (x->fo_stats.fs_rcount + x->fo_stats.fs_wcount)

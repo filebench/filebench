@@ -1579,7 +1579,6 @@ master_mode(struct fbparams *fbparams) {
 
 	execname = fbparams->execname;
 	fb_set_shmmax();
-	stats_init();
 
 	ipc_init();
 

@@ -104,17 +104,6 @@ HAVE_LSEEK64
 	use the lseek() instead.
 
 
-HAVE_LIBKSTAT
-
-	If libkstat library is available (usually only on Solaris), Filebench 
-	uses it to obtain global (per-system) _CPU_ usage statistics (user time,
-	system time).  Tries to use /proc/stat (see HAVE_PROC_STAT below), if
-	libkstat is not available.
-	Notice, that libkstat or /proc/stat are not used for obtaining
-	per-flowop statistics or for getting the total execution time:
-	gethrtime() and /proc/<pid>/stat or /proc/<pid>/lwp are used for it.
-	
-
 HAVE_LIBTECLA
 
 	If libtecla library is installed, use it for facilitating 
@@ -144,16 +133,6 @@ HAVE_OPEN64
 HAVE_PROCSCOPE_PTHREADS
 
 	If you have POSIX process scope threads, use them.
-
-HAVE_PROC_STAT
-
-	If /proc/stat file is available (usually only on Linux), Filebench 
-	uses it to obtain global (per-system) _CPU_ usage statistics (user time,
-	system time).  Prefers to use libkstat (see HAVE_PROC_STAT above)
-	instead.
-	Notice, that libkstat or /proc/stat are not used for obtaining
-	per-flowop statistics or for getting the total execution time:
-	gethrtime() and /proc/<pid>/stat or /proc/<pid>/lwp are used for it.
 
 HAVE_PROC_SYS_KERNEL_SHMMAX
 	We increase the maximum size of a shared memory segment through 

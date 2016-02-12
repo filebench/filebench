@@ -43,189 +43,6 @@
 
 /* Global statistics */
 static struct flowstats *globalstats = NULL;
-static hrtime_t stats_cputime = 0;
-
-#ifdef HAVE_LIBKSTAT
-#include <kstat.h>
-#include <sys/cpuvar.h>
-
-static kstat_ctl_t *kstatp = NULL;
-static kstat_t *sysinfo_ksp = NULL;
-static kstat_t **cpu_kstat_list = NULL;
-static int kstat_ncpus = 0;
-
-static int
-stats_build_kstat_list(void)
-{
-	kstat_t *ksp;
-
-	kstat_ncpus = 0;
-	for (ksp = kstatp->kc_chain; ksp; ksp = ksp->ks_next)
-		if (strncmp(ksp->ks_name, "cpu_stat", 8) == 0)
-			kstat_ncpus++;
-
-	if ((cpu_kstat_list = (kstat_t **)
-	    malloc(kstat_ncpus * sizeof (kstat_t *))) == NULL) {
-		filebench_log(LOG_ERROR, "malloc failed");
-		return (FILEBENCH_ERROR);
-	}
-
-	kstat_ncpus = 0;
-	for (ksp = kstatp->kc_chain; ksp; ksp = ksp->ks_next)
-		if (strncmp(ksp->ks_name, "cpu_stat", 8) == 0 &&
-		    kstat_read(kstatp, ksp, NULL) != -1)
-			cpu_kstat_list[kstat_ncpus++] = ksp;
-
-	if (kstat_ncpus == 0) {
-		filebench_log(LOG_ERROR,
-		    "kstats can't find any cpu statistics");
-		return (FILEBENCH_ERROR);
-	}
-
-	return (FILEBENCH_OK);
-}
-
-static int
-stats_kstat_update(void)
-{
-	if (kstatp == NULL) {
-		if ((kstatp = kstat_open()) == (kstat_ctl_t *)NULL) {
-			filebench_log(LOG_ERROR, "Cannot read kstats");
-			return (FILEBENCH_ERROR);
-		}
-	}
-
-	/* get the sysinfo kstat */
-	if (sysinfo_ksp == NULL)
-		sysinfo_ksp = kstat_lookup(kstatp, "unix", 0, "sysinfo");
-
-	/* get per cpu kstats, if necessary */
-	if (cpu_kstat_list == NULL) {
-
-		/* Initialize the array of cpu kstat pointers */
-		if (stats_build_kstat_list() == FILEBENCH_ERROR)
-			return (FILEBENCH_ERROR);
-
-	} else if (kstat_chain_update(kstatp) != 0) {
-
-		/* free up current array of kstat ptrs and get new one */
-		free((void *)cpu_kstat_list);
-		if (stats_build_kstat_list() == FILEBENCH_ERROR)
-			return (FILEBENCH_ERROR);
-	}
-
-	return (FILEBENCH_OK);
-}
-
-/*
- * Uses the kstat library or, if it is not available, the /proc/stat file
- * to obtain cpu statistics. Collects statistics for each cpu, initializes
- * a local pointer to the sysinfo kstat, and returns the sum of user and
- * kernel time for all the cpus.
- */
-static hrtime_t
-kstats_read_cpu(void)
-{
-	u_longlong_t	cputime_states[CPU_STATES];
-	hrtime_t	cputime;
-	int		i;
-
-	/*
-	 * Per-CPU statistics
-	 */
-
-	if (stats_kstat_update() == FILEBENCH_ERROR)
-		return (0);
-
-	/* Sum across all CPUs */
-	(void) memset(&cputime_states, 0, sizeof (cputime_states));
-	for (i = 0; i < kstat_ncpus; i++) {
-		cpu_stat_t cpu_stats;
-		int j;
-
-		(void) kstat_read(kstatp, cpu_kstat_list[i],
-		    (void *) &cpu_stats);
-		for (j = 0; j < CPU_STATES; j++)
-			cputime_states[j] += cpu_stats.cpu_sysinfo.cpu[j];
-	}
-
-	cputime = cputime_states[CPU_KERNEL] + cputime_states[CPU_USER];
-
-	return (10000000LL * cputime);
-}
-#elif defined(HAVE_PROC_STAT)
-static hrtime_t
-kstats_read_cpu(void)
-{
-	/*
-	 * Linux provides system wide statistics in /proc/stat
-	 * The entry for cpu is
-	 * cpu  1636 67 1392 208671 5407 20 12
-	 * cpu0 626 8 997 104476 2499 7 7
-	 * cpu1 1010 58 395 104195 2907 13 5
-	 *
-	 * The number of jiffies (1/100ths of  a  second)  that  the
-	 * system  spent  in  user mode, user mode with low priority
-	 * (nice), system mode, and  the  idle  task,  respectively.
-	 */
-	FILE *statfd;
-	hrtime_t user, nice, system;
-	char cpu[128]; /* placeholder to read "cpu" */
-
-	statfd = fopen("/proc/stat", "r");
-	if (!statfd) {
-		filebench_log(LOG_ERROR, "Cannot open /proc/stat");
-		return (-1);
-	}
-#if defined(_LP64) || (__WORDSIZE == 64)
-	if (fscanf(statfd, "%s %lu %lu %lu", cpu, &user, &nice, &system) != 4) {
-#else
-	if (fscanf(statfd, "%s %llu %llu %llu", cpu, &user, &nice, &system) != 4) {
-#endif
-		filebench_log(LOG_ERROR, "Cannot read /proc/stat");
-		fclose(statfd);
-		return (-1);
-	}
-	
-
-	fclose(statfd);
-	
-	/* convert jiffies to nanosecs */
-	return ((user+nice+system)*10000000);
-}
-#else
-static hrtime_t
-kstats_read_cpu(void)
-{
-	filebench_log(LOG_ERROR, "No /proc/stat or libkstat,"
-	 	"so no correct source of per-system CPU usage!");
-	return (-1);
-}
-#endif
-
-/*
- * Returns the net cpu time used since the beginning of the run.
- * Just calls kstat_read_cpu() and subtracts stats_cputime which
- * is set at the beginning of the filebench run.
- */
-static hrtime_t
-kstats_read_cpu_relative(void)
-{
-	hrtime_t cputime;
-
-	cputime = kstats_read_cpu();
-	return (cputime - stats_cputime);
-}
-
-/*
- * Initializes the static variable "stats_cputime" with the
- * current cpu time, for use by kstats_read_cpu_relative.
- */
-void
-stats_init(void)
-{
-	stats_cputime = kstats_read_cpu();
-}
 
 /*
  * Add a flowstat b to a, leave sum in a.
@@ -267,7 +84,6 @@ stats_snap(void)
 {
 	struct flowstats *iostat = &globalstats[FLOW_TYPE_IO];
 	struct flowstats *aiostat = &globalstats[FLOW_TYPE_AIO];
-	hrtime_t cputime;
 	hrtime_t orig_starttime;
 	flowop_t *flowop;
 	char *str;
@@ -354,8 +170,6 @@ stats_snap(void)
 
 	}
 
-	cputime = kstats_read_cpu_relative();
-
 	flowop = filebench_shm->shm_flowoplist;
 	str = malloc(1048576);
 	*str = '\0';
@@ -409,19 +223,14 @@ stats_snap(void)
 	free(str);
 
 	filebench_log(LOG_INFO,
-	    "IO Summary: %5d ops, %5.3lf ops/s, %0.0lf/%0.0lf rd/wr, "
-	    "%5.1lfmb/s, %6.0fus cpu/op, %5.1fms latency",
+	    "IO Summary: %5d ops %5.3lf ops/s %0.0lf/%0.0lf rd/wr "
+	    "%5.1lfmb/s %5.1fms/op",
 	    iostat->fs_count + aiostat->fs_count,
 	    (iostat->fs_count + aiostat->fs_count) / total_time_sec,
 	    (iostat->fs_rcount + aiostat->fs_rcount) / total_time_sec,
 	    (iostat->fs_wcount + aiostat->fs_wcount) / total_time_sec,
 	    ((iostat->fs_bytes + aiostat->fs_bytes) / MB_FLOAT)
 						/ total_time_sec,
-	    (iostat->fs_rcount + iostat->fs_wcount +
-	    aiostat->fs_rcount + aiostat->fs_wcount) ?
-	    (iostat->fs_syscpu / 1000.0) /
-	    (iostat->fs_rcount + iostat->fs_wcount +
-	    aiostat->fs_rcount + aiostat->fs_wcount) : 0,
 	    (iostat->fs_rcount + iostat->fs_wcount) ?
 	    iostat->fs_total_lat /
 	    ((iostat->fs_rcount + iostat->fs_wcount) * SEC2MS_FLOAT) : 0);
@@ -438,8 +247,6 @@ void
 stats_clear(void)
 {
 	flowop_t *flowop;
-
-	stats_cputime = kstats_read_cpu();
 
 	if (globalstats == NULL)
 		globalstats = malloc(FLOW_TYPES * sizeof (struct flowstats));

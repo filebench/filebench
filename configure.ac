@@ -138,13 +138,6 @@ fi
 ####
 #### Check for libraries
 ####
-# If kstat library is available (usually only on Solaris), use it to obtain
-# global (per-system) CPU usage statistics (user time, system time).
-# Tries to use /proc/stat (see HAVE_PROC_STAT below), if libkstat is not
-# available.
-# Notice, that libkstat or /proc/stat are not used for obtaining per-flowop
-# statistics or for getting the total execution time.
-AC_CHECK_LIB([kstat], [kstat_open])
 # Check that librt is installed and supports async IO. First line
 # allows to add librt to the linkers path, second one checks
 # if aio_wait() is in it, third one checks if aio_waitn() is there (usually
@@ -184,14 +177,6 @@ AC_CHECK_LIB([dl],[dlopen])
 ####
 #### Check for files
 ####
-# Use /proc/stat to obtain global (per-system) CPU usage statistics
-# (user time, system time). This is an alternative for libkstat (look above).
-# Notice, that /proc/stat (or libkstat) are not used for obtaining per-flowop
-# statistics or for getting the total execution time.
-AC_CHECK_FILE(
-	[/proc/stat],
-	[AC_DEFINE(HAVE_PROC_STAT, 1, [Checking if you have /proc/stat])]
-)
 
 # Increase the  maximum size of a shared memory segment through 
 # /proc/sys/kernel/shmmax, if this file exists.

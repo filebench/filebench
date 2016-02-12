@@ -112,9 +112,6 @@
 /* Define to 1 if you have the <libintl.h> header file. */
 #undef HAVE_LIBINTL_H
 
-/* Define to 1 if you have the `kstat' library (-lkstat). */
-#undef HAVE_LIBKSTAT
-
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
 
@@ -193,9 +190,6 @@
 
 /* Define if you have POSIX process scope threads */
 #undef HAVE_PROCSCOPE_PTHREADS
-
-/* Checking if you have /proc/stat */
-#undef HAVE_PROC_STAT
 
 /* Checking if you have /proc/sys/kernel/shmmax */
 #undef HAVE_PROC_SYS_KERNEL_SHMMAX
