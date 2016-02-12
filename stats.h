@@ -33,12 +33,6 @@ void stats_init(void);
 void stats_clear(void);
 void stats_snap(void);
 
-#define	FLOW_MSTATES 4
-#define	FLOW_MSTATE_LAT 0	/* Total service time of op */
-#define	FLOW_MSTATE_CPU 1	/* On-cpu time of op */
-#define	FLOW_MSTATE_WAIT 2	/* Wait-time, excluding waiting for CPU */
-#define	FLOW_MSTATE_OHEAD 3	/* overhead time, around op */
-
 #define OSPROF_BUCKET_NUMBER	64
 
 struct flowstats {
@@ -53,6 +47,7 @@ struct flowstats {
 	uint64_t	fs_wbytes;	/* Number of bytes written */
 
 	unsigned long	fs_distribution[OSPROF_BUCKET_NUMBER]; /* Used for OSprof */
+	hrtime_t	fs_total_lat;
 	unsigned long long fs_maxlat;	/* max flowop latency (nanoseconds) */
 	unsigned long long fs_minlat; /* min flowop latency (nanoseconds) */
 
@@ -62,7 +57,6 @@ struct flowstats {
 	hrtime_t	fs_stime;
 	hrtime_t	fs_etime;
 
-	hrtime_t	fs_mstate[FLOW_MSTATES]; /* Microstate breakdown */
 	hrtime_t	fs_syscpu;	/* System wide cpu, global only */
 };
 

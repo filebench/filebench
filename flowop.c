@@ -181,7 +181,7 @@ flowop_endop(threadflow_t *threadflow, flowop_t *flowop, int64_t bytes)
 	if (ll_delay > flowop->fo_stats.fs_maxlat)
 		flowop->fo_stats.fs_maxlat = ll_delay;
 
-	flowop->fo_stats.fs_mstate[FLOW_MSTATE_LAT] += ll_delay;
+	flowop->fo_stats.fs_total_lat += ll_delay;
 	flowop->fo_stats.fs_count++;
 	flowop->fo_stats.fs_bytes += bytes;
 	(void) ipc_mutex_lock(&controlstats_lock);

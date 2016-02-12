@@ -218,55 +218,6 @@ kstats_read_cpu_relative(void)
 }
 
 /*
- * IO Overhead CPU is the amount of CPU that is incurred running
- * the benchmark infrastructure.
- *
- * It is computed as the sum of micro-state cpu time for each
- * thread around the op being tested.
- *
- * Overhead time is computed for each flow.
- *
- * System overhead is computed as the overhead for I/O flows
- * plus all other time running non-io related flowops
- *
- */
-
-/*
- * Computes and returns the overhead CPU time attibutable to
- * IO type flowops.
- */
-static hrtime_t
-io_stats_ohead(void)
-{
-	struct flowstats *iostat = &globalstats[FLOW_TYPE_IO];
-	struct flowstats *aiostat = &globalstats[FLOW_TYPE_AIO];
-	struct flowstats *glstat = &globalstats[FLOW_TYPE_GLOBAL];
-
-	filebench_log(LOG_DEBUG_NEVER,
-	    "Computing overhead as %llu + %llu - %llu - %llu",
-	    (u_longlong_t)glstat->fs_mstate[FLOW_MSTATE_OHEAD],
-	    (u_longlong_t)glstat->fs_mstate[FLOW_MSTATE_CPU],
-	    (u_longlong_t)iostat->fs_mstate[FLOW_MSTATE_CPU],
-	    (u_longlong_t)aiostat->fs_mstate[FLOW_MSTATE_CPU]);
-
-	return ((glstat->fs_mstate[FLOW_MSTATE_OHEAD] +
-	    glstat->fs_mstate[FLOW_MSTATE_CPU] -
-	    iostat->fs_mstate[FLOW_MSTATE_CPU] -
-	    aiostat->fs_mstate[FLOW_MSTATE_CPU]));
-}
-
-/*
- * Returns the total overhead CPU time.
- */
-static hrtime_t
-gl_stats_ohead(void)
-{
-	struct flowstats *glstat = &globalstats[FLOW_TYPE_GLOBAL];
-
-	return (glstat->fs_mstate[FLOW_MSTATE_OHEAD]);
-}
-
-/*
  * Initializes the static variable "stats_cputime" with the
  * current cpu time, for use by kstats_read_cpu_relative.
  */
@@ -290,15 +241,13 @@ stats_add(struct flowstats *a, struct flowstats *b)
 	a->fs_bytes += b->fs_bytes;
 	a->fs_rbytes += b->fs_rbytes;
 	a->fs_wbytes += b->fs_wbytes;
+	a->fs_total_lat += b->fs_total_lat;
 
 	if (b->fs_maxlat > a->fs_maxlat)
 		a->fs_maxlat = b->fs_maxlat;
 
 	if (b->fs_minlat < a->fs_minlat)
 		a->fs_minlat = b->fs_minlat;
-
-	for (i = 0; i < FLOW_MSTATES; i++)
-		a->fs_mstate[i] += b->fs_mstate[i];
 
 	for (i = 0; i < OSPROF_BUCKET_NUMBER; i++)
 		a->fs_distribution[i] += b->fs_distribution[i];
@@ -318,7 +267,6 @@ stats_snap(void)
 {
 	struct flowstats *iostat = &globalstats[FLOW_TYPE_IO];
 	struct flowstats *aiostat = &globalstats[FLOW_TYPE_AIO];
-	struct flowstats *glstat = &globalstats[FLOW_TYPE_GLOBAL];
 	hrtime_t cputime;
 	hrtime_t orig_starttime;
 	flowop_t *flowop;
@@ -399,7 +347,7 @@ stats_snap(void)
 		    flowop->fo_stats.fs_count / total_time_sec,
 		    (flowop->fo_stats.fs_bytes / MB_FLOAT) / total_time_sec,
 		    flowop->fo_stats.fs_count ?
-		    flowop->fo_stats.fs_mstate[FLOW_MSTATE_LAT] /
+		    flowop->fo_stats.fs_total_lat /
 		    (flowop->fo_stats.fs_count * 1000000.0) : 0);
 
 		flowop = flowop->fo_next;
@@ -407,19 +355,6 @@ stats_snap(void)
 	}
 
 	cputime = kstats_read_cpu_relative();
-
-	filebench_log(LOG_DEBUG_IMPL,
-	    "cputime = %llu, ohead = %llu",
-	    (u_longlong_t)(cputime / 1000000000),
-	    (u_longlong_t)(io_stats_ohead() / 1000000000));
-
-	iostat->fs_syscpu =
-	    (cputime > io_stats_ohead()) ?
-	    (cputime - io_stats_ohead()) : 0;
-	glstat->fs_syscpu =
-	    (cputime > gl_stats_ohead()) ?
-	    (cputime - gl_stats_ohead()) : 0;
-
 
 	flowop = filebench_shm->shm_flowoplist;
 	str = malloc(1048576);
@@ -437,17 +372,14 @@ stats_snap(void)
 		}
 
 		(void) snprintf(line, sizeof(line), "%-20s %dops %8.0lfops/s "
-		    "%5.1lfmb/s %8.1fms/op %8.0fus/op-cpu",
+		    "%5.1lfmb/s %8.1fms/op",
 		    flowop->fo_name,
 		    flowop->fo_stats.fs_count,
 		    flowop->fo_stats.fs_count / total_time_sec,
 		    (flowop->fo_stats.fs_bytes / MB_FLOAT) / total_time_sec,
 		    flowop->fo_stats.fs_count ?
-		    flowop->fo_stats.fs_mstate[FLOW_MSTATE_LAT] /
-		    (flowop->fo_stats.fs_count * 1000000.0) : 0,
-		    flowop->fo_stats.fs_count ?
-		    flowop->fo_stats.fs_mstate[FLOW_MSTATE_CPU] /
-		    (flowop->fo_stats.fs_count * 1000.0) : 0);
+		    flowop->fo_stats.fs_total_lat /
+		    (flowop->fo_stats.fs_count * 1000000.0) : 0);
 		(void) strcat(str, line);
 
 		(void) snprintf(line, sizeof(line)," [%llums - %llums]",
@@ -491,7 +423,7 @@ stats_snap(void)
 	    (iostat->fs_rcount + iostat->fs_wcount +
 	    aiostat->fs_rcount + aiostat->fs_wcount) : 0,
 	    (iostat->fs_rcount + iostat->fs_wcount) ?
-	    iostat->fs_mstate[FLOW_MSTATE_LAT] /
+	    iostat->fs_total_lat /
 	    ((iostat->fs_rcount + iostat->fs_wcount) * 1000000.0) : 0);
 
 	filebench_shm->shm_bequiet = 0;
