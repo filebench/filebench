@@ -394,9 +394,9 @@ stats_snap(void)
 		    flowop->fo_instance,
 		    flowop->fo_stats.fs_count,
 		    flowop->fo_stats.fs_count /
-		    ((globalstats->fs_etime - globalstats->fs_stime) / FSECS),
+		    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
 		    (flowop->fo_stats.fs_bytes / (1024 * 1024)) /
-		    ((globalstats->fs_etime - globalstats->fs_stime) / FSECS),
+		    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
 		    flowop->fo_stats.fs_count ?
 		    flowop->fo_stats.fs_mstate[FLOW_MSTATE_LAT] /
 		    (flowop->fo_stats.fs_count * 1000000.0) : 0);
@@ -435,14 +435,14 @@ stats_snap(void)
 			continue;
 		}
 
-		(void) snprintf(line, sizeof (line), "%-20s %dops %8.0lfops/s "
+		(void) snprintf(line, sizeof(line), "%-20s %dops %8.0lfops/s "
 		    "%5.1lfmb/s %8.1fms/op %8.0fus/op-cpu",
 		    flowop->fo_name,
 		    flowop->fo_stats.fs_count,
 		    flowop->fo_stats.fs_count /
-		    ((globalstats->fs_etime - globalstats->fs_stime) / FSECS),
+		    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
 		    (flowop->fo_stats.fs_bytes / (1024 * 1024)) /
-		    ((globalstats->fs_etime - globalstats->fs_stime) / FSECS),
+		    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
 		    flowop->fo_stats.fs_count ?
 		    flowop->fo_stats.fs_mstate[FLOW_MSTATE_LAT] /
 		    (flowop->fo_stats.fs_count * 1000000.0) : 0,
@@ -482,13 +482,13 @@ stats_snap(void)
 	    "%5.1lfmb/s, %6.0fus cpu/op, %5.1fms latency",
 	    iostat->fs_count + aiostat->fs_count,
 	    (iostat->fs_count + aiostat->fs_count) /
-	    ((globalstats->fs_etime - globalstats->fs_stime) / FSECS),
+	    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
 	    (iostat->fs_rcount + aiostat->fs_rcount) /
-	    ((globalstats->fs_etime - globalstats->fs_stime) / FSECS),
+	    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
 	    (iostat->fs_wcount + aiostat->fs_wcount) /
-	    ((globalstats->fs_etime - globalstats->fs_stime) / FSECS),
+	    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
 	    ((iostat->fs_bytes + aiostat->fs_bytes) / (1024 * 1024)) /
-	    ((globalstats->fs_etime - globalstats->fs_stime) / FSECS),
+	    ((globalstats->fs_etime - globalstats->fs_stime) / SEC2NS_FLOAT),
 	    (iostat->fs_rcount + iostat->fs_wcount +
 	    aiostat->fs_rcount + aiostat->fs_wcount) ?
 	    (iostat->fs_syscpu / 1000.0) /

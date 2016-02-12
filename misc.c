@@ -154,7 +154,7 @@ fatal:
 
 	if (level < LOG_INFO) {
 		(void) fprintf(stderr, "%4.3f: %s",
-		    (now - filebench_shm->shm_epoch) / FSECS,
+		    (now - filebench_shm->shm_epoch) / SEC2NS_FLOAT,
 		    line);
 
 		if (my_procflow == NULL)
@@ -164,7 +164,7 @@ fatal:
 		(void) fflush(stderr);
 	} else {
 		(void) fprintf(stdout, "%4.3f: %s",
-		    (now - filebench_shm->shm_epoch) / FSECS,
+		    (now - filebench_shm->shm_epoch) / SEC2NS_FLOAT,
 		    line);
 		(void) fprintf(stdout, "\n");
 		(void) fflush(stdout);
