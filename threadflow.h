@@ -64,7 +64,6 @@ typedef struct threadflow {
 	int		tf_fdrotor;	/* Rotating fd within set */
 	struct flowstats	tf_stats;	/* Thread statistics */
 	hrtime_t	tf_stime;	/* Start time of current flowop: used to measure the latency of the flowop */
-	int		tf_lwpusagefd;	/* /proc lwp usage fd */
 #ifdef HAVE_AIO
 	aiolist_t	*tf_aiolist;	/* List of async I/Os */
 #endif
