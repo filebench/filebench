@@ -1606,7 +1606,7 @@ flowoplib_openfile_common(threadflow_t *threadflow, flowop_t *flowop, int fd)
 }
 
 /*
- * Emulate create of a file. Uses the flowop's fdnumber to select
+ * Emulate create of a file. Uses the flowoplib_fdnum to select
  * tf_fd and tf_fse array locations to put the created file's file
  * descriptor and filesetentry respectively. Uses flowoplib_pickfile()
  * to select a specific filesetentry whose file does not currently
@@ -1621,9 +1621,11 @@ static int
 flowoplib_createfile(threadflow_t *threadflow, flowop_t *flowop)
 {
 	filesetentry_t *file;
-	int fd = flowop->fo_fdnumber;
 	int openflag = O_CREAT;
+	int fd;
 	int err;
+
+	fd = flowoplib_fdnum(threadflow, flowop);
 
 	if (threadflow->tf_fd[fd].fd_ptr != NULL) {
 		filebench_log(LOG_ERROR,
@@ -1697,7 +1699,9 @@ flowoplib_deletefile(threadflow_t *threadflow, flowop_t *flowop)
 	fileset_t *fileset;
 	char path[MAXPATHLEN];
 	char *pathtmp;
-	int fd = flowop->fo_fdnumber;
+	int fd;
+
+	fd = flowoplib_fdnum(threadflow, flowop);
 
 	/* if fd specified, use it to access file */
 	if ((fd > 0) && ((file = threadflow->tf_fse[fd]) != NULL)) {
@@ -1806,7 +1810,9 @@ static int
 flowoplib_fsync(threadflow_t *threadflow, flowop_t *flowop)
 {
 	filesetentry_t *file;
-	int fd = flowop->fo_fdnumber;
+	int fd;
+
+	fd = flowoplib_fdnum(threadflow, flowop);
 
 	if (threadflow->tf_fd[fd].fd_ptr == NULL) {
 		filebench_log(LOG_ERROR,
@@ -1882,7 +1888,9 @@ flowoplib_closefile(threadflow_t *threadflow, flowop_t *flowop)
 {
 	filesetentry_t *file;
 	fileset_t *fileset;
-	int fd = flowop->fo_fdnumber;
+	int fd;
+
+	fd = flowoplib_fdnum(threadflow, flowop);
 
 	if (threadflow->tf_fd[fd].fd_ptr == NULL) {
 		filebench_log(LOG_ERROR,
@@ -2102,7 +2110,9 @@ flowoplib_statfile(threadflow_t *threadflow, flowop_t *flowop)
 	filesetentry_t *file;
 	fileset_t *fileset;
 	struct stat64 statbuf;
-	int fd = flowop->fo_fdnumber;
+	int fd;
+
+	fd = flowoplib_fdnum(threadflow, flowop);
 
 	/* if fd specified and the file is open, use it to access file */
 	if ((fd > 0) && (threadflow->tf_fd[fd].fd_num > 0)) {
