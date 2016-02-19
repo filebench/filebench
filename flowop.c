@@ -221,10 +221,11 @@ flowop_initflow(flowop_t *flowop)
 	 * save static copies of two items, in case they are supplied
 	 * from random variables
 	 */
-	if (!AVD_IS_STRING(flowop->fo_value))
+	if (flowop->fo_value)
 		flowop->fo_constvalue = avd_get_int(flowop->fo_value);
 
-	flowop->fo_constwss = avd_get_int(flowop->fo_wss);
+	if (flowop->fo_wss)
+		flowop->fo_constwss = avd_get_int(flowop->fo_wss);
 
 	if ((*flowop->fo_init)(flowop) < 0) {
 		filebench_log(LOG_ERROR, "flowop %s-%d init failed",
@@ -271,6 +272,7 @@ flowop_create_runtime_flowops(threadflow_t *threadflow, flowop_t **ops_list_ptr)
 
 		flowop = flowop->fo_exec_next;
 	}
+
 	return (FILEBENCH_OK);
 }
 
