@@ -301,68 +301,44 @@ flowoplib_pickleafdir(filesetentry_t **dirp, flowop_t *flowop, int flags)
 }
 
 /*
- * Searches for a file descriptor. Tries the flowop's
- * fo_fdnumber first and returns with it if it has been
- * explicitly set (greater than 0). It next checks to
- * see if a rotating file descriptor policy is in effect,
- * and if not returns the fdnumber regardless of what
- * it is. (note that if it is 0, it just selects to the
- * default file descriptor in the threadflow's tf_fd
- * array). If the rotating fd policy is in effect, it
- * cycles from the end of the tf_fd array to one location
- * beyond the maximum needed by the number of entries in
- * the associated fileset on each invocation, then starts
- * over from the end.
+ * Searches for a file descriptor. Tries the flowop's fo_fdnumber first and
+ * returns with it if it has been explicitly set (greater than 0). It next
+ * checks to see if a rotating file descriptor policy is in effect, and if not
+ * returns the fdnumber regardless of what it is. (note that if it is 0, it
+ * just selects to the default file descriptor in the threadflow's tf_fd
+ * array). If the rotating fd policy is in effect, it cycles from the end of
+ * the tf_fd array to 0 and then starts over from the end.
  *
- * The routine returns an index into the threadflow's
- * tf_fd table where the actual file descriptor will be
- * found. Note: the calling routine must not call this
- * routine if the flowop does not have a fileset, and the
- * flowop's fo_fdnumber is zero and fo_rotatefd is
- * asserted, or an addressing fault may occur.
+ * The routine returns an index into the threadflow's tf_fd table where the
+ * actual file descriptor will be found.
  */
 static int
 flowoplib_fdnum(threadflow_t *threadflow, flowop_t *flowop)
 {
-	fbint_t	entries;
-	int fdnumber = flowop->fo_fdnumber;
+	int fd = flowop->fo_fdnumber;
 
-	/* If the script sets the fd explicitly */
-	if (fdnumber > 0)
-		return (fdnumber);
-
-	/* If the flowop defaults to persistent fd */
-	if (!avd_get_bool(flowop->fo_rotatefd))
-		return (fdnumber);
-
-	if (flowop->fo_fileset == NULL) {
-		filebench_log(LOG_ERROR, "flowop NULL file");
-		return (FILEBENCH_ERROR);
+	if (fd > 0) {
+		filebench_log(LOG_DEBUG_IMPL, "picking explicitly set fd");
+		goto retfd;
 	}
 
-	entries = flowop->fo_fileset->fs_constentries;
-
-	/* Rotate the fd on each flowop invocation */
-	if (entries > (THREADFLOW_MAXFD / 2)) {
-		filebench_log(LOG_ERROR, "Out of file descriptors in flowop %s"
-		    " (too many files : %llu",
-		    flowop->fo_name, (u_longlong_t)entries);
-		return (FILEBENCH_ERROR);
+	if (!avd_get_bool(flowop->fo_rotatefd)) {
+		filebench_log(LOG_DEBUG_IMPL, "picking default fd");
+		goto retfd;
 	}
 
-	/* First time around */
-	if (threadflow->tf_fdrotor == 0)
-		threadflow->tf_fdrotor = THREADFLOW_MAXFD;
+	filebench_log(LOG_DEBUG_IMPL, "picking rotor fd");
 
-	/* One fd for every file in the set */
-	if (entries == (THREADFLOW_MAXFD - threadflow->tf_fdrotor))
+	/* first time or we wraped around */
+	if (!threadflow->tf_fdrotor)
 		threadflow->tf_fdrotor = THREADFLOW_MAXFD;
-
 
 	threadflow->tf_fdrotor--;
-	filebench_log(LOG_DEBUG_IMPL, "selected fd = %d",
-	    threadflow->tf_fdrotor);
-	return (threadflow->tf_fdrotor);
+	fd = threadflow->tf_fdrotor;
+
+retfd:
+	filebench_log(LOG_DEBUG_IMPL, "picked fd = %d", fd);
+	return fd;
 }
 
 /*
