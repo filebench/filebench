@@ -1643,9 +1643,9 @@ exists:
 		filebench_log(LOG_INFO, "%s populated: %llu files, "
 		    "avg. dir. width = %d, avg. dir. depth = %.1lf, "
 			"%llu leafdirs, %.3lfMB total size",
-		    avd_get_str(fileset->fs_name), entries, leafdirs,
-		    meandirwidth,
-		    fileset->fs_meandepth,
+		    avd_get_str(fileset->fs_name), entries,
+		    meandirwidth, fileset->fs_meandepth,
+		    leafdirs,
 		    (double)fileset->fs_bytes / 1024UL / 1024UL);
 	}
 
