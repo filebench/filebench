@@ -2431,7 +2431,7 @@ parser_fileset_define(cmd_t *cmd)
 	if (attr)
 		fileset->fs_entries = attr->attr_avd;
 	else
-		fileset->fs_entries = avd_int_alloc(1000);
+		fileset->fs_entries = avd_int_alloc(0);
 
 	attr = get_attr(cmd, FSA_LEAFDIRS);
 	if (attr)
