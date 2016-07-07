@@ -1,6 +1,25 @@
 Filebench - A Model Based File System Workload Generator
 ========================================================
 
+* Installation
+
+Makefile.in and configure files are not included in the repo, so they will have
+to be generated. To do so, make sure you have libtoolize and automake tools
+installed and run the following commands:
+
+$ libtoolize
+$ aclocal
+$ autoheader
+$ automake --add-missing
+$ autoconf
+
+Before proceeding, make sure yacc and lex are available in your system. Then,
+you can proceed with configuration, compilation, and installation as usual:
+
+$ ./configure
+$ make
+$ sudo make install
+
 * Usage
 
 filebench binary allows to run individual workload personalities. Below is
