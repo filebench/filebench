@@ -1035,7 +1035,7 @@ fileset_create(fileset_t *fileset)
 	}
 
 	/* make the filesets directory tree unless in reuse mode */
-	if (!reusing && (avd_get_bool(fileset->fs_preallocpercent))) {
+	if (!reusing) {
 		filebench_log(LOG_INFO,
 			"Pre-allocating directories in %s tree", fileset_name);
 
