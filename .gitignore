@@ -22,7 +22,6 @@ misc.o
 multi_client_sync.o
 parser_gram.o
 parser_lex.o
-posset.o
 procflow.o
 stats.o
 threadflow.o

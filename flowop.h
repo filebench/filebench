@@ -44,8 +44,6 @@ typedef struct flowop {
 	int		fo_attrs;	/* Flow op attribute */
 	avd_t		fo_filename;	/* file/fileset name */
 	fileset_t	*fo_fileset;	/* Fileset for op */
-	avd_t		fo_possetname;	/* posset name */
-	struct posset	*fo_posset;	/* posset */
 	int		fo_fdnumber;	/* User specified file descriptor */
 	int		fo_srcfdnumber;	/* User specified src file descriptor */
 	fbint_t		fo_constvalue;	/* constant version of fo_value */
