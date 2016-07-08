@@ -1,9 +1,10 @@
 ####
 #### Initialization stubs
 ####
-AC_INIT([filebench], [1.5.0.0])
+AC_INIT([filebench], [1.5.0.0-alpha1])
+AC_CONFIG_MACRO_DIRS([m4])
 AM_CONFIG_HEADER([config.h])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 
 ####
 #### Checking for programs
