@@ -377,12 +377,14 @@ fb_lfsflow_aiowait(threadflow_t *threadflow, flowop_t *flowop)
 	do {
 		uint_t ncompleted = 0;
 		uint_t todo;
-		struct timespec timeout;
 		int inprogress;
+#ifdef HAVE_AIOWAITN
+		struct timespec timeout;
 
 		/* Wait for half of the outstanding requests */
 		timeout.tv_sec = 1;
 		timeout.tv_nsec = 0;
+#endif
 
 		if (uncompleted > MAXREAP)
 			todo = MAXREAP;
@@ -566,15 +568,12 @@ fb_lfs_rmdir(char *path)
 static void
 fb_lfs_recur_rm(char *path)
 {
-	int ret;
 	char cmd[MAXPATHLEN];
 
 	(void) snprintf(cmd, sizeof (cmd), "rm -rf %s", path);
-	/*
-	 * we cant use (void) to ignore system()'s return value,
-	 * 'cause on Ubuntu it warns about such ignoring.
-	 */
-	ret = system(cmd);
+
+	/* We ignore system()'s return value */
+	if (system(cmd));
 	return;
 }
 

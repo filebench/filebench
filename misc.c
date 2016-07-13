@@ -61,7 +61,6 @@ __V((int level, const char *fmt, ...))
 	hrtime_t now = 0;
 	char line[131072];
 	char buf[131072];
-	int ret;
 
 	/* we want to be able to use filebench_log()
 	   eveing before filebench_shm is initialized.
@@ -138,8 +137,8 @@ fatal:
 	if (level == LOG_DUMP) {
 		if (filebench_shm->shm_dump_fd != -1) {
 			(void) snprintf(buf, sizeof (buf), "%s\n", line);
-			ret = write(filebench_shm->shm_dump_fd, buf,
-			    strlen(buf));
+			/* We ignore the return value of write() */
+			if (write(filebench_shm->shm_dump_fd, buf, strlen(buf)));
 			(void) fsync(filebench_shm->shm_dump_fd);
 			(void) ipc_mutex_unlock(&filebench_shm->shm_msg_lock);
 			return;

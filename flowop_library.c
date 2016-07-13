@@ -185,7 +185,7 @@ static flowop_proto_t flowoplib_funcs[] = {
  * instance "0".
  */
 void
-flowoplib_flowinit()
+flowoplib_flowinit(void)
 {
 	int nops = sizeof (flowoplib_funcs) / sizeof (flowop_proto_t);
 
