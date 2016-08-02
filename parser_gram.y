@@ -1292,21 +1292,23 @@ var_int_val: FSV_VAL_POSINT
 
 #define	USAGE \
 "Usage: " \
-"filebench {-f <wmlscript> | -h | -c [cvartype]}\n" \
-"Filebench interprets WML script and generates appropriate workload.\n" \
-"Version " FILEBENCH_VERSION "\n" \
-"Visit http://filebench.sourceforge.net/ for WML definition and tutorials.\n" \
+"filebench {-f <wmlscript> | -h | -c [cvartype]}\n\n" \
+"  Filebench version " FILEBENCH_VERSION "\n\n" \
+"  Filebench is a file system and storage benchmark that interprets a script\n" \
+"  written in its Workload Model Language (WML), and procees to generate the\n" \
+"  specified workload. Refer to the README for more details.\n\n" \
+"  Visit github.com/filebench/filebench for WML definition and tutorials.\n\n" \
 "Options:\n" \
 "   -f <wmlscript> generate workload from the specified file\n" \
 "   -h             display this help message\n" \
 "   -c             display supported cvar types\n" \
-"   -c [cvartype]  display options of the specific cvar type\n"
+"   -c [cvartype]  display options of the specific cvar type\n\n"
 
 static void
-usage_exit(int ret)
+usage_exit(int ret, const char *msg)
 {
 	if (ret) {
-		(void)fprintf(stderr, "Wrong usage!\n");
+		(void)fprintf(stderr, "Usage error: %s\n\n", msg);
 		(void)fprintf(stderr, USAGE);
 	} else
 		printf(USAGE);
@@ -1366,18 +1368,18 @@ parse_options(int argc, char *argv[], struct fbparams *fbparams)
 		/* public parameters */
 		case 'h':
 			if (mode != FB_MODE_NONE)
-				usage_exit(1);
+				usage_exit(1, "Too many options specified");
 			mode = FB_MODE_HELP;
 			break;
 		case 'c':
 			if (mode != FB_MODE_NONE)
-				usage_exit(1);
+				usage_exit(1, "Too many options specified");
 			mode = FB_MODE_CVARS;
 			fbparams->cvartype = optarg;
 			break;
 		case 'f':
 			if (mode != FB_MODE_NONE)
-				usage_exit(1);
+				usage_exit(1, "Too many options specified");
 			mode = FB_MODE_MASTER;
 			fbparams->fscriptname = optarg;
 			break;
@@ -1385,53 +1387,53 @@ parse_options(int argc, char *argv[], struct fbparams *fbparams)
 		case 'a':
 			if (mode != FB_MODE_NONE &&
 				(mode != FB_MODE_WORKER || fbparams->procname))
-					usage_exit(1);
+					usage_exit(1, "Too many options");
 			mode = FB_MODE_WORKER;
 			fbparams->procname = optarg;
 			break;
 		case 's':
 			if (mode != FB_MODE_NONE &&
 				(mode != FB_MODE_WORKER || fbparams->shmaddr))
-					usage_exit(1);
+					usage_exit(1, "Too many options");
 			mode = FB_MODE_WORKER;
 			sscanf(optarg, "%p", &fbparams->shmaddr);
 			break;
 		case 'm':
 			if (mode != FB_MODE_NONE &&
 				(mode != FB_MODE_WORKER || fbparams->shmpath))
-					usage_exit(1);
+					usage_exit(1, "Too many options");
 			mode = FB_MODE_WORKER;
 			fbparams->shmpath = optarg;
 			break;
 		case 'i':
 			if (mode != FB_MODE_NONE &&
 				(mode != FB_MODE_WORKER || fbparams->instance != -1))
-					usage_exit(1);
+					usage_exit(1, "Too many options");
 			mode = FB_MODE_WORKER;
 			sscanf(optarg, "%d", &fbparams->instance);
 			break;
 		case '?':
 			if (optopt == 'c') {
 				if (mode != FB_MODE_NONE)
-					usage_exit(1);
+					usage_exit(1, "Too many options");
 				mode = FB_MODE_CVARS;
 				break;
 			}
 		default:
-			usage_exit(1);
+			usage_exit(1, "Unrecognized option");
 			break;
 		}
 	}
 
 	if (mode == FB_MODE_NONE)
-		usage_exit(1);
+		usage_exit(1, "No runtime options specified");
 
 	if (mode == FB_MODE_WORKER) {
 		if (!fbparams->procname ||
 			!fbparams->shmaddr ||
 			!fbparams->shmpath ||
 			fbparams->instance == -1)
-			usage_exit(1);
+			usage_exit(1, "Invalid worker settings");
 	}
 
 	return mode;
@@ -1642,7 +1644,7 @@ main(int argc, char *argv[])
 	mode = parse_options(argc, argv, &fbparams);
 
 	if (mode == FB_MODE_HELP)
-		usage_exit(0);
+		usage_exit(0, NULL);
 
 	if (mode == FB_MODE_CVARS)
 		cvars_mode(&fbparams);

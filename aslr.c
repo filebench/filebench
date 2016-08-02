@@ -25,10 +25,9 @@
 void
 linux_disable_aslr()
 {
-	int old;
 	int r;
 
-	old = personality(0xffffffff);
+	(void) personality(0xffffffff);
 	r = personality(0xffffffff | ADDR_NO_RANDOMIZE);
 	if (r == -1)
 		filebench_log(LOG_ERROR, "Could not disable ASLR");
