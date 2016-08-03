@@ -163,7 +163,7 @@ noreadahead             { return FSA_NOREADAHEAD; }
                                 return FSK_QUOTE;
                         }
 
-<WHITESTRINGSTATE>[^$^\\^"][^$^"]*[^\\^$^"] {
+<WHITESTRINGSTATE>[^$\\"][^$"]*[^\\$"] {
 				if ((yylval.sval = strdup(yytext)) == NULL) {
 					yyerror("Out of memory");
 					filebench_shutdown(1);
@@ -177,7 +177,7 @@ noreadahead             { return FSA_NOREADAHEAD; }
 	       	}
 
 
-<WHITESTRINGSTATE>\\$[^"^$^\\]+	{
+<WHITESTRINGSTATE>\\$[^"$\\]+	{
 				if ((yylval.sval = strdup(yytext + 1)) == NULL) {
 					yyerror("Out of memory");
 					filebench_shutdown(1);
@@ -185,7 +185,7 @@ noreadahead             { return FSA_NOREADAHEAD; }
  				return FSV_WHITESTRING;
 	       	}
 
-<WHITESTRINGSTATE>[^$^\\^"] {
+<WHITESTRINGSTATE>[^$\\"] {
 				if ((yylval.sval = strdup(yytext)) == NULL) {
 					yyerror("Out of memory");
 					filebench_shutdown(1);
