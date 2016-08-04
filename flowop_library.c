@@ -1041,17 +1041,7 @@ flowoplib_bwlimit(threadflow_t *threadflow, flowop_t *flowop)
 }
 
 /*
- * These flowops terminate a benchmark run when either the specified
- * number of bytes of I/O (flowoplib_finishonbytes) or the specified
- * number of I/O operations (flowoplib_finishoncount) have been generated.
- */
-
-
-/*
- * Stop filebench run when specified number of I/O bytes have been
- * transferred. Compares controlstats.fs_bytes with flowop->value,
- * and if greater returns 1, stopping the run, if not, returns 0
- * to continue running.
+ * Stop worker thread when specified number of I/O bytes have been transferred.
  */
 static int
 flowoplib_finishonbytes(threadflow_t *threadflow, flowop_t *flowop)
@@ -1091,7 +1081,7 @@ flowoplib_finishonbytes(threadflow_t *threadflow, flowop_t *flowop)
 	flowop_beginop(threadflow, flowop);
 	if (bytes_io > byte_lim) {
 		flowop_endop(threadflow, flowop, 0);
-		return (FILEBENCH_DONE);
+		return (FILEBENCH_NORSC);
 	}
 	flowop_endop(threadflow, flowop, 0);
 
@@ -1099,10 +1089,8 @@ flowoplib_finishonbytes(threadflow_t *threadflow, flowop_t *flowop)
 }
 
 /*
- * Stop filebench run when specified number of I/O operations have
- * been performed. Compares controlstats.fs_count with *flowop->value,
- * and if greater returns 1, stopping the run, if not, returns FILEBENCH_OK
- * to continue running.
+ * Stop worker thread when specified number of I/O operations have been
+ * transferred.
  */
 static int
 flowoplib_finishoncount(threadflow_t *threadflow, flowop_t *flowop)
@@ -1131,7 +1119,7 @@ flowoplib_finishoncount(threadflow_t *threadflow, flowop_t *flowop)
 	flowop_beginop(threadflow, flowop);
 	if (ops >= count) {
 		flowop_endop(threadflow, flowop, 0);
-		return (FILEBENCH_DONE);
+		return (FILEBENCH_NORSC);
 	}
 	flowop_endop(threadflow, flowop, 0);
 
