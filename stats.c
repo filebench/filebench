@@ -186,7 +186,7 @@ stats_snap(void)
 		}
 
 		(void) snprintf(line, sizeof(line), "%-20s %dops %8.0lfops/s "
-		    "%5.1lfmb/s %8.1fms/op",
+		    "%5.1lfmb/s %8.3fms/op",
 		    flowop->fo_name,
 		    flowop->fo_stats.fs_count,
 		    flowop->fo_stats.fs_count / total_time_sec,
@@ -224,7 +224,7 @@ stats_snap(void)
 
 	filebench_log(LOG_INFO,
 	    "IO Summary: %5d ops %5.3lf ops/s %0.0lf/%0.0lf rd/wr "
-	    "%5.1lfmb/s %5.1fms/op",
+	    "%5.1lfmb/s %5.3fms/op",
 	    iostat->fs_count + aiostat->fs_count,
 	    (iostat->fs_count + aiostat->fs_count) / total_time_sec,
 	    (iostat->fs_rcount + aiostat->fs_rcount) / total_time_sec,
