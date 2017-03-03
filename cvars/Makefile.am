@@ -1,4 +1,4 @@
-libdir = $(datadir)/filebench/cvars
+libdir = @libdir@/filebench
 
 lib_LTLIBRARIES = libcvar-erlang.la \
 		  libcvar-exponential.la \
