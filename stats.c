@@ -196,7 +196,7 @@ stats_snap(void)
 		    (flowop->fo_stats.fs_count * SEC2MS_FLOAT) : 0);
 		(void) strcat(str, line);
 
-		(void) snprintf(line, sizeof(line)," [%.2fms - %5.2fms]",
+		(void) snprintf(line, sizeof(line)," [%.3fms - %5.3fms]",
 			flowop->fo_stats.fs_minlat / SEC2MS_FLOAT,
 			flowop->fo_stats.fs_maxlat / SEC2MS_FLOAT);
 		(void) strcat(str, line);
