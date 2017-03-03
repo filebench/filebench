@@ -1537,7 +1537,7 @@ cvars_mode(struct fbparams *fbparams)
 
 	ipc_init();
 
-	ret = init_cvar_library_info(FBDATADIR "/cvars");
+	ret = init_cvar_library_info(FBLIBDIR);
 	if (ret)
 		filebench_shutdown(1);
 
@@ -1592,7 +1592,7 @@ master_mode(struct fbparams *fbparams) {
 	eventgen_init();
 
 	/* Initialize custom variables. */
-	ret = init_cvar_library_info(FBDATADIR "/cvars");
+	ret = init_cvar_library_info(FBLIBDIR);
 	if (ret)
 		filebench_shutdown(1);
 

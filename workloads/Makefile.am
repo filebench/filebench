@@ -1,4 +1,4 @@
-workloadsdir=$(datadir)/filebench/workloads
+workloadsdir = @datadir@/filebench/workloads
 
 workloads_DATA = compflow_demo.f \
 	copyfiles.f \
