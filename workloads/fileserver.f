@@ -30,6 +30,7 @@ set $filesize=cvar(type=cvar-gamma,parameters=mean:131072;gamma:1.5)
 set $nthreads=50
 set $iosize=1m
 set $meanappendsize=16k
+set $runtime=60
 
 define fileset name=bigfileset,path=$dir,size=$filesize,entries=$nfiles,dirwidth=$meandirwidth,prealloc=80
 
@@ -53,4 +54,4 @@ define process name=filereader,instances=1
 
 echo  "File-server Version 3.0 personality successfully loaded"
 
-run 60
+run $runtime
