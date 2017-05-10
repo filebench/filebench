@@ -231,9 +231,9 @@ stats_snap(void)
 	    (iostat->fs_wcount + aiostat->fs_wcount) / total_time_sec,
 	    ((iostat->fs_bytes + aiostat->fs_bytes) / MB_FLOAT)
 						/ total_time_sec,
-	    (iostat->fs_rcount + iostat->fs_wcount) ?
-	    iostat->fs_total_lat /
-	    ((iostat->fs_rcount + iostat->fs_wcount) * SEC2MS_FLOAT) : 0);
+	    (iostat->fs_count + aiostat->fs_count) ?
+	    (iostat->fs_total_lat + aiostat->fs_total_lat) /
+	    ((iostat->fs_count + aiostat->fs_count) * SEC2MS_FLOAT) : 0);
 
 	filebench_shm->shm_bequiet = 0;
 }
