@@ -24,26 +24,30 @@
 #
 # ident	"%Z%%M%	%I%	%E% SMI"
 
-# Single threaded appends/writes (8KB I/Os) to a 1GB file.
-# Each loop iteration does a fsync after 1250 ($iters) appends.
-# Stops after 128K ($count) appends have been done.
+# Single-threaded writes to initially empty file.
+# I/O size is set to 8KB. After every 1024 writes 
+# (i.e., 8MB written) fsync is called.
+# The run finishes after 1GB is fully written.
 
 set $dir=/tmp
-set $count=128k
 set $iosize=8k
-set $iters=1250
-set $nthreads=1
+set $writeiters=1024
+set $fsynccount=128
+
+set mode quit firstdone
 
 define file name=bigfile,path=$dir,size=0,prealloc
 
-define process name=filecreater,instances=1
+define process name=filewriter,instances=1
 {
-  thread name=filecreaterthread,memsize=10m,instances=$nthreads
+  thread name=filewriterthread,memsize=10m,instances=1
   {
-    flowop appendfile name=append-file,filename=bigfile,iosize=$iosize,iters=$iters
+    flowop appendfile name=append-file,filename=bigfile,iosize=$iosize,iters=$writeiters
     flowop fsync name=sync-file
-    flowop finishoncount name=finish,value=$count
+    flowop finishoncount name=finish,value=128,target=sync-file
   }
 }
 
 echo  "FileMicro-WriteFsync Version 2.1 personality successfully loaded"
+
+run
