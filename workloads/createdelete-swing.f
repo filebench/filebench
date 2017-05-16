@@ -27,17 +27,16 @@
 #
 
 set $path=/tmp
-set $nfiles=10000
+set $nfiles=1000
 
-set $meanfilesize=500k
-set $filesizegamma=0
+set $filesize=500k
 
 # We want a flat directory (i.e., no subdirectories), so we set the
 # mean directory equal to the number of files. In addition, we set
 # gamma parameter for the directory width distribution to 0 to avoid
 # deviation from the mean.
 
-set $meandirwidth=$nfiles
+set $meandirwidth=1000
 set $dirgamma=0
 
 # the rate should be set to an approriate value of required
@@ -45,11 +44,14 @@ set $dirgamma=0
 
 eventgen rate=0
 
+# set the runtime
+
+set $runtime=60
+
 define fileset name=manyfiles,
 	       path=$path,
 	       entries=$nfiles,
-	       size=$meanfilesize,
-	       filesizegamma=$filesizegamma,
+	       size=$filesize,
 	       dirwidth=$meandirwidth,
 	       dirgamma=$dirgamma
 
@@ -99,3 +101,5 @@ define process name=delproc {
 }
 
 echo  "Create-Delete Swing personality Ver. 1.0 successfully loaded"
+
+run $runtime
