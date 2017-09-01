@@ -2891,9 +2891,6 @@ parser_var_assign_random(char *name, cmd_t *cmd)
 	if ((attr = get_attr(cmd, FSA_RANDTABLE))) {
 		rndp->rnd_probtabs = (probtabent_t *)(attr->attr_obj);
 		rndp->rnd_type |= RAND_TYPE_TABLE;
-
-		/* no need for the rest of the attributes */
-		goto randdist_init;
 	} else {
 		rndp->rnd_probtabs = NULL;
 	}
@@ -2942,7 +2939,6 @@ parser_var_assign_random(char *name, cmd_t *cmd)
 
 	var_assign_random(name, rndp);
 
-randdist_init:
 	randdist_init(rndp);
 }
 
