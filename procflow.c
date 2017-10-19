@@ -388,7 +388,7 @@ procflow_createnwait(void *unused)
 		/* child did not exit, but got a signal, so just continue waiting */
 		if (WIFSTOPPED(status))
 			continue;
-#ifdef WIFCONTINUED	
+#ifdef WIFCONTINUED /* some versions (NetBSD before version 8.0) do not support WIFCONTINUED */
 	  	if (WIFCONTINUED(status))
 			continue;
 #endif
