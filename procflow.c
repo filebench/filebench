@@ -386,9 +386,12 @@ procflow_createnwait(void *unused)
 		}
 #else /* HAVE_WAITID */
 		/* child did not exit, but got a signal, so just continue waiting */
-		if (WIFSTOPPED(status) || WIFCONTINUED(status))
+		if (WIFSTOPPED(status))
 			continue;
-
+#ifdef WIFCONTINUED	
+	  	if (WIFCONTINUED(status))
+			continue;
+#endif
 		if (WIFEXITED(status)) {
 			/* A process called exit(); check returned status */
 			if (WEXITSTATUS(status) != 0) {
