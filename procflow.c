@@ -560,7 +560,7 @@ procflow_cleanup(procflow_t *procflow)
  * in which case it returns -1.
  */
 static int
-procflow_allstarted()
+procflow_allstarted(void)
 {
 	procflow_t *procflow = filebench_shm->shm_procflowlist;
 	int running_procs = 0;
@@ -787,7 +787,7 @@ procflow_define(char *name, avd_t instances)
  * system.
  */
 void
-proc_create()
+proc_create(void)
 {
 	filebench_shm->shm_1st_err = 0;
 	filebench_shm->shm_f_abort = FILEBENCH_OK;
@@ -828,7 +828,7 @@ proc_create()
  * It does not exit the filebench program though.
  */
 void
-proc_shutdown()
+proc_shutdown(void)
 {
 	filebench_log(LOG_INFO, "Shutting down processes");
 	procflow_shutdown();

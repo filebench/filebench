@@ -23,7 +23,7 @@
 
 #if defined(HAVE_SYS_PERSONALITY_H) && defined(HAVE_ADDR_NO_RANDOMIZE)
 void
-linux_disable_aslr()
+linux_disable_aslr(void)
 {
 	int r;
 
@@ -34,7 +34,7 @@ linux_disable_aslr()
 }
 #else /* HAVE_SYS_PERSONALITY_H && HAVE_ADDR_NO_RANDOMIZE */
 void
-other_disable_aslr()
+other_disable_aslr(void)
 {
 	filebench_log(LOG_INFO, "Per-process disabling of ASLR is not "
 				"supported on this system. "

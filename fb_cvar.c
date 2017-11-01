@@ -204,7 +204,7 @@ static char
  * Returns 0 on success and non-zero on error.
  */
 int
-init_cvar_libraries()
+init_cvar_libraries(void)
 {
 	int count;
 	int ret = -1;
@@ -425,7 +425,7 @@ get_cvar_value(cvar_t *cvar)
  * Return 0 on success and a non-zero error code on failure.
  */
 int
-revalidate_cvar_handles()
+revalidate_cvar_handles(void)
 {
 	cvar_t *t;
 	cvar_library_t *cvar_lib;

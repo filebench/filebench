@@ -142,7 +142,7 @@ typedef struct fileset {
 	pthread_mutex_t	fs_histo_lock;	/* lock for incr of histo */
 } fileset_t;
 
-int fileset_createsets();
+int fileset_createsets(void);
 
 void fileset_delete_all_filesets(void);
 int fileset_openfile(fb_fdesc_t *fd, fileset_t *fileset,

@@ -103,7 +103,7 @@ fb_random32(uint32_t *randp,
  * Same as filebench_randomno64, but for probability [0-1].
  */
 static double
-fb_random_probability()
+fb_random_probability(void)
 {
 	uint64_t randnum;
 

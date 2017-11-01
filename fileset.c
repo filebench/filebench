@@ -1749,7 +1749,7 @@ fileset_checkraw(fileset_t *fileset)
  * fail.
  */
 int
-fileset_createsets()
+fileset_createsets(void)
 {
 	fileset_t *list;
 	int ret = 0;

@@ -37,9 +37,9 @@ typedef struct flowop {
 	struct flowop	*fo_comp_fops;	/* List of flowops in composite fo */
 	var_t		*fo_lvar_list;	/* List of composite local vars */
 	struct threadflow *fo_thread;	/* Backpointer to thread */
-	int		(*fo_func)();	/* Method */
-	int		(*fo_init)();	/* Init Method */
-	void		(*fo_destruct)(); /* Destructor Method */
+	int		(*fo_func)(threadflow_t *, struct flowop *);	/* Method */
+	int		(*fo_init)(struct flowop *);	/* Init Method */
+	void		(*fo_destruct)(struct flowop *); /* Destructor Method */
 	int		fo_type;	/* Type */
 	int		fo_attrs;	/* Flow op attribute */
 	avd_t		fo_filename;	/* file/fileset name */
@@ -118,9 +118,9 @@ typedef struct flowop_proto {
 	int	fl_type;
 	int	fl_attrs;
 	char	*fl_name;
-	int	(*fl_init)();
-	int	(*fl_func)();
-	void	(*fl_destruct)();
+	int	(*fl_init)(flowop_t *);
+	int	(*fl_func)(threadflow_t *, flowop_t *);
+	void	(*fl_destruct)(flowop_t *);
 } flowop_proto_t;
 
 extern struct flowstats controlstats;
@@ -148,7 +148,7 @@ void flowop_printall(void);
 void flowop_init(int ismaster);
 
 /* Local file system specific */
-void fb_lfs_funcvecinit();
-void fb_lfs_newflowops();
+void fb_lfs_funcvecinit(void);
+void fb_lfs_newflowops(void);
 
 #endif	/* _FB_FLOWOP_H */

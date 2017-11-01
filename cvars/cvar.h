@@ -19,7 +19,7 @@
  * Return 0 on success and a non-zero error code on failure.
  */
 
-int cvar_module_init();
+int cvar_module_init(void);
 
 /*
  * Allocate a new custom variable handle. A handle is subsequently used to
@@ -84,7 +84,7 @@ void cvar_free_handle(void *cvar_handle, void (*cvar_free)(void *ptr));
  * to quit without invoking cvar_module_exit.
  */
 
-void cvar_module_exit();
+void cvar_module_exit(void);
 
 /*
  * Show usage, including information on the list of parameters supported and the
@@ -95,7 +95,7 @@ void cvar_module_exit();
  * Return a non-null, formatted string to be displayed on screen.
  */
 
-const char *cvar_usage();
+const char *cvar_usage(void);
 
 /*
  * Show version.
@@ -105,6 +105,6 @@ const char *cvar_usage();
  * Return a non-null version string.
  */
 
-const char *cvar_version();
+const char *cvar_version(void);
 
 #endif /* _CVAR_H */

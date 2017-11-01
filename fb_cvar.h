@@ -59,7 +59,7 @@ typedef struct cvar_operations {
 	int (*cvar_revalidate_handle)(void *cvar_handle);
 	int (*cvar_next_value)(void *cvar_handle, double *value);
 	void (*cvar_free_handle)(void *cvar_handle, void (*cvar_free)(void *ptr));
-	void (*cvar_module_exit)();
+	void (*cvar_module_exit)(void);
 	const char *(*cvar_usage)(void);
 	const char *(*cvar_version)(void);
 } cvar_operations_t;
@@ -78,9 +78,9 @@ extern cvar_library_t **cvar_libraries;
 
 cvar_t * cvar_alloc(void);
 int init_cvar_library_info(const char *dirpath);
-int init_cvar_libraries();
+int init_cvar_libraries(void);
 int init_cvar_handle(cvar_t *cvar, const char *type, const char *parameters);
 double get_cvar_value(cvar_t *cvar);
-int revalidate_cvar_handles();
+int revalidate_cvar_handles(void);
 
 #endif /* _FB_CVAR_H */

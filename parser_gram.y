@@ -69,7 +69,7 @@ static attr_t *alloc_attr(void);
 static attr_t *alloc_lvar_attr(var_t *var);
 static attr_t *get_attr(cmd_t *cmd, int64_t name);
 static void get_attr_lvars(cmd_t *cmd, flowop_t *flowop);
-static list_t *alloc_list();
+static list_t *alloc_list(void);
 static probtabent_t *alloc_probtabent(void);
 static void add_lvar_to_list(var_t *newlvar, var_t **lvar_list);
 
@@ -1619,7 +1619,7 @@ master_mode(struct fbparams *fbparams) {
 }
 
 static void
-init_common()
+init_common(void)
 {
 	disable_aslr();
 	my_pid = getpid();
@@ -3117,7 +3117,7 @@ get_attr_lvars(cmd_t *cmd, flowop_t *flowop)
  * returns a pointer to it. On failure, returns NULL.
  */
 static list_t *
-alloc_list()
+alloc_list(void)
 {
 	list_t *list;
 
