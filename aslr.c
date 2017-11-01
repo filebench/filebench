@@ -16,12 +16,12 @@
  * functions should be added.
  */
 
-#include <sys/personality.h>
-
 #include "filebench.h"
 #include "aslr.h"
 
 #if defined(HAVE_SYS_PERSONALITY_H) && defined(HAVE_DECL_ADDR_NO_RANDOMIZE)
+#include <sys/personality.h>
+
 void
 linux_disable_aslr(void)
 {
