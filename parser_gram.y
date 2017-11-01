@@ -1302,7 +1302,8 @@ var_int_val: FSV_VAL_POSINT
 "   -f <wmlscript> generate workload from the specified file\n" \
 "   -h             display this help message\n" \
 "   -c             display supported cvar types\n" \
-"   -c [cvartype]  display options of the specific cvar type\n\n"
+"   -c [cvartype]  display options of the specific cvar type\n" \
+"   -L <libdir>    set the library directory (for cvars, e.g.)\n\n"
 
 static void
 usage_exit(int ret, const char *msg)
@@ -1323,6 +1324,7 @@ struct fbparams {
 	char *shmpath;
 	int instance;
 	char *cvartype;
+	char *fblibdir;
 };
 
 static void
@@ -1330,6 +1332,7 @@ init_fbparams(struct fbparams *fbparams)
 {
 	memset(fbparams, 0, sizeof(*fbparams));
 	fbparams->instance = -1;
+	fbparams->fblibdir = FBLIBDIR;
 }
 
 #define FB_MODE_NONE		0
@@ -1341,7 +1344,7 @@ init_fbparams(struct fbparams *fbparams)
 static int
 parse_options(int argc, char *argv[], struct fbparams *fbparams)
 {
-	const char cmd_options[] = "m:s:a:i:hf:c:";
+	const char cmd_options[] = "m:s:a:i:hf:c:L:";
 	int mode = FB_MODE_NONE;
 	int opt;
 
@@ -1382,6 +1385,9 @@ parse_options(int argc, char *argv[], struct fbparams *fbparams)
 				usage_exit(1, "Too many options specified");
 			mode = FB_MODE_MASTER;
 			fbparams->fscriptname = optarg;
+			break;
+		case 'L':
+			fbparams->fblibdir = optarg;
 			break;
 		/* private parameters: when filebench calls itself */
 		case 'a':
@@ -1537,7 +1543,7 @@ cvars_mode(struct fbparams *fbparams)
 
 	ipc_init();
 
-	ret = init_cvar_library_info(FBLIBDIR);
+	ret = init_cvar_library_info(fbparams->fblibdir);
 	if (ret)
 		filebench_shutdown(1);
 
@@ -1592,7 +1598,7 @@ master_mode(struct fbparams *fbparams) {
 	eventgen_init();
 
 	/* Initialize custom variables. */
-	ret = init_cvar_library_info(FBLIBDIR);
+	ret = init_cvar_library_info(fbparams->fblibdir);
 	if (ret)
 		filebench_shutdown(1);
 
