@@ -250,7 +250,7 @@ typedef struct filebench_shm {
 
 extern char shmpath[128];
 
-extern void ipc_init(void);
+extern void ipc_init(fb_plugin_type_t plugtype);
 extern int ipc_attach(void *shmaddr, char *shmpath);
 
 void *ipc_malloc(int type);
