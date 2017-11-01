@@ -156,7 +156,7 @@ fileset_mkdir(char *path, int mode)
 	while (1) {
 		struct stat64 sb;
 
-		if (stat64(p, &sb) == 0)
+		if (FB_STAT(p, &sb) == 0)
 			break;
 		if (strlen(p) < 3)
 			break;
@@ -250,7 +250,7 @@ fileset_alloc_leafdir(filesetentry_t *entry)
 	filebench_log(LOG_DEBUG_IMPL, "Populated %s", entry->fse_path);
 
 	/* see if not reusing and this directory does not exist */
-	if (!((entry->fse_flags & FSE_REUSING) && (stat64(path, &sb) == 0))) {
+	if (!((entry->fse_flags & FSE_REUSING) && (FB_STAT(path, &sb) == 0))) {
 
 		/* No file or not reusing, so create */
 		if (FB_MKDIR(path, 0755) < 0) {
@@ -439,7 +439,7 @@ fileset_openfile(fb_fdesc_t *fdesc, fileset_t *fileset,
 	(void) trunc_dirname(dir);
 
 	/* If we are going to create a file, create the parent dirs */
-	if ((flag & O_CREAT) && (stat64(dir, &sb) != 0)) {
+	if ((flag & O_CREAT) && (FB_STAT(dir, &sb) != 0)) {
 		if (fileset_mkdir(dir, 0755) == FILEBENCH_ERROR)
 			return (FILEBENCH_ERROR);
 	}
@@ -1014,7 +1014,7 @@ fileset_create(fileset_t *fileset)
 	if (avd_get_bool(fileset->fs_trust_tree)) {
 		reusing = 1;
 	/* if exists and resusing, then don't create new */
-	} else if (((stat64(path, &sb) == 0)&& (strlen(path) > 3) &&
+	} else if (((FB_STAT(path, &sb) == 0)&& (strlen(path) > 3) &&
 	    (strlen(avd_get_str(fileset->fs_path)) > 2)) &&
 	    avd_get_bool(fileset->fs_reuse)) {
 		reusing = 1;
@@ -1727,7 +1727,7 @@ fileset_checkraw(fileset_t *fileset)
 	(void) fb_strlcpy(path, pathname, MAXPATHLEN);
 	(void) fb_strlcat(path, "/", MAXPATHLEN);
 	(void) fb_strlcat(path, setname, MAXPATHLEN);
-	if ((stat64(path, &sb) == 0) &&
+	if ((FB_STAT(path, &sb) == 0) &&
 	    ((sb.st_mode & S_IFMT) == S_IFBLK)) {
 		fileset->fs_attrs |= FILESET_IS_RAW_DEV;
 		if (!(fileset->fs_attrs & FILESET_IS_FILE)) {
