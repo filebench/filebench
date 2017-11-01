@@ -73,7 +73,7 @@ static ssize_t fb_lfs_readlink(const char *, char *, size_t);
 static int fb_lfs_mkdir(char *, int);
 static int fb_lfs_rmdir(char *);
 static struct fsplug_dir *fb_lfs_opendir(char *);
-static struct dirent *fb_lfs_readdir(struct fsplug_dir *);
+static int fb_lfs_readdir(struct fsplug_dir *, struct fsplug_dirent *);
 static int fb_lfs_closedir(struct fsplug_dir *);
 static int fb_lfs_fsync(fb_fdesc_t *);
 static int fb_lfs_stat(char *, struct stat64 *);
@@ -588,13 +588,29 @@ fb_lfs_opendir(char *path)
 }
 
 /*
- * Does a readdir() call. Returns a pointer to a table of directory
- * information on success, NULL on failure.
+ * Emulates a readdir() call.  Populates dirent on success (and returns 0)
+ * or returns -1.
  */
-static struct dirent *
-fb_lfs_readdir(struct fsplug_dir *dirp)
+static int
+fb_lfs_readdir(struct fsplug_dir *dirp, struct fsplug_dirent *dirent)
 {
-	return (readdir((DIR*)dirp));
+	struct dirent *d = readdir((DIR*)dirp);
+
+	if (d != NULL) {
+		dirent->bytecost = sizeof(*d) + strlen(d->d_name) - 1;
+
+		/* We don't actually care about the name at the moment, except as it
+		 * influences the bytecost above.
+		 */
+#if 0
+		strncpy(dirent->d_name, d->d_name, sizeof(dirent->d_name)-1);
+		dirent->d_name[sizeof(dirent->d_name)-1] = '\0';
+#endif
+
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 /*

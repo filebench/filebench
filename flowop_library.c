@@ -36,7 +36,6 @@
 #include <inttypes.h>
 #include <fcntl.h>
 #include <math.h>
-#include <dirent.h>
 
 #ifndef HAVE_SYSV_SEM
 #include <semaphore.h>
@@ -2037,7 +2036,7 @@ flowoplib_listdir(threadflow_t *threadflow, flowop_t *flowop)
 	fileset_t	*fileset;
 	filesetentry_t	*dir;
 	struct fsplug_dir	*dir_handle;
-	struct dirent	*direntp;
+	struct fsplug_dirent	dirent;
 	int		dir_bytes = 0;
 	int		ret;
 	char		full_path[MAXPATHLEN];
@@ -2069,9 +2068,8 @@ flowoplib_listdir(threadflow_t *threadflow, flowop_t *flowop)
 	}
 
 	/* read through the directory entries */
-	while ((direntp = FB_READDIR(dir_handle)) != NULL) {
-		dir_bytes += (strlen(direntp->d_name) +
-		    sizeof (struct dirent) - 1);
+	while (FB_READDIR(dir_handle,&dirent) == 0) {
+		dir_bytes += dirent.bytecost;
 	}
 
 	/* close the directory */
