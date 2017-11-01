@@ -1219,7 +1219,9 @@ flowoplib_semblock(threadflow_t *threadflow, flowop_t *flowop)
 	struct sembuf sbuf[2];
 	int value = avd_get_int(flowop->fo_value);
 	int sys_semid;
+#ifdef HAVE_SEMTIMEDOP
 	struct timespec timeout;
+#endif
 
 	sys_semid = filebench_shm->shm_sys_semid;
 
@@ -1235,8 +1237,10 @@ flowoplib_semblock(threadflow_t *threadflow, flowop_t *flowop)
 	sbuf[1].sem_num = flowop->fo_semid_lw;
 	sbuf[1].sem_op = value * -1;
 	sbuf[1].sem_flg = 0;
+#ifdef HAVE_SEMTIMEDOP
 	timeout.tv_sec = 600;
 	timeout.tv_nsec = 0;
+#endif
 
 	if (avd_get_bool(flowop->fo_blocking))
 		(void) ipc_mutex_unlock(&flowop->fo_lock);
@@ -1340,10 +1344,12 @@ flowoplib_sempost(threadflow_t *threadflow, flowop_t *flowop)
 		struct sembuf sbuf[2];
 		int sys_semid;
 		int blocking;
+#ifdef HAVE_SEMTIMEDOP
+		struct timespec timeout;
+#endif
 #else
 		int i;
 #endif /* HAVE_SYSV_SEM */
-		struct timespec timeout;
 		int value = (int)avd_get_int(flowop->fo_value);
 
 		if (target->fo_instance == FLOW_MASTER) {
@@ -1366,8 +1372,10 @@ flowoplib_sempost(threadflow_t *threadflow, flowop_t *flowop)
 		sbuf[1].sem_num = target->fo_semid_hw;
 		sbuf[1].sem_op = value * -1;
 		sbuf[1].sem_flg = 0;
+#ifdef HAVE_SEMTIMEDOP
 		timeout.tv_sec = 600;
 		timeout.tv_nsec = 0;
+#endif
 
 		if (avd_get_bool(flowop->fo_blocking))
 			blocking = 1;
