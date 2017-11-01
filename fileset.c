@@ -171,7 +171,13 @@ fileset_mkdir(char *path, int mode)
 
 	/* Make the directories, from closest to root downwards. */
 	for (--i; i >= 0; i--) {
-		(void) FB_MKDIR(dirs[i], mode);
+		int code;
+		code = FB_MKDIR(dirs[i], mode);
+		if (code)
+			filebench_log(LOG_ERROR,
+				      "Failed to create directory path %s: %s",
+				      dirs[i], strerror(errno));
+
 		free(dirs[i]);
 	}
 
