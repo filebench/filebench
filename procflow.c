@@ -25,6 +25,8 @@
  * Portions Copyright 2008 Denis Cheng
  */
 
+#include "config.h"
+
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/stat.h>
