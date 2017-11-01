@@ -21,7 +21,7 @@
 #include "filebench.h"
 #include "aslr.h"
 
-#if defined(HAVE_SYS_PERSONALITY_H) && defined(HAVE_ADDR_NO_RANDOMIZE)
+#if defined(HAVE_SYS_PERSONALITY_H) && defined(HAVE_DECL_ADDR_NO_RANDOMIZE)
 void
 linux_disable_aslr(void)
 {
@@ -32,7 +32,7 @@ linux_disable_aslr(void)
 	if (r == -1)
 		filebench_log(LOG_ERROR, "Could not disable ASLR");
 }
-#else /* HAVE_SYS_PERSONALITY_H && HAVE_ADDR_NO_RANDOMIZE */
+#else /* HAVE_SYS_PERSONALITY_H && HAVE_DECL_ADDR_NO_RANDOMIZE */
 void
 other_disable_aslr(void)
 {
@@ -44,4 +44,4 @@ other_disable_aslr(void)
 				"\"sysctl  kernel.randomize_va_space=0\" command. "
 				"(the change does not persist across reboots)");
 }
-#endif /* HAVE_SYS_PERSONALITY_H && HAVE_ADDR_NO_RANDOMIZE */
+#endif /* HAVE_SYS_PERSONALITY_H && HAVE_DECL_ADDR_NO_RANDOMIZE */

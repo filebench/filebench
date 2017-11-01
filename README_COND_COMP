@@ -130,7 +130,7 @@ HAVE_OPEN64
 	On FreeBSD function open64() is not available. So we
 	use the refular open() instead.
 
-HAVE_PROCSCOPE_PTHREADS
+HAVE_PTHREAD_MUTEXATTR_SETPSHARED
 
 	If you have POSIX process scope threads, use them.
 
@@ -152,7 +152,7 @@ HAVE_PREAD64
 	On FreeBSD function pread64() is not available.
 	So we use refular pread() instead.
 
-HAVE_ROBUST_MUTEX
+HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
 
 	 Use robust mutexes if available.
 

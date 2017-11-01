@@ -62,7 +62,7 @@ ipc_mutex_lock(pthread_mutex_t *mutex)
 
 	error = pthread_mutex_lock(mutex);
 
-#ifdef HAVE_ROBUST_MUTEX
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
 	if (error == EOWNERDEAD) {
 		if (pthread_mutex_consistent_np(mutex) != 0) {
 			filebench_log(LOG_FATAL, "mutex make consistent "
@@ -71,7 +71,7 @@ ipc_mutex_lock(pthread_mutex_t *mutex)
 		}
 		return (0);
 	}
-#endif /* HAVE_ROBUST_MUTEX */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP */
 
 	if (error != 0) {
 		filebench_log(LOG_FATAL, "mutex lock failed: %s",
@@ -91,7 +91,7 @@ ipc_mutex_unlock(pthread_mutex_t *mutex)
 
 	error = pthread_mutex_unlock(mutex);
 
-#ifdef HAVE_ROBUST_MUTEX
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
 	if (error == EOWNERDEAD) {
 		if (pthread_mutex_consistent_np(mutex) != 0) {
 			filebench_log(LOG_FATAL, "mutex make consistent "
@@ -100,7 +100,7 @@ ipc_mutex_unlock(pthread_mutex_t *mutex)
 		}
 		return (0);
 	}
-#endif /* HAVE_ROBUST_MUTEX */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP */
 
 	if (error != 0) {
 		filebench_log(LOG_FATAL, "mutex unlock failed: %s",
@@ -122,7 +122,7 @@ ipc_mutexattr_init(int mtx_type)
 
 	(void) pthread_mutexattr_init(mtx_attrp);
 
-#ifdef HAVE_PROCSCOPE_PTHREADS
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETPSHARED
 	if (pthread_mutexattr_setpshared(mtx_attrp,
 	    PTHREAD_PROCESS_SHARED) != 0) {
 		filebench_log(LOG_ERROR, "cannot set mutex attr "
@@ -140,8 +140,8 @@ ipc_mutexattr_init(int mtx_type)
 		}
 	}
 #endif /* HAVE_PTHREAD_MUTEXATTR_SETPROTOCOL */
-#endif /* HAVE_PROCSCOPE_PTHREADS */
-#ifdef HAVE_ROBUST_MUTEX
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETPSHARED */
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
 	if (mtx_type & IPC_MUTEX_ROBUST) {
 		if (pthread_mutexattr_setrobust_np(mtx_attrp,
 		    PTHREAD_MUTEX_ROBUST_NP) != 0) {
@@ -159,7 +159,7 @@ ipc_mutexattr_init(int mtx_type)
 			filebench_shutdown(1);
 		}
 	}
-#endif /* HAVE_ROBUST_MUTEX */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP */
 }
 
 /*
@@ -197,14 +197,14 @@ ipc_condattr(void)
 			filebench_shutdown(1);
 		}
 		(void) pthread_condattr_init(condattr);
-#ifdef HAVE_PROCSCOPE_PTHREADS
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETPSHARED
 		if (pthread_condattr_setpshared(condattr,
 		    PTHREAD_PROCESS_SHARED) != 0) {
 			filebench_log(LOG_ERROR,
 			    "cannot set cond attr PROCESS_SHARED");
 //			filebench_shutdown(1);
 		}
-#endif /* HAVE_PROCSCOPE_PTHREADS */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETPSHARED */
 	}
 	return (condattr);
 }
@@ -226,14 +226,14 @@ ipc_rwlockattr(void)
 			filebench_shutdown(1);
 		}
 		(void) pthread_rwlockattr_init(rwlockattr);
-#ifdef HAVE_PROCSCOPE_PTHREADS
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETPSHARED
 		if (pthread_rwlockattr_setpshared(rwlockattr,
 		    PTHREAD_PROCESS_SHARED) != 0) {
 			filebench_log(LOG_ERROR,
 			    "cannot set rwlock attr PROCESS_SHARED");
 //			filebench_shutdown(1);
 		}
-#endif /* HAVE_PROCSCOPE_PTHREADS */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETPSHARED */
 	}
 	return (rwlockattr);
 }
