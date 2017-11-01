@@ -48,6 +48,8 @@ typedef union fb_fdesc {
 
 typedef struct aiolist aiol_t;
 
+struct fsplug_dir; /* Opaque! */
+
 /* Functions vector for file system plug-ins */
 typedef struct fsplug_func_s {
 	char fs_name[16];
@@ -67,9 +69,9 @@ typedef struct fsplug_func_s {
 	ssize_t (*fsp_readlink)(const char *, char *, size_t);
 	int (*fsp_mkdir)(char *, int);
 	int (*fsp_rmdir)(char *);
-	DIR *(*fsp_opendir)(char *);
-	struct dirent *(*fsp_readdir)(DIR *);
-	int (*fsp_closedir)(DIR *);
+	struct fsplug_dir *(*fsp_opendir)(char *);
+	struct dirent *(*fsp_readdir)(struct fsplug_dir *);
+	int (*fsp_closedir)(struct fsplug_dir *);
 	int (*fsp_fsync)(fb_fdesc_t *);
 	int (*fsp_stat)(char *, struct stat64 *);
 	int (*fsp_fstat)(fb_fdesc_t *, struct stat64 *);

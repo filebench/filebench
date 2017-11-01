@@ -72,9 +72,9 @@ static int fb_lfs_unlink(char *);
 static ssize_t fb_lfs_readlink(const char *, char *, size_t);
 static int fb_lfs_mkdir(char *, int);
 static int fb_lfs_rmdir(char *);
-static DIR *fb_lfs_opendir(char *);
-static struct dirent *fb_lfs_readdir(DIR *);
-static int fb_lfs_closedir(DIR *);
+static struct fsplug_dir *fb_lfs_opendir(char *);
+static struct dirent *fb_lfs_readdir(struct fsplug_dir *);
+static int fb_lfs_closedir(struct fsplug_dir *);
 static int fb_lfs_fsync(fb_fdesc_t *);
 static int fb_lfs_stat(char *, struct stat64 *);
 static int fb_lfs_fstat(fb_fdesc_t *, struct stat64 *);
@@ -581,10 +581,10 @@ fb_lfs_recur_rm(char *path)
  * Does a posix opendir(), Returns a directory handle on success,
  * NULL on failure.
  */
-static DIR *
+static struct fsplug_dir *
 fb_lfs_opendir(char *path)
 {
-	return (opendir(path));
+	return (struct fsplug_dir *)(opendir(path));
 }
 
 /*
@@ -592,18 +592,18 @@ fb_lfs_opendir(char *path)
  * information on success, NULL on failure.
  */
 static struct dirent *
-fb_lfs_readdir(DIR *dirp)
+fb_lfs_readdir(struct fsplug_dir *dirp)
 {
-	return (readdir(dirp));
+	return (readdir((DIR*)dirp));
 }
 
 /*
  * Does a closedir() call.
  */
 static int
-fb_lfs_closedir(DIR *dirp)
+fb_lfs_closedir(struct fsplug_dir *dirp)
 {
-	return (closedir(dirp));
+	return (closedir((DIR*)dirp));
 }
 
 /*
