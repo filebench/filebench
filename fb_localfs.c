@@ -25,7 +25,6 @@
  * Portions Copyright 2008 Denis Cheng
  */
 
-#include "config.h"
 #include "filebench.h"
 #include "flowop.h"
 #include "threadflow.h" /* For aiolist definition */

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "fbtime.h"
-#include "config.h"
 #include "filebench.h"
 
 /*
