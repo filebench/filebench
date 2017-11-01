@@ -65,7 +65,7 @@ int tokenize(const char *parameters, const char parameter_delimiter,
 
 			if (key_start == key_end) {
 				cvar_log_error("Empty key at position %lu in parameter string "
-						"\"%s\"", (key_start - param)/sizeof(char) + 1,
+						"\"%s\"", ((unsigned long)(key_start - param))/sizeof(char) + 1,
 						parameters);
 				goto cleanup;
 			}
