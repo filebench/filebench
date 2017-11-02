@@ -10,7 +10,7 @@ linux_disable_aslr(void);
 static inline void
 disable_aslr(void)
 {
-	return linux_disable_aslr();
+	linux_disable_aslr();
 }
 #else /* HAVE_SYS_PERSONALITY_H && HAVE_DECL_ADDR_NO_RANDOMIZE */
 extern void
@@ -18,7 +18,7 @@ other_disable_aslr(void);
 
 static inline void
 disable_aslr(void) {
-	return other_disable_aslr();
+	other_disable_aslr();
 }
 #endif /* HAVE_SYS_PERSONALITY_H && HAVE_DECL_ADDR_NO_RANDOMIZE */
 
