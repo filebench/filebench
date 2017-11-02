@@ -572,7 +572,7 @@ fb_lfs_recur_rm(char *path)
 	(void) snprintf(cmd, sizeof (cmd), "rm -rf %s", path);
 
 	/* We ignore system()'s return value */
-	if (system(cmd));
+	(void) system(cmd);
 	return;
 }
 
