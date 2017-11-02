@@ -223,7 +223,7 @@ typedef struct filebench_shm {
 	 * consequently use a lot of physical memory, while
 	 * in fact, we might not need so much memory later.
 	 */
-	int		shm_marker[0];
+	int		shm_marker;
 
 	/*
 	 * IPC shared memory pools. Allocated to users
