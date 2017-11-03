@@ -282,6 +282,7 @@ fileset_alloc_file(filesetentry_t *entry)
 	off64_t seek;
 	fb_fdesc_t fdesc;
 	int trust_tree;
+	int fs_readonly;
 
 	fileset = entry->fse_fileset;
 	(void) fb_strlcpy(path, avd_get_str(fileset->fs_path), MAXPATHLEN);
@@ -293,11 +294,14 @@ fileset_alloc_file(filesetentry_t *entry)
 
 	filebench_log(LOG_DEBUG_IMPL, "Populated %s", entry->fse_path);
 
+	/* see if fileset is readonly */
+	fs_readonly = avd_get_bool(fileset->fs_readonly) == TRUE;
+	
 	/* see if reusing and this file exists */
 	trust_tree = avd_get_bool(fileset->fs_trust_tree);
 	if ((entry->fse_flags & FSE_REUSING) && (trust_tree ||
 	    (FB_STAT(path, &sb) == 0))) {
-		if (FB_OPEN(&fdesc, path, O_RDWR, 0) == FILEBENCH_ERROR) {
+		if (FB_OPEN(&fdesc, path, fs_readonly ? O_RDONLY : O_RDWR, 0) == FILEBENCH_ERROR) {
 			filebench_log(LOG_INFO,
 			    "Attempted but failed to Re-use file %s",
 			    path);
