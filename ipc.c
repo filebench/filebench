@@ -40,7 +40,7 @@
 #include "fb_cvar.h"
 
 filebench_shm_t *filebench_shm = NULL;
-char shmpath[128] = "/tmp/filebench-shm-XXXXXX";
+char *shmpath;
 
 /*
  * Interprocess Communication mechanisms. If multiple processes
@@ -282,6 +282,16 @@ void ipc_init(fb_plugin_type_t plugtype)
 #ifdef HAVE_SEM_RMID
 	int sys_semid;
 #endif
+	char *shmdir;
+
+	shmdir = getenv("FB_SHM_DIR");
+	if (shmdir == NULL)
+	    shmdir = "/tmp";
+
+	if (asprintf(&shmpath, "%s/filebench-shm-XXXXXX", shmdir) < 0) {
+		filebench_log(LOG_FATAL, "Could not name shared memory file");
+		exit(1);
+	}
 
 	shmfd = mkstemp(shmpath);
 	if (shmfd  < 0) {
@@ -388,6 +398,7 @@ ipc_fini(void)
 #endif
 
 	(void) unlink(shmpath);
+	free(shmpath);
 }
 
 /*
@@ -432,7 +443,7 @@ static int
 preallocated_entries(int obj_type)
 {
 	int entries;
-	
+
 	switch(obj_type) {
 	case FILEBENCH_FILESET:
 		entries = sizeof(filebench_shm->shm_fileset)
