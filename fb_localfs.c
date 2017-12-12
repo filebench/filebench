@@ -55,6 +55,7 @@
  * and may be replaced by vectors for other file system plug-ins.
  */
 
+static void fb_lfs_init_master(void);
 static int fb_lfs_freemem(fb_fdesc_t *fd, off64_t size);
 static int fb_lfs_open(fb_fdesc_t *, char *, int, int);
 static int fb_lfs_pread(fb_fdesc_t *, caddr_t, fbint_t, off64_t);
@@ -80,9 +81,19 @@ static int fb_lfs_fstat(fb_fdesc_t *, struct stat64 *);
 static int fb_lfs_access(const char *, int);
 static void fb_lfs_recur_rm(char *);
 
-static fsplug_func_t fb_lfs_funcs =
+/*
+ * This is named as would be a generic fsplug, even though we are going to
+ * statically link this plugin into the executable.  This allows us to test
+ * the filesystem and loader as different components.  The name
+ * "fsplug_funcs" is never used directly, despite being exported here.
+ */
+fsplug_func_t fsplug_funcs =
 {
 	"locfs",
+
+	fb_lfs_init_master,
+	NULL,				/* Needs no per-worker initialization */
+
 	fb_lfs_freemem,		/* flush page cache */
 	fb_lfs_open,		/* open */
 	fb_lfs_pread,		/* pread */
@@ -109,6 +120,9 @@ static fsplug_func_t fb_lfs_funcs =
 	fb_lfs_recur_rm		/* recursive rm */
 };
 
+/* Set the default fs_functions_vec to us */
+fsplug_func_t *fs_functions_vec = &fsplug_funcs;
+
 #ifdef HAVE_AIO
 /*
  * Local file system asynchronous IO flowops are in this module, as
@@ -127,22 +141,11 @@ static flowop_proto_t fb_lfsflow_funcs[] = {
 #endif /* HAVE_AIO */
 
 /*
- * Initialize file system functions vector to point to the vector of local file
- * system functions. This function will be called for the master process and
- * every created worker process.
- */
-void
-fb_lfs_funcvecinit(void)
-{
-	fs_functions_vec = &fb_lfs_funcs;
-}
-
-/*
  * Initialize those flowops which implementation is file system specific. It is
  * called only once in the master process.
  */
-void
-fb_lfs_newflowops(void)
+static void
+fb_lfs_init_master(void)
 {
 #ifdef HAVE_AIO
 	int nops;

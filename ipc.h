@@ -205,7 +205,7 @@ typedef struct filebench_shm {
 	 * Type of plug-in file system client to use. Defaults to
 	 * local file system, which is type "0".
 	 */
-	fb_plugin_type_t shm_filesys_type;
+	char		shm_filesys_path[PATH_MAX];
 
 	/*
 	 * IPC shared memory pools allocation/deallocation control:
@@ -250,7 +250,7 @@ typedef struct filebench_shm {
 
 extern char *shmpath;
 
-extern void ipc_init(fb_plugin_type_t plugtype);
+extern void ipc_init(char *plugpath);
 extern int ipc_attach(void *shmaddr, char *shmpath);
 
 void *ipc_malloc(int type);

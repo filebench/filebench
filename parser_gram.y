@@ -1305,7 +1305,7 @@ var_int_val: FSV_VAL_POSINT
 "   -h             display this help message\n" \
 "   -c             display supported cvar types\n" \
 "   -c [cvartype]  display options of the specific cvar type\n" \
-"   [-t type]      Benchmark a filesystem of the type named. (afs, nfs3, nfs4, or cifs. defaults to localfs)\n" \
+"   [-t fsplug]    Load filesystem plugin\n" \
 "   -L <libdir>    set the library directory (for cvars, e.g.)\n\n"
 
 static void
@@ -1328,7 +1328,7 @@ struct fbparams {
 	int instance;
 	char *cvartype;
 	char *fblibdir;
-	fb_plugin_type_t plugtype;
+	char *fsplug;
 };
 
 static void
@@ -1337,7 +1337,6 @@ init_fbparams(struct fbparams *fbparams)
 	memset(fbparams, 0, sizeof(*fbparams));
 	fbparams->instance = -1;
 	fbparams->fblibdir = FBLIBDIR;
-	fbparams->plugtype = LOCAL_FS_PLUG;
 }
 
 #define FB_MODE_NONE		0
@@ -1397,16 +1396,7 @@ parse_options(int argc, char *argv[], struct fbparams *fbparams)
 		case 't':
 			if (!optarg)
 				usage_exit(1, "Need type for -t");
-			if (strcmp(optarg, "cifs") == 0)
-				fbparams->plugtype = CIFS_PLUG;
-			else if (strcmp(optarg, "nfs3") == 0)
-				fbparams->plugtype = NFS3_PLUG;
-			else if (strcmp(optarg, "nfs4") == 0)
-				fbparams->plugtype = NFS4_PLUG;
-			else if (strcmp(optarg, "localfs") == 0)
-				fbparams->plugtype = LOCAL_FS_PLUG;
-			else
-				usage_exit(1, "Unknown type for -t");
+			fbparams->fsplug = optarg;
 			break;
 		/* private parameters: when filebench calls itself */
 		case 'a':
@@ -1560,7 +1550,7 @@ cvars_mode(struct fbparams *fbparams)
 {
 	int ret;
 
-	ipc_init(fbparams->plugtype);
+	ipc_init(NULL); /* cvars mode doesn't use fsplug */
 
 	ret = init_cvar_library_info(fbparams->fblibdir);
 	if (ret)
@@ -1607,7 +1597,25 @@ master_mode(struct fbparams *fbparams) {
 	execname = fbparams->execname;
 	fb_set_shmmax();
 
-	ipc_init(fbparams->plugtype);
+	if ((fbparams->fsplug == NULL)
+	   || ((strchr(fbparams->fsplug, '/') != NULL)
+	      && (strlen(fbparams->fsplug) < PATH_MAX)))
+		ipc_init(fbparams->fsplug);
+	else {
+		/* Otherwise, construct the path */
+		char path[PATH_MAX];
+
+		ret = snprintf(path, sizeof(path), "%s/libfb_%s.so",
+		               fbparams->fblibdir, fbparams->fsplug);
+		if ((ret < 0) || (ret > PATH_MAX)) {
+			/* error or too big */
+			filebench_log(LOG_FATAL, "Cannot interpret plug %s!",
+			              fbparams->fsplug);
+			exit(1);
+		}
+
+		ipc_init(path);
+	}
 
 	/* Below we initialize things that depend on IPC */
 	(void)strcpy(filebench_shm->shm_fscriptname,

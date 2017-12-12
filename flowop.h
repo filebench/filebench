@@ -147,8 +147,4 @@ void flowop_printall(void);
 
 void flowop_init(int ismaster);
 
-/* Local file system specific */
-void fb_lfs_funcvecinit(void);
-void fb_lfs_newflowops(void);
-
 #endif	/* _FB_FLOWOP_H */

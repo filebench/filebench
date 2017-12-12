@@ -38,9 +38,6 @@
 #include "fsplug.h"
 #include "fbtime.h"
 
-/* File System functions vector */
-fsplug_func_t *fs_functions_vec;
-
 extern int lex_lineno;
 
 /*
