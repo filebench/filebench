@@ -138,7 +138,7 @@ fatal:
 		if (filebench_shm->shm_dump_fd != -1) {
 			(void) snprintf(buf, sizeof (buf), "%s\n", line);
 			/* We ignore the return value of write() */
-			if (write(filebench_shm->shm_dump_fd, buf, strlen(buf)));
+			(void) write(filebench_shm->shm_dump_fd, buf, strlen(buf));
 			(void) fsync(filebench_shm->shm_dump_fd);
 			(void) ipc_mutex_unlock(&filebench_shm->shm_msg_lock);
 			return;
