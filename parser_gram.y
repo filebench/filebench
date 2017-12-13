@@ -2825,9 +2825,9 @@ parser_system(cmd_t *cmd)
 		    strerror(errno));
 		free(string);
 		filebench_shutdown(1);
+	} else {
+		free(string);
 	}
-
-	free(string);
 }
 
 /*
