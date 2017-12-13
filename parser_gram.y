@@ -2514,8 +2514,6 @@ parser_filebench_shutdown(cmd_t *cmd)
 {
 	int f_abort = filebench_shm->shm_f_abort;
 
-	ipc_fini();
-
 	if (f_abort == FILEBENCH_ABORT_ERROR)
 		filebench_shutdown(1);
 	else

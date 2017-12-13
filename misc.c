@@ -184,9 +184,25 @@ filebench_shutdown(int error) {
 		filebench_log(LOG_DEBUG_IMPL, "Shutdown on error %d", error);
 		(void) ipc_mutex_lock(&filebench_shm->shm_procflow_lock);
 		if (filebench_shm->shm_f_abort == FILEBENCH_ABORT_FINI) {
+			/* This can only happen if someone else has called
+ 			 * procflow_shutdown() already, which means that the
+ 			 * whole thing is in the process of coming down.  That
+ 			 * someone else will eventually reach the clean-up
+ 			 * below, so here, we just bail out without clean-up.
+ 			 *
+ 			 * Specifically, the only calls to procflow_shutdown()
+ 			 * are ours below or proc_shutdown()'s.  proc_shutdown()
+ 			 * is only called by the parser and always followed by
+ 			 * parser_filebench_shutdown(), which calls us.  When
+ 			 * it does so, error is either 0, so we won't get here
+ 			 * again, or is not but ->shm_f_abort is
+ 			 * FILEBENCH_ABORT_ERROR, not FILEBENCH_ABORT_FINI, so
+ 			 * we won't get here again either.  Thus, someone always
+ 			 * makes it to the cleanup code below.
+ 			 */
 			(void) ipc_mutex_unlock(
 			    &filebench_shm->shm_procflow_lock);
-			return;
+			exit(error);
 		}
 		filebench_shm->shm_f_abort = FILEBENCH_ABORT_ERROR;
 		(void) ipc_mutex_unlock(&filebench_shm->shm_procflow_lock);
@@ -196,7 +212,7 @@ filebench_shutdown(int error) {
 
 	procflow_shutdown();
 
-	(void) unlink("/tmp/filebench_shm");
 	ipc_ismdelete();
+	ipc_fini();
 	exit(error);
 }
