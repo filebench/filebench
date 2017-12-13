@@ -81,6 +81,10 @@ init_cvar_library_info(const char *dirpath)
 		if (!strcmp(".", dirent->d_name) || !strcmp("..", dirent->d_name))
 			continue;
 
+		/* Restrict to appropriately-named libraries */
+		if (strncmp("libcvar-", dirent->d_name, 8))
+			continue;
+
 		direntlen = strlen(dirent->d_name);
 		if (strcmp(".so", dirent->d_name + direntlen - 3))
 			continue;
