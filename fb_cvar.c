@@ -167,7 +167,7 @@ static char
 	else {
 		libname++;
 		/* Check for a malformed filename string. */
-		if (!libname) {
+		if (*libname == '\0') {
 			filebench_log(LOG_ERROR, "Malformed cvar library filename");
 			return NULL;
 		}
