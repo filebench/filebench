@@ -277,7 +277,7 @@ ipc_seminit(void)
 void ipc_init(fb_plugin_type_t plugtype)
 {
 	int shmfd;
-	char tmpbuf[MB];
+	char tmpbuf[MB] = {0};
 	key_t key;
 #ifdef HAVE_SEM_RMID
 	int sys_semid;
