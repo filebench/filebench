@@ -113,11 +113,12 @@ procflow_createproc(procflow_t *procflow)
 		/* Child */
 
 #ifdef USE_SYSTEM
-		(void) snprintf(syscmd, sizeof (syscmd), "%s -a %s -i %s -s %s",
+		(void) snprintf(syscmd, sizeof (syscmd), "%s -a %s -i %s -s %s -x %s",
 		    execname,
 		    procname,
 		    instance,
-		    shmaddr);
+		    shmaddr,
+		    execname);
 		if (system(syscmd) < 0) {
 			filebench_log(LOG_ERROR,
 			    "procflow exec proc failed: %s",
@@ -127,7 +128,8 @@ procflow_createproc(procflow_t *procflow)
 
 #else
 		if (execlp(execname, procname, "-a", procname, "-i",
-		    instance, "-s", shmaddr, "-m", shmpath, NULL) < 0) {
+		    instance, "-s", shmaddr, "-m", shmpath,
+		    "-x", execname, NULL) < 0) {
 			filebench_log(LOG_ERROR,
 			    "procflow exec proc failed: %s",
 			    strerror(errno));

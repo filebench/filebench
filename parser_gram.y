@@ -1306,6 +1306,7 @@ var_int_val: FSV_VAL_POSINT
 "   -c             display supported cvar types\n" \
 "   -c [cvartype]  display options of the specific cvar type\n" \
 "   [-t fsplug]    Load filesystem plugin\n" \
+"   [-x wrapper]   Wrap workers with an external program\n" \
 "   -L <libdir>    set the library directory (for cvars, e.g.)\n\n"
 
 static void
@@ -1348,7 +1349,7 @@ init_fbparams(struct fbparams *fbparams)
 static int
 parse_options(int argc, char *argv[], struct fbparams *fbparams)
 {
-	const char cmd_options[] = "m:s:a:i:hf:c:L:t:";
+	const char cmd_options[] = "m:s:a:i:hf:c:L:t:x:";
 	int mode = FB_MODE_NONE;
 	int opt;
 
@@ -1397,6 +1398,11 @@ parse_options(int argc, char *argv[], struct fbparams *fbparams)
 			if (!optarg)
 				usage_exit(1, "Need type for -t");
 			fbparams->fsplug = optarg;
+			break;
+		case 'x':
+			if (!optarg)
+				usage_exit(1, "Need program for -x");
+			fbparams->execname = optarg;
 			break;
 		/* private parameters: when filebench calls itself */
 		case 'a':
