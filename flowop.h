@@ -146,5 +146,6 @@ flowop_t *flowop_new_composite_define(char *name);
 void flowop_printall(void);
 
 void flowop_init(int ismaster);
+void flowop_fini(void);
 
 #endif	/* _FB_FLOWOP_H */

@@ -208,6 +208,7 @@ filebench_shutdown(int error) {
 	}
 
 	procflow_shutdown();
+	flowop_fini();
 
 	ipc_ismdelete();
 	ipc_fini();

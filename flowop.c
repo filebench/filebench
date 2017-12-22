@@ -35,6 +35,8 @@
 #include "stats.h"
 #include "ioprio.h"
 
+static void *fsplug_handle = NULL;
+
 static flowop_t *flowop_define_common(threadflow_t *threadflow, char *name,
     flowop_t *inherit, flowop_t **flowoplist_hdp, int instance, int type);
 static int flowop_composite(threadflow_t *threadflow, flowop_t *flowop);
@@ -563,7 +565,7 @@ flowop_init(int ismaster)
 	}
 
 	if (filebench_shm->shm_filesys_path[0] != '\0') {
-		void *fsplug_handle = dlopen(filebench_shm->shm_filesys_path, RTLD_LOCAL | RTLD_NOW);
+		fsplug_handle = dlopen(filebench_shm->shm_filesys_path, RTLD_LOCAL | RTLD_NOW);
 		if (fsplug_handle == NULL) {
 				filebench_log(LOG_ERROR, "Cannot load fsplug %s: %s\n",
 					filebench_shm->shm_filesys_path, dlerror());
@@ -583,6 +585,15 @@ flowop_init(int ismaster)
 
 	if (fs_functions_vec->fsp_init)
 		fs_functions_vec->fsp_init();
+}
+
+void
+flowop_fini(void)
+{
+	if (fsplug_handle != NULL) {
+		dlclose(fsplug_handle);
+		fsplug_handle = NULL;
+	}
 }
 
 /*
