@@ -1654,7 +1654,6 @@ master_mode(struct fbparams *fbparams) {
 static void
 init_common(void)
 {
-	disable_aslr();
 	my_pid = getpid();
 	fb_set_rlimit();
 }
@@ -1678,6 +1677,11 @@ main(int argc, char *argv[])
 {
 	struct fbparams fbparams;
 	int mode;
+
+	if (disable_aslr()) {
+		filebench_log(LOG_INFO, "ASLR now disabled; re-exec()ing self.");
+		execv(argv[0], argv);
+	}
 
 	/* parse_options() exits if detects wrong usage */
 	mode = parse_options(argc, argv, &fbparams);

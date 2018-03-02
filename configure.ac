@@ -42,6 +42,7 @@ AC_CHECK_HEADERS([sys/socket.h])
 AC_CHECK_HEADERS([sys/statvfs.h])
 AC_CHECK_HEADERS([sys/time.h]) 
 AC_CHECK_HEADERS([sys/personality.h]) 
+AC_CHECK_HEADERS([linux/personality.h])
 
 ####
 #### Check for more sophisticated headers
@@ -372,7 +373,9 @@ AC_TRY_COMPILE([
 # Sometimes personality() function exists but ADDR_NO_RANDOMIZE is not defined
 # (e.g, in CentOS 5.11)
 #
-AC_CHECK_DECLS(ADDR_NO_RANDOMIZE,[],[],[#include <sys/personality.h>])
+AC_CHECK_DECLS(ADDR_NO_RANDOMIZE,[],[
+  AC_CHECK_DECLS(ADDR_NO_RANDOMIZE,[],[],[#include<linux/personality.h>])
+],[#include <sys/personality.h>])
 
 #
 # Configuring direct I/O. There are 3 main options:
