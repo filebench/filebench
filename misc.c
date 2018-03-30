@@ -133,7 +133,8 @@ fatal:
 
 	if (level == LOG_DUMP) {
 		if (filebench_shm->shm_dump_fd != -1) {
-			(void) snprintf(buf, sizeof (buf), "%s\n", line);
+			(void) fb_strlcpy(buf, line, sizeof(buf));
+			(void) fb_strlcat(buf, "\n", sizeof(buf));
 			/* We ignore the return value of write() */
 			(void) write(filebench_shm->shm_dump_fd, buf, strlen(buf));
 			(void) fsync(filebench_shm->shm_dump_fd);

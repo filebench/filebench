@@ -38,6 +38,7 @@
 #include <sys/shm.h>
 #include "filebench.h"
 #include "fb_cvar.h"
+#include "utils.h"
 
 filebench_shm_t *filebench_shm = NULL;
 char *shmpath;
@@ -323,8 +324,8 @@ void ipc_init(char *fsplug)
 	 * Pass the name of the target filesystem, if not the local driver
 	 */
 	if (fsplug)
-		strncpy(filebench_shm->shm_filesys_path,fsplug,
-			sizeof (filebench_shm->shm_filesys_path)-1);
+		fb_strlcpy(filebench_shm->shm_filesys_path,fsplug,
+			   sizeof(filebench_shm->shm_filesys_path));
 
 	/*
 	 * First, initialize all the structures needed for the filebench_log()
@@ -708,7 +709,7 @@ ipc_stralloc(const char *string)
 		return (NULL);
 	}
 
-	(void) strncpy(allocstr, string, strlen(string));
+	memcpy(allocstr, string, strlen(string) + 1);
 
 	return (allocstr);
 }
@@ -737,7 +738,7 @@ ipc_pathalloc(char *path)
 		return (NULL);
 	}
 
-	(void) strncpy(allocpath, path, strlen(path));
+	memcpy(allocpath, path, strlen(path) + 1);
 
 	return (allocpath);
 }
