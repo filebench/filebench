@@ -33,7 +33,6 @@ set $usermode=200000
 set $filesize=10m
 set $memperthread=1m
 set $workingset=0
-set $cached=0
 set $logfilesize=10m
 set $nfiles=10
 set $nlogfiles=1
@@ -42,8 +41,8 @@ set $directio=0
 eventgen rate = $eventrate
 
 # Define a datafile and logfile
-define fileset name=datafiles,path=$dir,size=$filesize,filesizegamma=0,entries=$nfiles,dirwidth=1024,prealloc=100,cached=$cached,reuse
-define fileset name=logfile,path=$dir,size=$logfilesize,filesizegamma=0,entries=$nlogfiles,dirwidth=1024,prealloc=100,cached=$cached,reuse
+define fileset name=datafiles,path=$dir,size=$filesize,entries=$nfiles,dirwidth=1024,prealloc=100,reuse
+define fileset name=logfile,path=$dir,size=$logfilesize,entries=$nlogfiles,dirwidth=1024,prealloc=100,reuse
 
 define process name=lgwr,instances=1
 {
@@ -83,3 +82,5 @@ define process name=shadow,instances=$nshadows
 }
 
 echo "OLTP Version 3.0  personality successfully loaded"
+
+run 60
