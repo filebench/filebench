@@ -65,7 +65,7 @@
 #define	FILEBENCH_RANDDIST		7
 #define FILEBENCH_CVAR			8
 #define FILEBENCH_CVAR_LIB_INFO		9
-#define	FILEBENCH_MAXTYPE		FILEBENCH_CVAR_LIB_INFO
+#define	FILEBENCH_MAXTYPE		(FILEBENCH_CVAR_LIB_INFO + 1)
 
 /*
  * The values below are selected by intuition: these limits
