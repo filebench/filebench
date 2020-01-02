@@ -554,7 +554,7 @@ flowoplib_read(threadflow_t *threadflow, flowop_t *flowop)
 		}
 		(void) flowop_endop(threadflow, flowop, ret);
 
-		if ((ret == 0))
+		if (ret == 0)
 			(void) FB_LSEEK(fdesc, 0, SEEK_SET);
 
 	} else {
@@ -570,7 +570,7 @@ flowoplib_read(threadflow_t *threadflow, flowop_t *flowop)
 		}
 		(void) flowop_endop(threadflow, flowop, ret);
 
-		if ((ret == 0))
+		if (ret == 0)
 			(void) FB_LSEEK(fdesc, 0, SEEK_SET);
 	}
 
