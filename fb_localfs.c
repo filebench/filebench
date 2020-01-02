@@ -160,6 +160,7 @@ fb_lfs_init_master(void)
  * If successful, returns 0. Otherwise returns -1 if "size"
  * is zero, or -1 times the number of times msync() failed.
  */
+#ifdef HAVE_MMAP64
 static int
 fb_lfs_freemem(fb_fdesc_t *fd, off64_t size)
 {
@@ -178,15 +179,43 @@ fb_lfs_freemem(fb_fdesc_t *fd, off64_t size)
 	}
 	return (ret);
 }
+#else
+static int
+fb_lfs_freemem(fb_fdesc_t *fd, off_t size)
+{
+	off64_t left;
+	int ret = 0;
+
+	for (left = size; left > 0; left -= MMAP_SIZE) {
+		off64_t thismapsize;
+		caddr_t addr;
+
+		thismapsize = MIN(MMAP_SIZE, left);
+		addr = mmap(0, thismapsize, PROT_READ|PROT_WRITE,
+		    MAP_SHARED, fd->fd_num, size - left);
+		ret += msync(addr, thismapsize, MS_INVALIDATE);
+		(void) munmap(addr, thismapsize);
+	}
+	return (ret);
+}
+#endif
 
 /*
  * Does a posix pread. Returns what the pread() returns.
  */
+#ifdef HAVE_PREAD64
 static int
 fb_lfs_pread(fb_fdesc_t *fd, caddr_t iobuf, fbint_t iosize, off64_t fileoffset)
 {
 	return (pread64(fd->fd_num, iobuf, iosize, fileoffset));
 }
+#else
+static int
+fb_lfs_pread(fb_fdesc_t *fd, caddr_t iobuf, fbint_t iosize, off_t fileoffset)
+{
+	return (pread(fd->fd_num, iobuf, iosize, fileoffset));
+}
+#endif
 
 /*
  * Does a posix read. Returns what the read() returns.
@@ -481,6 +510,7 @@ fb_lfsflow_aiowait(threadflow_t *threadflow, flowop_t *flowop)
  * successs, and FILEBENCH_ERROR on failure.
  */
 
+#ifdef HAVE_OPEN64
 static int
 fb_lfs_open(fb_fdesc_t *fd, char *path, int flags, int perms)
 {
@@ -489,6 +519,16 @@ fb_lfs_open(fb_fdesc_t *fd, char *path, int flags, int perms)
 	else
 		return (FILEBENCH_OK);
 }
+#else
+static int
+fb_lfs_open(fb_fdesc_t *fd, char *path, int flags, int perms)
+{
+	if ((fd->fd_num = open(path, flags, perms)) < 0)
+		return (FILEBENCH_ERROR);
+	else
+		return (FILEBENCH_OK);
+}
+#endif
 
 /*
  * Does an unlink (delete) of a file.
@@ -520,11 +560,19 @@ fb_lfs_fsync(fb_fdesc_t *fd)
 /*
  * Do a posix lseek of a file. Return what lseek() returns.
  */
+#ifdef HAVE_LSEEK64
 static int
 fb_lfs_lseek(fb_fdesc_t *fd, off64_t offset, int whence)
 {
 	return (lseek64(fd->fd_num, offset, whence));
 }
+#else
+static int
+fb_lfs_lseek(fb_fdesc_t *fd, off_t offset, int whence)
+{
+	return (lseek(fd->fd_num, offset, whence));
+}
+#endif
 
 /*
  * Do a posix rename of a file. Return what rename() returns.
@@ -627,29 +675,54 @@ fb_lfs_closedir(struct fsplug_dir *dirp)
 /*
  * Does an fstat of a file.
  */
+#ifdef HAVE_FSTAT64
 static int
 fb_lfs_fstat(fb_fdesc_t *fd, struct stat64 *statbufp)
 {
 	return (fstat64(fd->fd_num, statbufp));
 }
+#else
+static int
+fb_lfs_fstat(fb_fdesc_t *fd, struct stat *statbufp)
+{
+	return (fstat(fd->fd_num, statbufp));
+}
+#endif
+
 
 /*
  * Does a stat of a file.
  */
+#ifdef HAVE_STAT64
 static int
 fb_lfs_stat(char *path, struct stat64 *statbufp)
 {
 	return (stat64(path, statbufp));
 }
+#else
+static int
+fb_lfs_stat(char *path, struct stat *statbufp)
+{
+	return (stat(path, statbufp));
+}
+#endif
 
 /*
  * Do a pwrite64 to a file.
  */
+#ifdef HAVE_PWRITE64
 static int
 fb_lfs_pwrite(fb_fdesc_t *fd, caddr_t iobuf, fbint_t iosize, off64_t offset)
 {
 	return (pwrite64(fd->fd_num, iobuf, iosize, offset));
 }
+#else
+static int
+fb_lfs_pwrite(fb_fdesc_t *fd, caddr_t iobuf, fbint_t iosize, off_t offset)
+{
+	return (pwrite(fd->fd_num, iobuf, iosize, offset));
+}
+#endif
 
 /*
  * Do a write to a file.

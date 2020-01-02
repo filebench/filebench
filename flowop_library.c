@@ -417,7 +417,11 @@ flowoplib_iobufsetup(threadflow_t *threadflow, flowop_t *flowop,
     caddr_t *iobufp, fbint_t iosize)
 {
 	long memsize;
+#if defined(_LP64) || (__WORDSIZE == 64)
+	uint64_t memoffset;
+#else
 	size_t memoffset;
+#endif
 
 	if (iosize == 0) {
 		filebench_log(LOG_ERROR, "zero iosize for thread %s",
