@@ -27,10 +27,8 @@
 #define	_MULTI_CLIENT_SYNC_H
 
 #include <sys/types.h>
-#if 0
+#if defined(HAVE_SYS_SOCKET_H)
 #include <sys/socket.h>
-XXX: we do not support this so far
-#include <inet/ip.h>
 #endif
 
 int mc_sync_open_sock(char *master_name, int master_port, char *client_name);
