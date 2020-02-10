@@ -38,9 +38,10 @@
 #include <sys/shm.h>
 #include "filebench.h"
 #include "fb_cvar.h"
+#include "utils.h"
 
 filebench_shm_t *filebench_shm = NULL;
-char shmpath[128] = "/tmp/filebench-shm-XXXXXX";
+char *shmpath;
 
 /*
  * Interprocess Communication mechanisms. If multiple processes
@@ -62,7 +63,7 @@ ipc_mutex_lock(pthread_mutex_t *mutex)
 
 	error = pthread_mutex_lock(mutex);
 
-#ifdef HAVE_ROBUST_MUTEX
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
 	if (error == EOWNERDEAD) {
 		if (pthread_mutex_consistent_np(mutex) != 0) {
 			filebench_log(LOG_FATAL, "mutex make consistent "
@@ -71,7 +72,7 @@ ipc_mutex_lock(pthread_mutex_t *mutex)
 		}
 		return (0);
 	}
-#endif /* HAVE_ROBUST_MUTEX */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP */
 
 	if (error != 0) {
 		filebench_log(LOG_FATAL, "mutex lock failed: %s",
@@ -91,7 +92,7 @@ ipc_mutex_unlock(pthread_mutex_t *mutex)
 
 	error = pthread_mutex_unlock(mutex);
 
-#ifdef HAVE_ROBUST_MUTEX
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
 	if (error == EOWNERDEAD) {
 		if (pthread_mutex_consistent_np(mutex) != 0) {
 			filebench_log(LOG_FATAL, "mutex make consistent "
@@ -100,7 +101,7 @@ ipc_mutex_unlock(pthread_mutex_t *mutex)
 		}
 		return (0);
 	}
-#endif /* HAVE_ROBUST_MUTEX */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP */
 
 	if (error != 0) {
 		filebench_log(LOG_FATAL, "mutex unlock failed: %s",
@@ -122,7 +123,7 @@ ipc_mutexattr_init(int mtx_type)
 
 	(void) pthread_mutexattr_init(mtx_attrp);
 
-#ifdef HAVE_PROCSCOPE_PTHREADS
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETPSHARED
 	if (pthread_mutexattr_setpshared(mtx_attrp,
 	    PTHREAD_PROCESS_SHARED) != 0) {
 		filebench_log(LOG_ERROR, "cannot set mutex attr "
@@ -140,8 +141,8 @@ ipc_mutexattr_init(int mtx_type)
 		}
 	}
 #endif /* HAVE_PTHREAD_MUTEXATTR_SETPROTOCOL */
-#endif /* HAVE_PROCSCOPE_PTHREADS */
-#ifdef HAVE_ROBUST_MUTEX
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETPSHARED */
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
 	if (mtx_type & IPC_MUTEX_ROBUST) {
 		if (pthread_mutexattr_setrobust_np(mtx_attrp,
 		    PTHREAD_MUTEX_ROBUST_NP) != 0) {
@@ -159,7 +160,7 @@ ipc_mutexattr_init(int mtx_type)
 			filebench_shutdown(1);
 		}
 	}
-#endif /* HAVE_ROBUST_MUTEX */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP */
 }
 
 /*
@@ -197,14 +198,14 @@ ipc_condattr(void)
 			filebench_shutdown(1);
 		}
 		(void) pthread_condattr_init(condattr);
-#ifdef HAVE_PROCSCOPE_PTHREADS
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETPSHARED
 		if (pthread_condattr_setpshared(condattr,
 		    PTHREAD_PROCESS_SHARED) != 0) {
 			filebench_log(LOG_ERROR,
 			    "cannot set cond attr PROCESS_SHARED");
 //			filebench_shutdown(1);
 		}
-#endif /* HAVE_PROCSCOPE_PTHREADS */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETPSHARED */
 	}
 	return (condattr);
 }
@@ -226,14 +227,14 @@ ipc_rwlockattr(void)
 			filebench_shutdown(1);
 		}
 		(void) pthread_rwlockattr_init(rwlockattr);
-#ifdef HAVE_PROCSCOPE_PTHREADS
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETPSHARED
 		if (pthread_rwlockattr_setpshared(rwlockattr,
 		    PTHREAD_PROCESS_SHARED) != 0) {
 			filebench_log(LOG_ERROR,
 			    "cannot set rwlock attr PROCESS_SHARED");
 //			filebench_shutdown(1);
 		}
-#endif /* HAVE_PROCSCOPE_PTHREADS */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETPSHARED */
 	}
 	return (rwlockattr);
 }
@@ -274,14 +275,24 @@ ipc_seminit(void)
  * memory. It also uses ftok() to get a shared memory semaphore key for later
  * use in allocating shared semaphores.
  */
-void ipc_init(void)
+void ipc_init(char *fsplug)
 {
 	int shmfd;
-	char tmpbuf[MB];
+	char tmpbuf[MB] = {0};
 	key_t key;
 #ifdef HAVE_SEM_RMID
 	int sys_semid;
 #endif
+	char *shmdir;
+
+	shmdir = getenv("FB_SHM_DIR");
+	if (shmdir == NULL)
+	    shmdir = "/tmp";
+
+	if (asprintf(&shmpath, "%s/filebench-shm-XXXXXX", shmdir) < 0) {
+		filebench_log(LOG_FATAL, "Could not name shared memory file");
+		exit(1);
+	}
 
 	shmfd = mkstemp(shmpath);
 	if (shmfd  < 0) {
@@ -308,6 +319,13 @@ void ipc_init(void)
 
 	(void) memset(filebench_shm, 0,
 		 (char *)&filebench_shm->shm_marker - (char *)filebench_shm);
+
+	/*
+	 * Pass the name of the target filesystem, if not the local driver
+	 */
+	if (fsplug)
+		fb_strlcpy(filebench_shm->shm_filesys_path,fsplug,
+			   sizeof(filebench_shm->shm_filesys_path));
 
 	/*
 	 * First, initialize all the structures needed for the filebench_log()
@@ -374,8 +392,6 @@ void ipc_init(void)
 	filebench_shm->shm_dump_fd = -1;
 	filebench_shm->shm_eventgen_hz = 0;
 	filebench_shm->shm_id = -1;
-
-	filebench_shm->shm_filesys_type = LOCAL_FS_PLUG;
 }
 
 void
@@ -389,6 +405,7 @@ ipc_fini(void)
 #endif
 
 	(void) unlink(shmpath);
+	free(shmpath);
 }
 
 /*
@@ -433,7 +450,7 @@ static int
 preallocated_entries(int obj_type)
 {
 	int entries;
-	
+
 	switch(obj_type) {
 	case FILEBENCH_FILESET:
 		entries = sizeof(filebench_shm->shm_fileset)
@@ -692,7 +709,7 @@ ipc_stralloc(const char *string)
 		return (NULL);
 	}
 
-	(void) strncpy(allocstr, string, strlen(string));
+	memcpy(allocstr, string, strlen(string) + 1);
 
 	return (allocstr);
 }
@@ -721,7 +738,7 @@ ipc_pathalloc(char *path)
 		return (NULL);
 	}
 
-	(void) strncpy(allocpath, path, strlen(path));
+	memcpy(allocpath, path, strlen(path) + 1);
 
 	return (allocpath);
 }

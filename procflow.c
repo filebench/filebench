@@ -25,6 +25,8 @@
  * Portions Copyright 2008 Denis Cheng
  */
 
+#include "config.h"
+
 #include <signal.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -111,11 +113,12 @@ procflow_createproc(procflow_t *procflow)
 		/* Child */
 
 #ifdef USE_SYSTEM
-		(void) snprintf(syscmd, sizeof (syscmd), "%s -a %s -i %s -s %s",
+		(void) snprintf(syscmd, sizeof (syscmd), "%s -a %s -i %s -s %s -x %s",
 		    execname,
 		    procname,
 		    instance,
-		    shmaddr);
+		    shmaddr,
+		    execname);
 		if (system(syscmd) < 0) {
 			filebench_log(LOG_ERROR,
 			    "procflow exec proc failed: %s",
@@ -125,7 +128,8 @@ procflow_createproc(procflow_t *procflow)
 
 #else
 		if (execlp(execname, procname, "-a", procname, "-i",
-		    instance, "-s", shmaddr, "-m", shmpath, NULL) < 0) {
+		    instance, "-s", shmaddr, "-m", shmpath,
+		    "-x", execname, NULL) < 0) {
 			filebench_log(LOG_ERROR,
 			    "procflow exec proc failed: %s",
 			    strerror(errno));
@@ -560,7 +564,7 @@ procflow_cleanup(procflow_t *procflow)
  * in which case it returns -1.
  */
 static int
-procflow_allstarted()
+procflow_allstarted(void)
 {
 	procflow_t *procflow = filebench_shm->shm_procflowlist;
 	int running_procs = 0;
@@ -787,7 +791,7 @@ procflow_define(char *name, avd_t instances)
  * system.
  */
 void
-proc_create()
+proc_create(void)
 {
 	filebench_shm->shm_1st_err = 0;
 	filebench_shm->shm_f_abort = FILEBENCH_OK;
@@ -828,7 +832,7 @@ proc_create()
  * It does not exit the filebench program though.
  */
 void
-proc_shutdown()
+proc_shutdown(void)
 {
 	filebench_log(LOG_INFO, "Shutting down processes");
 	procflow_shutdown();

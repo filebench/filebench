@@ -140,7 +140,6 @@ typedef unsigned int uint_t;
 
 extern pid_t my_pid;		/* this process' process id */
 extern procflow_t *my_procflow;	/* if slave process, procflow pointer */
-extern int errno;
 extern char *execname;
 
 void filebench_log __V((int level, const char *fmt, ...));

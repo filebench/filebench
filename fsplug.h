@@ -30,16 +30,6 @@
 
 #include "filebench.h"
 
-/*
- * Type of file system client plug-in desired.
- */
-typedef enum fb_plugin_type {
-	LOCAL_FS_PLUG = 0,
-	NFS3_PLUG,
-	NFS4_PLUG,
-	CIFS_PLUG
-} fb_plugin_type_t;
-
 /* universal file descriptor for both local and nfs file systems */
 typedef union fb_fdesc {
 	int		fd_num;		/* OS file descriptor number */
@@ -48,9 +38,19 @@ typedef union fb_fdesc {
 
 typedef struct aiolist aiol_t;
 
+struct fsplug_dir; /* Opaque! */
+
+/* Approximate a dirent as far as we're concerned as a benchmark tool */
+struct fsplug_dirent {
+	int  bytecost;	/* Size of read operations */
+};
+
 /* Functions vector for file system plug-ins */
 typedef struct fsplug_func_s {
 	char fs_name[16];
+	void (*fsp_init_master)(void);		/* Initialize once, in master process */
+	void (*fsp_init)(void);				/* Initialize in all processes */
+
 	int (*fsp_freemem)(fb_fdesc_t *, off64_t);
 	int (*fsp_open)(fb_fdesc_t *, char *, int, int);
 	int (*fsp_pread)(fb_fdesc_t *, caddr_t, fbint_t, off64_t);
@@ -67,9 +67,9 @@ typedef struct fsplug_func_s {
 	ssize_t (*fsp_readlink)(const char *, char *, size_t);
 	int (*fsp_mkdir)(char *, int);
 	int (*fsp_rmdir)(char *);
-	DIR *(*fsp_opendir)(char *);
-	struct dirent *(*fsp_readdir)(DIR *);
-	int (*fsp_closedir)(DIR *);
+	struct fsplug_dir *(*fsp_opendir)(char *);
+	int (*fsp_readdir)(struct fsplug_dir *, struct fsplug_dirent *);
+	int (*fsp_closedir)(struct fsplug_dir *);
 	int (*fsp_fsync)(fb_fdesc_t *);
 	int (*fsp_stat)(char *, struct stat64 *);
 	int (*fsp_fstat)(fb_fdesc_t *, struct stat64 *);
@@ -77,6 +77,12 @@ typedef struct fsplug_func_s {
 	void (*fsp_recur_rm)(char *);
 } fsplug_func_t;
 
+#define FB_FSPLUG_MODULE_FUNC_S	"fsplug_funcs"
+
+/*
+ * The current functions vector; statically initialized to that of
+ * fb_localfs.c, but may be overwritten in flowop_init()
+ */
 extern fsplug_func_t *fs_functions_vec;
 
 /* Macros for calling functions */
@@ -116,8 +122,8 @@ extern fsplug_func_t *fs_functions_vec;
 #define	FB_OPENDIR(path) \
 	(*fs_functions_vec->fsp_opendir)(path)
 
-#define	FB_READDIR(dir) \
-	(*fs_functions_vec->fsp_readdir)(dir)
+#define	FB_READDIR(dir,dent) \
+	(*fs_functions_vec->fsp_readdir)(dir,dent)
 
 #define	FB_CLOSEDIR(dir) \
 	(*fs_functions_vec->fsp_closedir)(dir)

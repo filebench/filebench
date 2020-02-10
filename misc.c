@@ -38,9 +38,6 @@
 #include "fsplug.h"
 #include "fbtime.h"
 
-/* File System functions vector */
-fsplug_func_t *fs_functions_vec;
-
 extern int lex_lineno;
 
 /*
@@ -136,9 +133,10 @@ fatal:
 
 	if (level == LOG_DUMP) {
 		if (filebench_shm->shm_dump_fd != -1) {
-			(void) snprintf(buf, sizeof (buf), "%s\n", line);
+			(void) fb_strlcpy(buf, line, sizeof(buf));
+			(void) fb_strlcat(buf, "\n", sizeof(buf));
 			/* We ignore the return value of write() */
-			if (write(filebench_shm->shm_dump_fd, buf, strlen(buf)));
+			(void) write(filebench_shm->shm_dump_fd, buf, strlen(buf));
 			(void) fsync(filebench_shm->shm_dump_fd);
 			(void) ipc_mutex_unlock(&filebench_shm->shm_msg_lock);
 			return;
@@ -184,9 +182,25 @@ filebench_shutdown(int error) {
 		filebench_log(LOG_DEBUG_IMPL, "Shutdown on error %d", error);
 		(void) ipc_mutex_lock(&filebench_shm->shm_procflow_lock);
 		if (filebench_shm->shm_f_abort == FILEBENCH_ABORT_FINI) {
+			/* This can only happen if someone else has called
+ 			 * procflow_shutdown() already, which means that the
+ 			 * whole thing is in the process of coming down.  That
+ 			 * someone else will eventually reach the clean-up
+ 			 * below, so here, we just bail out without clean-up.
+ 			 *
+ 			 * Specifically, the only calls to procflow_shutdown()
+ 			 * are ours below or proc_shutdown()'s.  proc_shutdown()
+ 			 * is only called by the parser and always followed by
+ 			 * parser_filebench_shutdown(), which calls us.  When
+ 			 * it does so, error is either 0, so we won't get here
+ 			 * again, or is not but ->shm_f_abort is
+ 			 * FILEBENCH_ABORT_ERROR, not FILEBENCH_ABORT_FINI, so
+ 			 * we won't get here again either.  Thus, someone always
+ 			 * makes it to the cleanup code below.
+ 			 */
 			(void) ipc_mutex_unlock(
 			    &filebench_shm->shm_procflow_lock);
-			return;
+			exit(error);
 		}
 		filebench_shm->shm_f_abort = FILEBENCH_ABORT_ERROR;
 		(void) ipc_mutex_unlock(&filebench_shm->shm_procflow_lock);
@@ -195,8 +209,9 @@ filebench_shutdown(int error) {
 	}
 
 	procflow_shutdown();
+	flowop_fini();
 
-	(void) unlink("/tmp/filebench_shm");
 	ipc_ismdelete();
+	ipc_fini();
 	exit(error);
 }

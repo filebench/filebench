@@ -115,7 +115,7 @@ void cvar_free_handle(void *handle, void (*cvar_free)(void *ptr))
 	cvar_free(handle);
 }
 
-const char *cvar_usage()
+const char *cvar_usage(void)
 {
 	int offset;
 
@@ -147,7 +147,7 @@ const char *cvar_usage()
 	return usage;
 }
 
-const char *cvar_version()
+const char *cvar_version(void)
 {
 	return VERSION;
 }

@@ -18,6 +18,17 @@ filebench_SOURCES = eventgen.c fb_avl.c fb_localfs.c \
 		    fbtime.c fbtime.h \
 		    fb_cvar.c fb_cvar.h aslr.c aslr.h \
 		    cvars/mtwist/mtwist.c cvars/mtwist/mtwist.h
+filebench_LDFLAGS = -export-dynamic
+
+# We're going to build fb_localfs.c into a library as well; this means
+# building it both with and without libtool, triggering
+# an autoconf issue as documented at
+# https://www.gnu.org/software/automake/manual/html_node/Objects-created-both-with-libtool-and-without.html
+#
+# The recommended fix there is per-target flags.
+lib_LTLIBRARIES = libfb_localfs.la
+libfb_localfs_la_SOURCES = fb_localfs.c
+libfb_localfs_la_CFLAGS = $(AM_CFLAGS)
 
 EXTRA_DIST = LICENSE
 

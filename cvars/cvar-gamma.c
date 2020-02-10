@@ -116,19 +116,7 @@ default_src(unsigned short *xi)
 	return (drand48());
 }
 
-/*
- * Sample the gamma distributed random variable with gamma 'a' and
- * result mulitplier 'b', which is usually mean/gamma. Uses the default
- * drand48 random number generator as input
- */
-static double
-gamma_dist_knuth(double a, double b)
-{
-	if (a <= 1.0)
-		return (b * gamma_dist_knuth_algG(a, default_src, NULL));
-	else
-		return (b * gamma_dist_knuth_algA(a, default_src, NULL));
-}
+
 
 /*
  * Sample the gamma distributed random variable with gamma 'a' and
@@ -144,6 +132,17 @@ gamma_dist_knuth_src(double a, double b,
 		return (b * gamma_dist_knuth_algG(a, src, xi));
 	else
 		return (b * gamma_dist_knuth_algA(a, src, xi));
+}
+
+/*
+ * Sample the gamma distributed random variable with gamma 'a' and
+ * result mulitplier 'b', which is usually mean/gamma. Uses the default
+ * drand48 random number generator as input
+ */
+static double
+gamma_dist_knuth(double a, double b)
+{
+	return gamma_dist_knuth_src(a, b, default_src, NULL);
 }
 /*************************************************************/
 
@@ -216,8 +215,6 @@ out:
 
 int cvar_revalidate_handle(void *cvar_handle)
 {
-	handle_t *h = (handle_t *) cvar_handle;
-
 	return 0;
 }
 
@@ -245,7 +242,7 @@ void cvar_free_handle(void *handle, void (*cvar_free)(void *ptr))
 	cvar_free(handle);
 }
 
-const char *cvar_usage()
+const char *cvar_usage(void)
 {
 	int offset;
 
@@ -277,7 +274,7 @@ const char *cvar_usage()
 	return usage;
 }
 
-const char *cvar_version()
+const char *cvar_version(void)
 {
 	return VERSION;
 }

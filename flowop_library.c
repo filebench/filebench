@@ -36,7 +36,6 @@
 #include <inttypes.h>
 #include <fcntl.h>
 #include <math.h>
-#include <dirent.h>
 
 #ifndef HAVE_SYSV_SEM
 #include <semaphore.h>
@@ -418,7 +417,11 @@ flowoplib_iobufsetup(threadflow_t *threadflow, flowop_t *flowop,
     caddr_t *iobufp, fbint_t iosize)
 {
 	long memsize;
+#if defined(_LP64) || (__WORDSIZE == 64)
+	uint64_t memoffset;
+#else
 	size_t memoffset;
+#endif
 
 	if (iosize == 0) {
 		filebench_log(LOG_ERROR, "zero iosize for thread %s",
@@ -551,7 +554,7 @@ flowoplib_read(threadflow_t *threadflow, flowop_t *flowop)
 		}
 		(void) flowop_endop(threadflow, flowop, ret);
 
-		if ((ret == 0))
+		if (ret == 0)
 			(void) FB_LSEEK(fdesc, 0, SEEK_SET);
 
 	} else {
@@ -567,7 +570,7 @@ flowoplib_read(threadflow_t *threadflow, flowop_t *flowop)
 		}
 		(void) flowop_endop(threadflow, flowop, ret);
 
-		if ((ret == 0))
+		if (ret == 0)
 			(void) FB_LSEEK(fdesc, 0, SEEK_SET);
 	}
 
@@ -1220,7 +1223,9 @@ flowoplib_semblock(threadflow_t *threadflow, flowop_t *flowop)
 	struct sembuf sbuf[2];
 	int value = avd_get_int(flowop->fo_value);
 	int sys_semid;
+#ifdef HAVE_SEMTIMEDOP
 	struct timespec timeout;
+#endif
 
 	sys_semid = filebench_shm->shm_sys_semid;
 
@@ -1236,8 +1241,10 @@ flowoplib_semblock(threadflow_t *threadflow, flowop_t *flowop)
 	sbuf[1].sem_num = flowop->fo_semid_lw;
 	sbuf[1].sem_op = value * -1;
 	sbuf[1].sem_flg = 0;
+#ifdef HAVE_SEMTIMEDOP
 	timeout.tv_sec = 600;
 	timeout.tv_nsec = 0;
+#endif
 
 	if (avd_get_bool(flowop->fo_blocking))
 		(void) ipc_mutex_unlock(&flowop->fo_lock);
@@ -1341,10 +1348,12 @@ flowoplib_sempost(threadflow_t *threadflow, flowop_t *flowop)
 		struct sembuf sbuf[2];
 		int sys_semid;
 		int blocking;
+#ifdef HAVE_SEMTIMEDOP
+		struct timespec timeout;
+#endif
 #else
 		int i;
 #endif /* HAVE_SYSV_SEM */
-		struct timespec timeout;
 		int value = (int)avd_get_int(flowop->fo_value);
 
 		if (target->fo_instance == FLOW_MASTER) {
@@ -1367,8 +1376,10 @@ flowoplib_sempost(threadflow_t *threadflow, flowop_t *flowop)
 		sbuf[1].sem_num = target->fo_semid_hw;
 		sbuf[1].sem_op = value * -1;
 		sbuf[1].sem_flg = 0;
+#ifdef HAVE_SEMTIMEDOP
 		timeout.tv_sec = 600;
 		timeout.tv_nsec = 0;
+#endif
 
 		if (avd_get_bool(flowop->fo_blocking))
 			blocking = 1;
@@ -2036,8 +2047,8 @@ flowoplib_listdir(threadflow_t *threadflow, flowop_t *flowop)
 {
 	fileset_t	*fileset;
 	filesetentry_t	*dir;
-	DIR		*dir_handle;
-	struct dirent	*direntp;
+	struct fsplug_dir	*dir_handle;
+	struct fsplug_dirent	dirent;
 	int		dir_bytes = 0;
 	int		ret;
 	char		full_path[MAXPATHLEN];
@@ -2069,9 +2080,8 @@ flowoplib_listdir(threadflow_t *threadflow, flowop_t *flowop)
 	}
 
 	/* read through the directory entries */
-	while ((direntp = FB_READDIR(dir_handle)) != NULL) {
-		dir_bytes += (strlen(direntp->d_name) +
-		    sizeof (struct dirent) - 1);
+	while (FB_READDIR(dir_handle,&dirent) == 0) {
+		dir_bytes += dirent.bytecost;
 	}
 
 	/* close the directory */

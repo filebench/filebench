@@ -25,7 +25,6 @@
  * Portions Copyright 2008 Denis Cheng
  */
 
-#include "config.h"
 #include "filebench.h"
 #include "flowop.h"
 #include "threadflow.h" /* For aiolist definition */
@@ -56,6 +55,7 @@
  * and may be replaced by vectors for other file system plug-ins.
  */
 
+static void fb_lfs_init_master(void);
 static int fb_lfs_freemem(fb_fdesc_t *fd, off64_t size);
 static int fb_lfs_open(fb_fdesc_t *, char *, int, int);
 static int fb_lfs_pread(fb_fdesc_t *, caddr_t, fbint_t, off64_t);
@@ -72,18 +72,28 @@ static int fb_lfs_unlink(char *);
 static ssize_t fb_lfs_readlink(const char *, char *, size_t);
 static int fb_lfs_mkdir(char *, int);
 static int fb_lfs_rmdir(char *);
-static DIR *fb_lfs_opendir(char *);
-static struct dirent *fb_lfs_readdir(DIR *);
-static int fb_lfs_closedir(DIR *);
+static struct fsplug_dir *fb_lfs_opendir(char *);
+static int fb_lfs_readdir(struct fsplug_dir *, struct fsplug_dirent *);
+static int fb_lfs_closedir(struct fsplug_dir *);
 static int fb_lfs_fsync(fb_fdesc_t *);
 static int fb_lfs_stat(char *, struct stat64 *);
 static int fb_lfs_fstat(fb_fdesc_t *, struct stat64 *);
 static int fb_lfs_access(const char *, int);
 static void fb_lfs_recur_rm(char *);
 
-static fsplug_func_t fb_lfs_funcs =
+/*
+ * This is named as would be a generic fsplug, even though we are going to
+ * statically link this plugin into the executable.  This allows us to test
+ * the filesystem and loader as different components.  The name
+ * "fsplug_funcs" is never used directly, despite being exported here.
+ */
+fsplug_func_t fsplug_funcs =
 {
 	"locfs",
+
+	fb_lfs_init_master,
+	NULL,				/* Needs no per-worker initialization */
+
 	fb_lfs_freemem,		/* flush page cache */
 	fb_lfs_open,		/* open */
 	fb_lfs_pread,		/* pread */
@@ -110,6 +120,9 @@ static fsplug_func_t fb_lfs_funcs =
 	fb_lfs_recur_rm		/* recursive rm */
 };
 
+/* Set the default fs_functions_vec to us */
+fsplug_func_t *fs_functions_vec = &fsplug_funcs;
+
 #ifdef HAVE_AIO
 /*
  * Local file system asynchronous IO flowops are in this module, as
@@ -128,22 +141,11 @@ static flowop_proto_t fb_lfsflow_funcs[] = {
 #endif /* HAVE_AIO */
 
 /*
- * Initialize file system functions vector to point to the vector of local file
- * system functions. This function will be called for the master process and
- * every created worker process.
- */
-void
-fb_lfs_funcvecinit(void)
-{
-	fs_functions_vec = &fb_lfs_funcs;
-}
-
-/*
  * Initialize those flowops which implementation is file system specific. It is
  * called only once in the master process.
  */
-void
-fb_lfs_newflowops(void)
+static void
+fb_lfs_init_master(void)
 {
 #ifdef HAVE_AIO
 	int nops;
@@ -158,6 +160,7 @@ fb_lfs_newflowops(void)
  * If successful, returns 0. Otherwise returns -1 if "size"
  * is zero, or -1 times the number of times msync() failed.
  */
+#ifdef HAVE_MMAP64
 static int
 fb_lfs_freemem(fb_fdesc_t *fd, off64_t size)
 {
@@ -176,15 +179,43 @@ fb_lfs_freemem(fb_fdesc_t *fd, off64_t size)
 	}
 	return (ret);
 }
+#else
+static int
+fb_lfs_freemem(fb_fdesc_t *fd, off_t size)
+{
+	off64_t left;
+	int ret = 0;
+
+	for (left = size; left > 0; left -= MMAP_SIZE) {
+		off64_t thismapsize;
+		caddr_t addr;
+
+		thismapsize = MIN(MMAP_SIZE, left);
+		addr = mmap(0, thismapsize, PROT_READ|PROT_WRITE,
+		    MAP_SHARED, fd->fd_num, size - left);
+		ret += msync(addr, thismapsize, MS_INVALIDATE);
+		(void) munmap(addr, thismapsize);
+	}
+	return (ret);
+}
+#endif
 
 /*
  * Does a posix pread. Returns what the pread() returns.
  */
+#ifdef HAVE_PREAD64
 static int
 fb_lfs_pread(fb_fdesc_t *fd, caddr_t iobuf, fbint_t iosize, off64_t fileoffset)
 {
 	return (pread64(fd->fd_num, iobuf, iosize, fileoffset));
 }
+#else
+static int
+fb_lfs_pread(fb_fdesc_t *fd, caddr_t iobuf, fbint_t iosize, off_t fileoffset)
+{
+	return (pread(fd->fd_num, iobuf, iosize, fileoffset));
+}
+#endif
 
 /*
  * Does a posix read. Returns what the read() returns.
@@ -479,6 +510,7 @@ fb_lfsflow_aiowait(threadflow_t *threadflow, flowop_t *flowop)
  * successs, and FILEBENCH_ERROR on failure.
  */
 
+#ifdef HAVE_OPEN64
 static int
 fb_lfs_open(fb_fdesc_t *fd, char *path, int flags, int perms)
 {
@@ -487,6 +519,16 @@ fb_lfs_open(fb_fdesc_t *fd, char *path, int flags, int perms)
 	else
 		return (FILEBENCH_OK);
 }
+#else
+static int
+fb_lfs_open(fb_fdesc_t *fd, char *path, int flags, int perms)
+{
+	if ((fd->fd_num = open(path, flags, perms)) < 0)
+		return (FILEBENCH_ERROR);
+	else
+		return (FILEBENCH_OK);
+}
+#endif
 
 /*
  * Does an unlink (delete) of a file.
@@ -518,11 +560,19 @@ fb_lfs_fsync(fb_fdesc_t *fd)
 /*
  * Do a posix lseek of a file. Return what lseek() returns.
  */
+#ifdef HAVE_LSEEK64
 static int
 fb_lfs_lseek(fb_fdesc_t *fd, off64_t offset, int whence)
 {
 	return (lseek64(fd->fd_num, offset, whence));
 }
+#else
+static int
+fb_lfs_lseek(fb_fdesc_t *fd, off_t offset, int whence)
+{
+	return (lseek(fd->fd_num, offset, whence));
+}
+#endif
 
 /*
  * Do a posix rename of a file. Return what rename() returns.
@@ -573,7 +623,7 @@ fb_lfs_recur_rm(char *path)
 	(void) snprintf(cmd, sizeof (cmd), "rm -rf %s", path);
 
 	/* We ignore system()'s return value */
-	if (system(cmd));
+	(void) system(cmd);
 	return;
 }
 
@@ -581,57 +631,98 @@ fb_lfs_recur_rm(char *path)
  * Does a posix opendir(), Returns a directory handle on success,
  * NULL on failure.
  */
-static DIR *
+static struct fsplug_dir *
 fb_lfs_opendir(char *path)
 {
-	return (opendir(path));
+	return (struct fsplug_dir *)(opendir(path));
 }
 
 /*
- * Does a readdir() call. Returns a pointer to a table of directory
- * information on success, NULL on failure.
+ * Emulates a readdir() call.  Populates dirent on success (and returns 0)
+ * or returns -1.
  */
-static struct dirent *
-fb_lfs_readdir(DIR *dirp)
+static int
+fb_lfs_readdir(struct fsplug_dir *dirp, struct fsplug_dirent *dirent)
 {
-	return (readdir(dirp));
+	struct dirent *d = readdir((DIR*)dirp);
+
+	if (d != NULL) {
+		dirent->bytecost = sizeof(*d) + strlen(d->d_name) - 1;
+
+		/* We don't actually care about the name at the moment, except as it
+		 * influences the bytecost above.
+		 */
+#if 0
+		strncpy(dirent->d_name, d->d_name, sizeof(dirent->d_name)-1);
+		dirent->d_name[sizeof(dirent->d_name)-1] = '\0';
+#endif
+
+		return 0;
+	} else {
+		return -1;
+	}
 }
 
 /*
  * Does a closedir() call.
  */
 static int
-fb_lfs_closedir(DIR *dirp)
+fb_lfs_closedir(struct fsplug_dir *dirp)
 {
-	return (closedir(dirp));
+	return (closedir((DIR*)dirp));
 }
 
 /*
  * Does an fstat of a file.
  */
+#ifdef HAVE_FSTAT64
 static int
 fb_lfs_fstat(fb_fdesc_t *fd, struct stat64 *statbufp)
 {
 	return (fstat64(fd->fd_num, statbufp));
 }
+#else
+static int
+fb_lfs_fstat(fb_fdesc_t *fd, struct stat *statbufp)
+{
+	return (fstat(fd->fd_num, statbufp));
+}
+#endif
+
 
 /*
  * Does a stat of a file.
  */
+#ifdef HAVE_STAT64
 static int
 fb_lfs_stat(char *path, struct stat64 *statbufp)
 {
 	return (stat64(path, statbufp));
 }
+#else
+static int
+fb_lfs_stat(char *path, struct stat *statbufp)
+{
+	return (stat(path, statbufp));
+}
+#endif
 
 /*
  * Do a pwrite64 to a file.
  */
+#ifdef HAVE_PWRITE64
 static int
 fb_lfs_pwrite(fb_fdesc_t *fd, caddr_t iobuf, fbint_t iosize, off64_t offset)
 {
 	return (pwrite64(fd->fd_num, iobuf, iosize, offset));
 }
+#else
+static int
+fb_lfs_pwrite(fb_fdesc_t *fd, caddr_t iobuf, fbint_t iosize, off_t offset)
+{
+	return (pwrite(fd->fd_num, iobuf, iosize, offset));
+}
+#endif
 
 /*
  * Do a write to a file.

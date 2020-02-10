@@ -28,6 +28,8 @@
 
 %{
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -69,7 +71,7 @@ static attr_t *alloc_attr(void);
 static attr_t *alloc_lvar_attr(var_t *var);
 static attr_t *get_attr(cmd_t *cmd, int64_t name);
 static void get_attr_lvars(cmd_t *cmd, flowop_t *flowop);
-static list_t *alloc_list();
+static list_t *alloc_list(void);
 static probtabent_t *alloc_probtabent(void);
 static void add_lvar_to_list(var_t *newlvar, var_t **lvar_list);
 
@@ -1302,7 +1304,10 @@ var_int_val: FSV_VAL_POSINT
 "   -f <wmlscript> generate workload from the specified file\n" \
 "   -h             display this help message\n" \
 "   -c             display supported cvar types\n" \
-"   -c [cvartype]  display options of the specific cvar type\n\n"
+"   -c [cvartype]  display options of the specific cvar type\n" \
+"   [-t fsplug]    Load filesystem plugin\n" \
+"   [-x wrapper]   Wrap workers with an external program\n" \
+"   -L <libdir>    set the library directory (for cvars, e.g.)\n\n"
 
 static void
 usage_exit(int ret, const char *msg)
@@ -1323,6 +1328,8 @@ struct fbparams {
 	char *shmpath;
 	int instance;
 	char *cvartype;
+	char *fblibdir;
+	char *fsplug;
 };
 
 static void
@@ -1330,6 +1337,7 @@ init_fbparams(struct fbparams *fbparams)
 {
 	memset(fbparams, 0, sizeof(*fbparams));
 	fbparams->instance = -1;
+	fbparams->fblibdir = FBLIBDIR;
 }
 
 #define FB_MODE_NONE		0
@@ -1341,7 +1349,7 @@ init_fbparams(struct fbparams *fbparams)
 static int
 parse_options(int argc, char *argv[], struct fbparams *fbparams)
 {
-	const char cmd_options[] = "m:s:a:i:hf:c:";
+	const char cmd_options[] = "m:s:a:i:hf:c:L:t:x:";
 	int mode = FB_MODE_NONE;
 	int opt;
 
@@ -1382,6 +1390,19 @@ parse_options(int argc, char *argv[], struct fbparams *fbparams)
 				usage_exit(1, "Too many options specified");
 			mode = FB_MODE_MASTER;
 			fbparams->fscriptname = optarg;
+			break;
+		case 'L':
+			fbparams->fblibdir = optarg;
+			break;
+		case 't':
+			if (!optarg)
+				usage_exit(1, "Need type for -t");
+			fbparams->fsplug = optarg;
+			break;
+		case 'x':
+			if (!optarg)
+				usage_exit(1, "Need program for -x");
+			fbparams->execname = optarg;
 			break;
 		/* private parameters: when filebench calls itself */
 		case 'a':
@@ -1535,9 +1556,9 @@ cvars_mode(struct fbparams *fbparams)
 {
 	int ret;
 
-	ipc_init();
+	ipc_init(NULL); /* cvars mode doesn't use fsplug */
 
-	ret = init_cvar_library_info(FBLIBDIR);
+	ret = init_cvar_library_info(fbparams->fblibdir);
 	if (ret)
 		filebench_shutdown(1);
 
@@ -1582,7 +1603,25 @@ master_mode(struct fbparams *fbparams) {
 	execname = fbparams->execname;
 	fb_set_shmmax();
 
-	ipc_init();
+	if ((fbparams->fsplug == NULL)
+	   || ((strchr(fbparams->fsplug, '/') != NULL)
+	      && (strlen(fbparams->fsplug) < PATH_MAX)))
+		ipc_init(fbparams->fsplug);
+	else {
+		/* Otherwise, construct the path */
+		char path[PATH_MAX];
+
+		ret = snprintf(path, sizeof(path), "%s/libfb_%s.so",
+		               fbparams->fblibdir, fbparams->fsplug);
+		if ((ret < 0) || (ret > PATH_MAX)) {
+			/* error or too big */
+			filebench_log(LOG_FATAL, "Cannot interpret plug %s!",
+			              fbparams->fsplug);
+			exit(1);
+		}
+
+		ipc_init(path);
+	}
 
 	/* Below we initialize things that depend on IPC */
 	(void)strcpy(filebench_shm->shm_fscriptname,
@@ -1592,7 +1631,7 @@ master_mode(struct fbparams *fbparams) {
 	eventgen_init();
 
 	/* Initialize custom variables. */
-	ret = init_cvar_library_info(FBLIBDIR);
+	ret = init_cvar_library_info(fbparams->fblibdir);
 	if (ret)
 		filebench_shutdown(1);
 
@@ -1613,9 +1652,8 @@ master_mode(struct fbparams *fbparams) {
 }
 
 static void
-init_common()
+init_common(void)
 {
-	disable_aslr();
 	my_pid = getpid();
 	fb_set_rlimit();
 }
@@ -1639,6 +1677,11 @@ main(int argc, char *argv[])
 {
 	struct fbparams fbparams;
 	int mode;
+
+	if (disable_aslr()) {
+		filebench_log(LOG_INFO, "ASLR now disabled; re-exec()ing self.");
+		execv(argv[0], argv);
+	}
 
 	/* parse_options() exits if detects wrong usage */
 	mode = parse_options(argc, argv, &fbparams);
@@ -2489,8 +2532,6 @@ parser_filebench_shutdown(cmd_t *cmd)
 {
 	int f_abort = filebench_shm->shm_f_abort;
 
-	ipc_fini();
-
 	if (f_abort == FILEBENCH_ABORT_ERROR)
 		filebench_shutdown(1);
 	else
@@ -2800,9 +2841,9 @@ parser_system(cmd_t *cmd)
 		    strerror(errno));
 		free(string);
 		filebench_shutdown(1);
+	} else {
+		free(string);
 	}
-
-	free(string);
 }
 
 /*
@@ -3111,7 +3152,7 @@ get_attr_lvars(cmd_t *cmd, flowop_t *flowop)
  * returns a pointer to it. On failure, returns NULL.
  */
 static list_t *
-alloc_list()
+alloc_list(void)
 {
 	list_t *list;
 

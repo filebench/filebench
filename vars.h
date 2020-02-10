@@ -160,13 +160,13 @@ typedef struct var {
 		(vp)->var_type = VAR_UNKNOWN; \
 	}
 
-avd_t avd_bool_alloc(boolean_t bool);
+avd_t avd_bool_alloc(boolean_t boolval);
 avd_t avd_int_alloc(uint64_t integer);
 avd_t avd_dbl_alloc(double integer);
 avd_t avd_str_alloc(char *string);
 avd_t avd_var_alloc(char *varname);
 
-int var_assign_boolean(char *name, boolean_t bool);
+int var_assign_boolean(char *name, boolean_t boolval);
 int var_assign_integer(char *name, uint64_t integer);
 int var_assign_double(char *name, double dbl);
 int var_assign_string(char *name, char *string);

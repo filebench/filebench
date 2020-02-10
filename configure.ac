@@ -42,6 +42,7 @@ AC_CHECK_HEADERS([sys/socket.h])
 AC_CHECK_HEADERS([sys/statvfs.h])
 AC_CHECK_HEADERS([sys/time.h]) 
 AC_CHECK_HEADERS([sys/personality.h]) 
+AC_CHECK_HEADERS([linux/personality.h])
 
 ####
 #### Check for more sophisticated headers
@@ -156,22 +157,12 @@ AC_CHECK_LIB(
 ])
 AC_CHECK_LIB([m],[pow])
 AC_CHECK_LIB([pthread], [pthread_mutex_lock])
-# Use Sun's robust mutexes if available
-AC_CHECK_LIB(
-	[pthread],
-	[pthread_mutexattr_setrobust_np],
-	[ AC_DEFINE(HAVE_ROBUST_MUTEX, 1, [ Define if you have robus POSIX mutexes ])]
-	)
 # Use Sun's additional mutex functionality if available
-AC_CHECK_LIB(
-	[pthread],
-	[pthread_mutexattr_setpshared],
-	[ AC_DEFINE(HAVE_PROCSCOPE_PTHREADS, 1, [ Define if you have POSIX process scope threads ])]
-	)
-AC_CHECK_LIB(
-	[pthread],
-	[pthread_mutexattr_setprotocol],
-        [ AC_DEFINE(HAVE_PTHREAD_MUTEXATTR_SETPROTOCOL, 1, [ Define if you have POSIX setprotocol ])])
+AC_CHECK_FUNCS([ \
+	pthread_mutexattr_setrobust_np \
+	pthread_mutexattr_setprotocol \
+	pthread_mutexattr_setpshared \
+])
 
 AC_CHECK_LIB([dl],[dlopen])
 
@@ -199,22 +190,7 @@ AC_TYPE_SIGNAL
 AC_TYPE_SIZE_T
 AC_STRUCT_TM
 
-# check for off64_t.
-# FreeBSD doesn't have off64_t because off_t et al are 64 bits,
-# even on 32-bit systems, and have been ever since the net4.4 release from UCB
-# (at least). Consequently, there isn't a separate set of interfaces for 32-bit
-# and 64-bit files or file systems, they're all 64-bit.
-AC_MSG_CHECKING(for off64_t)
-AC_TRY_COMPILE([
-	#define _LARGEFILE64_SOURCE
-	#include <sys/types.h>
-	],
-	[off64_t test;
-	],[
-	    AC_DEFINE(HAVE_OFF64_T, 1, [ Define if you have off64_t ])
-	    AC_MSG_RESULT(yes)
-	  ], AC_MSG_RESULT(no)
-)
+AC_CHECK_TYPES([off64_t])
 
 # check for boolean_t: Solaris defines it.
 AC_MSG_CHECKING(for boolean_t)
@@ -397,18 +373,9 @@ AC_TRY_COMPILE([
 # Sometimes personality() function exists but ADDR_NO_RANDOMIZE is not defined
 # (e.g, in CentOS 5.11)
 #
-AC_MSG_CHECKING(for ADDR_NO_RANDOMIZE)
-AC_TRY_COMPILE([
-	#include <sys/personality.h>
-	],
-	[
-		int ret;
-		ret = personality(0xffffffff | ADDR_NO_RANDOMIZE);
-	],[
-	    AC_DEFINE(HAVE_ADDR_NO_RANDOMIZE, 1, [ Define if you have ADDR_NO_RANDOMIZE. ])
-	    AC_MSG_RESULT(yes)
-	  ], AC_MSG_RESULT(no)
-)
+AC_CHECK_DECLS(ADDR_NO_RANDOMIZE,[],[
+  AC_CHECK_DECLS(ADDR_NO_RANDOMIZE,[],[],[#include<linux/personality.h>])
+],[#include <sys/personality.h>])
 
 #
 # Configuring direct I/O. There are 3 main options:

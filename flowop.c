@@ -29,10 +29,13 @@
 #include <sys/lwp.h>
 #endif
 #include <fcntl.h>
+#include <dlfcn.h>
 #include "filebench.h"
 #include "flowop.h"
 #include "stats.h"
 #include "ioprio.h"
+
+static void *fsplug_handle = NULL;
 
 static flowop_t *flowop_define_common(threadflow_t *threadflow, char *name,
     flowop_t *inherit, flowop_t **flowoplist_hdp, int instance, int type);
@@ -561,16 +564,35 @@ flowop_init(int ismaster)
 		flowoplib_flowinit();
 	}
 
-	switch (filebench_shm->shm_filesys_type) {
-	case LOCAL_FS_PLUG:
-		if (ismaster)
-			fb_lfs_newflowops();
-		fb_lfs_funcvecinit();
-		break;
-	case NFS3_PLUG:
-	case NFS4_PLUG:
-	case CIFS_PLUG:
-		break;
+	if (filebench_shm->shm_filesys_path[0] != '\0') {
+		fsplug_handle = dlopen(filebench_shm->shm_filesys_path, RTLD_LOCAL | RTLD_NOW);
+		if (fsplug_handle == NULL) {
+				filebench_log(LOG_ERROR, "Cannot load fsplug %s: %s\n",
+					filebench_shm->shm_filesys_path, dlerror());
+				filebench_shutdown(1);
+		}
+
+		fs_functions_vec = dlsym(fsplug_handle, FB_FSPLUG_MODULE_FUNC_S);
+		if (fs_functions_vec == NULL) {
+				filebench_log(LOG_ERROR, "fsplug is not what it claims? (%s)\n",
+					filebench_shm->shm_filesys_path);
+				filebench_shutdown(1);
+		}
+	}
+
+	if (ismaster && fs_functions_vec->fsp_init_master)
+		fs_functions_vec->fsp_init_master();
+
+	if (fs_functions_vec->fsp_init)
+		fs_functions_vec->fsp_init();
+}
+
+void
+flowop_fini(void)
+{
+	if (fsplug_handle != NULL) {
+		dlclose(fsplug_handle);
+		fsplug_handle = NULL;
 	}
 }
 

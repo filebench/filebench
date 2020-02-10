@@ -80,7 +80,7 @@
 /* 16 flowops per threadflow seems reasonable */
 #define	FILEBENCH_NFLOWOPS 		(16 * 1024)
 /* variables are not the only one that are specified
-   explicitly in the .f file. Some special 
+   explicitly in the .f file. Some special
    variables are used within FB itself. So, let's
    put this value to some save large value */
 #define	FILEBENCH_NVARIABLES		(1024)
@@ -100,7 +100,7 @@ typedef struct filebench_shm {
 	 * All fields down to shm_marker are set to zero during
 	 * filebench initialization in ipc_init() function.
 	 */
-	
+
 	/*
 	 * Global lists and locks for main Filebench objects:
 	 * filesets, procflows, threaflows, and flowops.
@@ -109,7 +109,7 @@ typedef struct filebench_shm {
 	pthread_mutex_t shm_fileset_lock;
 	procflow_t	*shm_procflowlist;
 	pthread_mutex_t shm_procflow_lock;
-	/* threadflow_t	*shm_threadflowlist; (this one is per procflow) */ 
+	/* threadflow_t	*shm_threadflowlist; (this one is per procflow) */
 	pthread_mutex_t shm_threadflow_lock;
 	flowop_t	*shm_flowoplist;
 	pthread_mutex_t shm_flowop_lock;
@@ -205,7 +205,7 @@ typedef struct filebench_shm {
 	 * Type of plug-in file system client to use. Defaults to
 	 * local file system, which is type "0".
 	 */
-	fb_plugin_type_t shm_filesys_type;
+	char		shm_filesys_path[PATH_MAX];
 
 	/*
 	 * IPC shared memory pools allocation/deallocation control:
@@ -223,7 +223,7 @@ typedef struct filebench_shm {
 	 * consequently use a lot of physical memory, while
 	 * in fact, we might not need so much memory later.
 	 */
-	int		shm_marker[0];
+	int		shm_marker;
 
 	/*
 	 * IPC shared memory pools. Allocated to users
@@ -248,9 +248,9 @@ typedef struct filebench_shm {
 
 } filebench_shm_t;
 
-extern char shmpath[128];
+extern char *shmpath;
 
-extern void ipc_init(void);
+extern void ipc_init(char *plugpath);
 extern int ipc_attach(void *shmaddr, char *shmpath);
 
 void *ipc_malloc(int type);

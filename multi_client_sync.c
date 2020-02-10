@@ -26,6 +26,7 @@
 
 #include "filebench.h"
 #include "multi_client_sync.h"
+#include "utils.h"
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -49,7 +50,7 @@ mc_sync_open_sock(char *master_name, int master_port, char *my_name)
 	//int error_num;
 	//char buffer[MCS_MSGLENGTH];
 
-	(void) strncpy(this_client_name, my_name, MCS_NAMELENGTH);
+	(void) fb_strlcpy(this_client_name, my_name, MCS_NAMELENGTH);
 	if ((mc_sync_sock_id = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
 		filebench_log(LOG_ERROR, "could not create a client socket");
 		return (FILEBENCH_ERROR);
