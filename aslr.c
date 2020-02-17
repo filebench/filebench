@@ -16,6 +16,7 @@
  * functions should be added.
  */
 
+#include "config.h"
 #if defined(HAVE_SYS_PERSONALITY_H)
 #include <sys/personality.h>
 #endif
