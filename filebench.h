@@ -188,5 +188,6 @@ static inline int sigignore(int sig) {
 #define	FILEBENCH_OK	 0
 #define	FILEBENCH_ERROR -1
 #define	FILEBENCH_NORSC -2
+#define	FILEBENCH_AGAIN	-3
 
 #endif	/* _FB_FILEBENCH_H */

@@ -197,6 +197,7 @@ fileset_create_subdirs(fileset_t *fileset, char *filesetpath)
 	filesetentry_t *direntry;
 	char full_path[MAXPATHLEN];
 	char *part_path;
+	int ret;
 
 	/* walk the subdirectory list, enstanciating subdirs */
 	direntry = fileset->fs_dirlist;
@@ -207,8 +208,8 @@ fileset_create_subdirs(fileset_t *fileset, char *filesetpath)
 		free(part_path);
 
 		/* now create this portion of the subdirectory tree */
-		if (fileset_mkdir(full_path, 0755) == FILEBENCH_ERROR)
-			return (FILEBENCH_ERROR);
+		if ((ret = fileset_mkdir(full_path, 0755)) != FILEBENCH_OK)
+			return ret;
 
 		direntry = direntry->fse_nextoftype;
 	}
@@ -258,6 +259,9 @@ fileset_alloc_leafdir(filesetentry_t *entry)
 			    "Failed to pre-allocate leaf directory %s: %s",
 			    path, strerror(errno));
 			fileset_unbusy(entry, TRUE, FALSE, 0);
+			if (errno == EIO) {
+				return (FILEBENCH_AGAIN);
+			}
 			return (FILEBENCH_ERROR);
 		}
 	}
@@ -283,6 +287,7 @@ fileset_alloc_file(filesetentry_t *entry)
 	fb_fdesc_t fdesc;
 	int trust_tree;
 	int fs_readonly;
+	int ret;
 
 	fileset = entry->fse_fileset;
 	(void) fb_strlcpy(path, avd_get_str(fileset->fs_path), MAXPATHLEN);
@@ -301,12 +306,12 @@ fileset_alloc_file(filesetentry_t *entry)
 	trust_tree = avd_get_bool(fileset->fs_trust_tree);
 	if ((entry->fse_flags & FSE_REUSING) && (trust_tree ||
 	    (FB_STAT(path, &sb) == 0))) {
-		if (FB_OPEN(&fdesc, path, fs_readonly ? O_RDONLY : O_RDWR, 0) == FILEBENCH_ERROR) {
+		if ((ret = FB_OPEN(&fdesc, path, fs_readonly ? O_RDONLY : O_RDWR, 0)) != FILEBENCH_OK) {
 			filebench_log(LOG_INFO,
 			    "Attempted but failed to Re-use file %s",
 			    path);
 			fileset_unbusy(entry, TRUE, FALSE, 0);
-			return (FILEBENCH_ERROR);
+			return ret;
 		}
 
 		if (trust_tree || (sb.st_size == (off64_t)entry->fse_size)) {
@@ -335,15 +340,15 @@ fileset_alloc_file(filesetentry_t *entry)
 	} else {
 
 		/* No file or not reusing, so create */
-		if (FB_OPEN(&fdesc, path, O_RDWR | O_CREAT, 0644) ==
-		    FILEBENCH_ERROR) {
+		if ((ret = FB_OPEN(&fdesc, path, O_RDWR | O_CREAT, 0644)) !=
+		    FILEBENCH_OK) {
 			filebench_log(LOG_ERROR,
 			    "Failed to pre-allocate file %s: %s",
 			    path, strerror(errno));
 
 			/* unbusy the unallocated entry */
 			fileset_unbusy(entry, TRUE, FALSE, 0);
-			return (FILEBENCH_ERROR);
+			return ret;
 		}
 	}
 
@@ -371,6 +376,9 @@ fileset_alloc_file(filesetentry_t *entry)
 			(void) FB_CLOSE(&fdesc);
 			free(buf);
 			fileset_unbusy(entry, TRUE, FALSE, 0);
+			if (errno == EIO) {
+				return (FILEBENCH_AGAIN);
+			}
 			return (FILEBENCH_ERROR);
 		}
 		seek += wsize;
@@ -398,12 +406,12 @@ fileset_alloc_file(filesetentry_t *entry)
 static void *
 fileset_alloc_thread(filesetentry_t *entry)
 {
-	if (fileset_alloc_file(entry) == FILEBENCH_ERROR) {
-		(void) pthread_mutex_lock(&filebench_shm->shm_fsparalloc_lock);
-		filebench_shm->shm_fsparalloc_count = -1;
-	} else {
+	if (fileset_alloc_file(entry) == FILEBENCH_OK) {
 		(void) pthread_mutex_lock(&filebench_shm->shm_fsparalloc_lock);
 		filebench_shm->shm_fsparalloc_count--;
+	} else {
+		(void) pthread_mutex_lock(&filebench_shm->shm_fsparalloc_lock);
+		filebench_shm->shm_fsparalloc_count = -1;
 	}
 
 	(void) pthread_cond_signal(&filebench_shm->shm_fsparalloc_cv);
@@ -432,6 +440,7 @@ fileset_openfile(fb_fdesc_t *fdesc, fileset_t *fileset,
 	char *pathtmp;
 	struct stat64 sb;
 	int open_attrs = 0;
+	int ret;
 
 	(void) fb_strlcpy(path, avd_get_str(fileset->fs_path), MAXPATHLEN);
 	(void) fb_strlcat(path, "/", MAXPATHLEN);
@@ -444,8 +453,8 @@ fileset_openfile(fb_fdesc_t *fdesc, fileset_t *fileset,
 
 	/* If we are going to create a file, create the parent dirs */
 	if ((flag & O_CREAT) && (stat64(dir, &sb) != 0)) {
-		if (fileset_mkdir(dir, 0755) == FILEBENCH_ERROR)
-			return (FILEBENCH_ERROR);
+		if ((ret = fileset_mkdir(dir, 0755)) != FILEBENCH_OK)
+			return ret;
 	}
 
 	if (attrs & FLOW_ATTR_DSYNC)
@@ -456,14 +465,14 @@ fileset_openfile(fb_fdesc_t *fdesc, fileset_t *fileset,
 		open_attrs |= O_DIRECT;
 #endif /* HAVE_O_DIRECT */
 
-	if (FB_OPEN(fdesc, path, flag | open_attrs, filemode)
-	    == FILEBENCH_ERROR) {
+	if ((ret = FB_OPEN(fdesc, path, flag | open_attrs, filemode))
+	    != FILEBENCH_OK) {
 		filebench_log(LOG_ERROR,
 		    "Failed to open file %d, %s, with status %x: %s",
 		    entry->fse_index, path, entry->fse_flags, strerror(errno));
 
 		fileset_unbusy(entry, FALSE, FALSE, 0);
-		return (FILEBENCH_ERROR);
+		return ret;
 	}
 
 #ifdef HAVE_DIRECTIO
@@ -988,6 +997,7 @@ fileset_create(fileset_t *fileset)
 	int preallocated = 0;
 	int reusing;
 	uint64_t preallocpercent;
+	int ret;
 
 	fileset_path = avd_get_str(fileset->fs_path);
 	if (!fileset_path) {
@@ -1045,8 +1055,8 @@ fileset_create(fileset_t *fileset)
 
 		(void) FB_MKDIR(path, 0755);
 
-		if (fileset_create_subdirs(fileset, path) == FILEBENCH_ERROR)
-			return (FILEBENCH_ERROR);
+		if ((ret = fileset_create_subdirs(fileset, path)) != FILEBENCH_OK)
+			return ret;
 	}
 
 	start = gethrtime();
@@ -1130,8 +1140,8 @@ fileset_create(fileset_t *fileset)
 			}
 
 		} else {
-			if (fileset_alloc_file(entry) == FILEBENCH_ERROR)
-				return FILEBENCH_ERROR;
+			if ((ret = fileset_alloc_file(entry)) != FILEBENCH_OK)
+				return ret;
 		}
 	}
 
@@ -1153,8 +1163,8 @@ fileset_create(fileset_t *fileset)
 		else
 			entry->fse_flags &= (~FSE_REUSING);
 
-		if (fileset_alloc_leafdir(entry) == FILEBENCH_ERROR)
-			return (FILEBENCH_ERROR);
+		if ((ret = fileset_alloc_leafdir(entry)) != FILEBENCH_OK)
+			return ret;
 	}
 
 	filebench_log(LOG_VERBOSE,
@@ -1872,14 +1882,15 @@ fileset_iter(int (*cmd)(fileset_t *fileset, int first))
 {
 	fileset_t *fileset = filebench_shm->shm_filesetlist;
 	int count = 0;
+	int ret;
 
 	(void) ipc_mutex_lock(&filebench_shm->shm_fileset_lock);
 
 	while (fileset) {
-		if (cmd(fileset, count == 0) == FILEBENCH_ERROR) {
+		if ((ret = cmd(fileset, count == 0)) != FILEBENCH_OK) {
 			(void) ipc_mutex_unlock(
 			    &filebench_shm->shm_fileset_lock);
-			return (FILEBENCH_ERROR);
+			return ret;
 		}
 		fileset = fileset->fs_next;
 		count++;

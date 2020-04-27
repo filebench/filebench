@@ -479,16 +479,20 @@ fb_lfsflow_aiowait(threadflow_t *threadflow, flowop_t *flowop)
 /*
  * Does an open64 of a file. Inserts the file descriptor number returned
  * by open() into the supplied filebench fd. Returns FILEBENCH_OK on
- * successs, and FILEBENCH_ERROR on failure.
+ * successs, FILEBENCH_AGAIN on IO error and FILEBENCH_ERROR on failure.
  */
 
 static int
 fb_lfs_open(fb_fdesc_t *fd, char *path, int flags, int perms)
 {
-	if ((fd->fd_num = open64(path, flags, perms)) < 0)
+	if ((fd->fd_num = open64(path, flags, perms)) < 0) {
+		if (errno == EIO) {
+			return (FILEBENCH_AGAIN);
+		}
 		return (FILEBENCH_ERROR);
-	else
-		return (FILEBENCH_OK);
+	}
+
+	return (FILEBENCH_OK);
 }
 
 /*

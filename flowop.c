@@ -333,9 +333,12 @@ flowop_destruct_all_flows(threadflow_t *threadflow)
 void
 flowop_start(threadflow_t *threadflow)
 {
-	flowop_t *flowop;
+	flowop_t *flowop, flowop_tmp;
 	size_t memsize;
 	int ret = FILEBENCH_OK;
+	fb_fdesc_t tf_snapshot_fd[THREADFLOW_MAXFD + 1];
+	filesetentry_t *tf_snapshot_fse[THREADFLOW_MAXFD + 1];
+	struct flowstats tf_snapshot_stats;
 
 	set_thread_ioprio(threadflow);
 
@@ -413,8 +416,13 @@ flowop_start(threadflow_t *threadflow)
 	(void) memset(threadflow->tf_mem, 0, memsize);
 	filebench_log(LOG_DEBUG_SCRIPT, "Thread allocated %d bytes", memsize);
 
+	/* Initialize snapshot data for FILEBENCH_AGAIN */
+	memcpy(tf_snapshot_fd, threadflow->tf_fd, sizeof(tf_snapshot_fd));
+	memcpy(tf_snapshot_fse, threadflow->tf_fse, sizeof(tf_snapshot_fse));
+	tf_snapshot_stats = threadflow->tf_stats;
+
 	/* Main filebench worker loop */
-	while (ret == FILEBENCH_OK) {
+	while (ret == FILEBENCH_OK || ret == FILEBENCH_AGAIN) {
 		int i, count;
 
 		/* Abort if asked */
@@ -498,6 +506,22 @@ flowop_start(threadflow_t *threadflow)
 			}
 
 			/*
+			 * Return value of FILEBENCH_AGAIN means "discard
+			 * current results and goto start of flow-op loop".
+			 */
+			if (ret == FILEBENCH_AGAIN) {
+				filebench_log(LOG_DEBUG_SCRIPT, "restarting flowop loop");
+				(void) ipc_mutex_lock(&threadflow->tf_lock);
+				memcpy(threadflow->tf_fd, tf_snapshot_fd, sizeof(tf_snapshot_fd));
+				memcpy(threadflow->tf_fse, tf_snapshot_fse, sizeof(tf_snapshot_fse));
+				threadflow->tf_stats = tf_snapshot_stats;
+				(void) ipc_mutex_unlock(&threadflow->tf_lock);
+				flowop_tmp.fo_exec_next = threadflow->tf_thrd_fops;
+				flowop = &flowop_tmp;
+				break;
+			}
+
+			/*
 			 * Return value of FILEBENCH_DONE means "stop
 			 * the filebench run without error"
 			 */
@@ -531,8 +555,13 @@ flowop_start(threadflow_t *threadflow)
 
 		/* but if at end of list, start over from the beginning */
 		if (flowop == NULL) {
+			(void) ipc_mutex_lock(&threadflow->tf_lock);
 			flowop = threadflow->tf_thrd_fops;
 			threadflow->tf_stats.fs_count++;
+			memcpy(tf_snapshot_fd, threadflow->tf_fd, sizeof(tf_snapshot_fd));
+			memcpy(tf_snapshot_fse, threadflow->tf_fse, sizeof(tf_snapshot_fse));
+			tf_snapshot_stats = threadflow->tf_stats;
+			(void) ipc_mutex_unlock(&threadflow->tf_lock);
 		}
 	}
 
@@ -1025,6 +1054,10 @@ flowop_composite(threadflow_t *threadflow, flowop_t *flowop)
 			/* quit if inner flowop limit reached */
 			case FILEBENCH_NORSC:
 				return (FILEBENCH_NORSC);
+
+			/* quit to try again */
+			case FILEBENCH_AGAIN:
+				return (FILEBENCH_AGAIN);
 
 			/* quit on inner flowop error */
 			case FILEBENCH_ERROR:

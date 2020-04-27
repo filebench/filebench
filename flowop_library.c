@@ -553,6 +553,9 @@ flowoplib_read(threadflow_t *threadflow, flowop_t *flowop)
 			    avd_get_str(flowop->fo_fileset->fs_name),
 			    (u_longlong_t)fileoffset, iobuf, strerror(errno));
 			flowop_endop(threadflow, flowop, 0);
+			if (errno == EIO) {
+				return (FILEBENCH_AGAIN);
+			}
 			return (FILEBENCH_ERROR);
 		}
 		(void) flowop_endop(threadflow, flowop, ret);
@@ -569,6 +572,9 @@ flowoplib_read(threadflow_t *threadflow, flowop_t *flowop)
 			    avd_get_str(flowop->fo_fileset->fs_name),
 			    iobuf, strerror(errno));
 			(void) flowop_endop(threadflow, flowop, 0);
+			if (errno == EIO) {
+				return (FILEBENCH_AGAIN);
+			}
 			return (FILEBENCH_ERROR);
 		}
 		(void) flowop_endop(threadflow, flowop, ret);
@@ -892,6 +898,7 @@ flowoplib_opslimit(threadflow_t *threadflow, flowop_t *flowop)
 	uint64_t ops;
 	uint64_t delta;
 	uint64_t events;
+	int ret;
 
 	/* Immediately bail if not set/enabled */
 	if (!filebench_shm->shm_eventgen_enabled)
@@ -902,9 +909,9 @@ flowoplib_opslimit(threadflow_t *threadflow, flowop_t *flowop)
 		    flowop, threadflow->tf_name, threadflow->tf_instance);
 		flowop->fo_initted = 1;
 
-		if (flowoplib_event_find_target(threadflow, flowop)
-		    == FILEBENCH_ERROR)
-			return (FILEBENCH_ERROR);
+		if ((ret = flowoplib_event_find_target(threadflow, flowop))
+		    != FILEBENCH_OK)
+			return (FILEBENCH_OK);
 	}
 
 	if (flowop->fo_targets) {
@@ -967,6 +974,7 @@ flowoplib_bwlimit(threadflow_t *threadflow, flowop_t *flowop)
 	uint64_t bytes;
 	uint64_t delta;
 	uint64_t events;
+	int ret;
 
 	/* Immediately bail if not set/enabled */
 	if (!filebench_shm->shm_eventgen_enabled)
@@ -977,9 +985,9 @@ flowoplib_bwlimit(threadflow_t *threadflow, flowop_t *flowop)
 		    flowop, threadflow->tf_name, threadflow->tf_instance);
 		flowop->fo_initted = 1;
 
-		if (flowoplib_event_find_target(threadflow, flowop)
-		    == FILEBENCH_ERROR)
-			return (FILEBENCH_ERROR);
+		if ((ret = flowoplib_event_find_target(threadflow, flowop))
+		    != FILEBENCH_OK)
+			return ret;
 
 		if ((flowop->fo_targets) &&
 		    ((flowop->fo_targets->fo_attrs &
@@ -1054,6 +1062,7 @@ flowoplib_finishonbytes(threadflow_t *threadflow, flowop_t *flowop)
 {
 	uint64_t bytes_io;		/* Bytes of I/O delivered so far */
 	uint64_t byte_lim = flowop->fo_constvalue;  /* Total Bytes desired */
+	int ret;
 						    /* Uses constant value */
 
 	if (flowop->fo_initted == 0) {
@@ -1061,9 +1070,9 @@ flowoplib_finishonbytes(threadflow_t *threadflow, flowop_t *flowop)
 		    flowop, threadflow->tf_name, threadflow->tf_instance);
 		flowop->fo_initted = 1;
 
-		if (flowoplib_event_find_target(threadflow, flowop)
-		    == FILEBENCH_ERROR)
-			return (FILEBENCH_ERROR);
+		if ((ret = flowoplib_event_find_target(threadflow, flowop))
+		    != FILEBENCH_OK)
+			return ret;
 
 		if ((flowop->fo_targets) &&
 		    ((flowop->fo_targets->fo_attrs &
@@ -1103,15 +1112,16 @@ flowoplib_finishoncount(threadflow_t *threadflow, flowop_t *flowop)
 {
 	uint64_t ops;
 	uint64_t count = flowop->fo_constvalue; /* use constant value */
+	int ret;
 
 	if (flowop->fo_initted == 0) {
 		filebench_log(LOG_DEBUG_IMPL, "rate %zx %s-%d locking",
 		    flowop, threadflow->tf_name, threadflow->tf_instance);
 		flowop->fo_initted = 1;
 
-		if (flowoplib_event_find_target(threadflow, flowop)
-		    == FILEBENCH_ERROR)
-			return (FILEBENCH_ERROR);
+		if ((ret = flowoplib_event_find_target(threadflow, flowop))
+		    != FILEBENCH_OK)
+			return ret;
 	}
 
 	if (flowop->fo_targets) {
@@ -1532,12 +1542,12 @@ flowoplib_openfile_common(threadflow_t *threadflow, flowop_t *flowop, int fd)
 		filebench_log(LOG_DEBUG_SCRIPT,
 		    "open raw device %s flags %d = %d", name, open_attrs, fd);
 
-		if (FB_OPEN(&(threadflow->tf_fd[fd]), name,
-		    openflag | open_attrs, 0666) == FILEBENCH_ERROR) {
+		if ((err = FB_OPEN(&(threadflow->tf_fd[fd]), name,
+		    openflag | open_attrs, 0666)) != FILEBENCH_OK) {
 			filebench_log(LOG_ERROR,
 			    "Failed to open raw device %s: %s",
 			    name, strerror(errno));
-			return (FILEBENCH_ERROR);
+			return err;
 		}
 
 #ifdef HAVE_DIRECTIO
@@ -1586,10 +1596,10 @@ flowoplib_openfile_common(threadflow_t *threadflow, flowop_t *flowop, int fd)
 	    file, openflag, 0666, flowoplib_fileattrs(flowop));
 	flowop_endop(threadflow, flowop, 0);
 
-	if (err == FILEBENCH_ERROR) {
+	if (err != FILEBENCH_OK) {
 		filebench_log(LOG_ERROR, "flowop %s failed to open file %s",
 		    flowop->fo_name, file->fse_path);
-		return (FILEBENCH_ERROR);
+		return err;
 	}
 
 	filebench_log(LOG_DEBUG_SCRIPT,
@@ -1664,10 +1674,10 @@ flowoplib_createfile(threadflow_t *threadflow, flowop_t *flowop)
 		file, openflag, 0666, flowoplib_fileattrs(flowop));
 	flowop_endop(threadflow, flowop, 0);
 
-	if (err == FILEBENCH_ERROR) {
+	if (err != FILEBENCH_OK) {
 		filebench_log(LOG_ERROR, "failed to create file %s",
 		    flowop->fo_name);
-		return (FILEBENCH_ERROR);
+		return err;
 	}
 
 	filebench_log(LOG_DEBUG_SCRIPT,
@@ -2071,6 +2081,9 @@ flowoplib_listdir(threadflow_t *threadflow, flowop_t *flowop)
 		filebench_log(LOG_ERROR,
 		    "flowop %s failed to open directory in fileset %s\n",
 		    flowop->fo_name, avd_get_str(fileset->fs_name));
+		if (errno == EIO) {
+			return (FILEBENCH_AGAIN);
+		}
 		return (FILEBENCH_ERROR);
 	}
 
@@ -2136,6 +2149,9 @@ flowoplib_opendir(threadflow_t *threadflow, flowop_t *flowop)
 		filebench_log(LOG_ERROR,
 		    "flowop %s failed to open directory in fileset %s\n",
 		    flowop->fo_name, avd_get_str(fileset->fs_name));
+		if (errno == EIO) {
+			return (FILEBENCH_AGAIN);
+		}
 		return (FILEBENCH_ERROR);
 	}
 
@@ -2314,6 +2330,9 @@ flowoplib_readwholefile(threadflow_t *threadflow, flowop_t *flowop)
 		filebench_log(LOG_ERROR,
 		    "readwhole fail Failed to read whole file: %s",
 		    strerror(errno));
+		if (errno == EIO) {
+			return (FILEBENCH_AGAIN);
+		}
 		return (FILEBENCH_ERROR);
 	}
 
@@ -2369,6 +2388,9 @@ flowoplib_write(threadflow_t *threadflow, flowop_t *flowop)
 			    "offset %llu io buffer %zd: %s",
 			    (u_longlong_t)fileoffset, iobuf, strerror(errno));
 			flowop_endop(threadflow, flowop, 0);
+			if (errno == EIO) {
+				return (FILEBENCH_AGAIN);
+			}
 			return (FILEBENCH_ERROR);
 		}
 		flowop_endop(threadflow, flowop, iosize);
@@ -2379,6 +2401,9 @@ flowoplib_write(threadflow_t *threadflow, flowop_t *flowop)
 			    "write failed, io buffer %zd: %s",
 			    iobuf, strerror(errno));
 			flowop_endop(threadflow, flowop, 0);
+			if (errno == EIO) {
+				return (FILEBENCH_AGAIN);
+			}
 			return (FILEBENCH_ERROR);
 		}
 		flowop_endop(threadflow, flowop, iosize);
@@ -2455,6 +2480,9 @@ flowoplib_writewholefile(threadflow_t *threadflow, flowop_t *flowop)
 			    "Failed to write %d bytes on fd %d: %s",
 			    wsize, fdesc->fd_num, strerror(errno));
 			flowop_endop(threadflow, flowop, 0);
+			if (errno == EIO) {
+				return (FILEBENCH_AGAIN);
+			}
 			return (FILEBENCH_ERROR);
 		}
 		wsize = (int)MIN(wss - seek, iosize);
@@ -2507,6 +2535,9 @@ flowoplib_appendfile(threadflow_t *threadflow, flowop_t *flowop)
 		    "Failed to write %llu bytes on fd %d: %s",
 		    (u_longlong_t)iosize, fdesc->fd_num, strerror(errno));
 		flowop_endop(threadflow, flowop, ret);
+		if (errno == EIO) {
+			return (FILEBENCH_AGAIN);
+		}
 		return (FILEBENCH_ERROR);
 	}
 	flowop_endop(threadflow, flowop, ret);
@@ -2571,6 +2602,9 @@ flowoplib_appendfilerand(threadflow_t *threadflow, flowop_t *flowop)
 		    "Failed to write %llu bytes on fd %d: %s",
 		    (u_longlong_t)appendsize, fdesc->fd_num, strerror(errno));
 		flowop_endop(threadflow, flowop, 0);
+		if (errno == EIO) {
+			return (FILEBENCH_AGAIN);
+		}
 		return (FILEBENCH_ERROR);
 	}
 
@@ -2685,9 +2719,8 @@ flowoplib_print(threadflow_t *threadflow, flowop_t *flowop)
 }
 
 /*
- * Executes ioctl on a file. Opens the filename of the flowop,
- * does an ioctl operation on it and closes it. Returns
- * FILEBENCH_OK if successful, FILEBENCH_ERROR otherwise.
+ * Executes ioctl on a file. Return FILEBENCH_ERROR if the
+ * file descriptor is not valid, FILEBENCH_OK otherwise.
  */
 static int
 flowoplib_ioctl(threadflow_t *threadflow, flowop_t *flowop)
@@ -2710,7 +2743,7 @@ flowoplib_ioctl(threadflow_t *threadflow, flowop_t *flowop)
 		filebench_log(LOG_ERROR,
 		    "ioctl failed, file %s command %lu: %s",
 		    filename, command, strerror(errno));
-		return (FILEBENCH_ERROR);
+		return (FILEBENCH_OK);
 	}
 	flowop_endop(threadflow, flowop, 0);
 

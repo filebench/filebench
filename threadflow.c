@@ -57,7 +57,7 @@ static threadflow_t *threadflow_define_common(procflow_t *procflow,
  * shared memory is desired, then increments the amount of shared
  * memory needed by the amount specified in the threadflow's
  * tf_memsize parameter. The thread starts in routine
- * flowop_start() with a poineter to the threadflow supplied
+ * flowop_start() with a pointer to the threadflow supplied
  * as the argument.
  */
 static int
