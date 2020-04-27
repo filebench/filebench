@@ -75,6 +75,7 @@ typedef struct fsplug_func_s {
 	int (*fsp_fstat)(fb_fdesc_t *, struct stat64 *);
 	int (*fsp_access)(const char *, int);
 	void (*fsp_recur_rm)(char *);
+	int (*fsp_ioctl)(fb_fdesc_t *, unsigned long, void *);
 } fsplug_func_t;
 
 extern fsplug_func_t *fs_functions_vec;
@@ -142,5 +143,8 @@ extern fsplug_func_t *fs_functions_vec;
 
 #define	FB_SYMLINK(name1, name2) \
 	(*fs_functions_vec->fsp_symlink)(name1, name2)
+
+#define	FB_IOCTL(fdesc, request, argp) \
+	(*fs_functions_vec->fsp_ioctl)(fdesc, request, argp)
 
 #endif /* _FB_FSPLUG_H */

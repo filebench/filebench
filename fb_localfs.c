@@ -40,6 +40,7 @@
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/resource.h>
+#include <sys/ioctl.h>
 #include <strings.h>
 
 #include "filebench.h"
@@ -80,6 +81,7 @@ static int fb_lfs_stat(char *, struct stat64 *);
 static int fb_lfs_fstat(fb_fdesc_t *, struct stat64 *);
 static int fb_lfs_access(const char *, int);
 static void fb_lfs_recur_rm(char *);
+static int fb_lfs_ioctl(fb_fdesc_t *, unsigned long, void *);
 
 static fsplug_func_t fb_lfs_funcs =
 {
@@ -107,7 +109,8 @@ static fsplug_func_t fb_lfs_funcs =
 	fb_lfs_stat,		/* stat */
 	fb_lfs_fstat,		/* fstat */
 	fb_lfs_access,		/* access */
-	fb_lfs_recur_rm		/* recursive rm */
+	fb_lfs_recur_rm,	/* recursive rm */
+	fb_lfs_ioctl		/* ioctl */
 };
 
 #ifdef HAVE_AIO
@@ -682,4 +685,13 @@ static int
 fb_lfs_access(const char *path, int amode)
 {
 	return (access(path, amode));
+}
+
+/*
+ * Does an ioctl() call on a file.
+ */
+static int
+fb_lfs_ioctl(fb_fdesc_t *fd, unsigned long request, void *argp)
+{
+	return (ioctl(fd->fd_num, request, argp));
 }

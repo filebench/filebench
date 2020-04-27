@@ -95,6 +95,7 @@ static int flowoplib_openfile(threadflow_t *, flowop_t *flowop);
 static int flowoplib_openfile_common(threadflow_t *, flowop_t *flowop, int fd);
 static int flowoplib_createfile(threadflow_t *, flowop_t *flowop);
 static int flowoplib_closefile(threadflow_t *, flowop_t *flowop);
+static int flowoplib_opendir(threadflow_t *, flowop_t *flowop);
 static int flowoplib_makedir(threadflow_t *, flowop_t *flowop);
 static int flowoplib_removedir(threadflow_t *, flowop_t *flowop);
 static int flowoplib_listdir(threadflow_t *, flowop_t *flowop);
@@ -111,6 +112,7 @@ static int flowoplib_fsyncset(threadflow_t *threadflow, flowop_t *flowop);
 static int flowoplib_testrandvar(threadflow_t *threadflow, flowop_t *flowop);
 static int flowoplib_testrandvar_init(flowop_t *flowop);
 static void flowoplib_testrandvar_destruct(flowop_t *flowop);
+static int flowoplib_ioctl(threadflow_t *threadflow, flowop_t *flowop);
 
 static flowop_proto_t flowoplib_funcs[] = {
 	{FLOW_TYPE_IO, FLOW_ATTR_WRITE, "write", flowop_init_generic,
@@ -147,6 +149,8 @@ static flowop_proto_t flowoplib_funcs[] = {
 	flowoplib_createfile, flowop_destruct_generic},
 	{FLOW_TYPE_IO, 0, "closefile", flowop_init_generic,
 	flowoplib_closefile, flowop_destruct_generic},
+	{FLOW_TYPE_IO, 0, "opendir", flowop_init_generic,
+	flowoplib_opendir, flowop_destruct_generic},
 	{FLOW_TYPE_IO, 0, "makedir", flowop_init_generic,
 	flowoplib_makedir, flowop_destruct_generic},
 	{FLOW_TYPE_IO, 0, "removedir", flowop_init_generic,
@@ -173,7 +177,9 @@ static flowop_proto_t flowoplib_funcs[] = {
 	flowoplib_print, flowop_destruct_generic},
 	/* routine to calculate mean and stddev for output from a randvar */
 	{FLOW_TYPE_OTHER, 0, "testrandvar", flowoplib_testrandvar_init,
-	flowoplib_testrandvar, flowoplib_testrandvar_destruct}
+	flowoplib_testrandvar, flowoplib_testrandvar_destruct},
+	{FLOW_TYPE_OTHER, 0, "ioctl", flowop_init_generic,
+	flowoplib_ioctl, flowop_destruct_generic},
 };
 
 /*
@@ -2085,6 +2091,68 @@ flowoplib_listdir(threadflow_t *threadflow, flowop_t *flowop)
 	return (FILEBENCH_OK);
 }
 
+/* Use opendir() to open a directory and store its file descriptor.
+ * Obtains the fileset name from the flowop, selects a normal subdirectory
+ * (which always exist) and obtains its full path, then uses opendir() to
+ * get a DIR handle to it from the file system. Returns FILEBENCH_ERROR on
+ * errors, and FILEBENCH_OK on success.
+ */
+static int
+flowoplib_opendir(threadflow_t *threadflow, flowop_t *flowop)
+{
+	int		fd;
+	fileset_t	*fileset;
+	filesetentry_t	*dir;
+	DIR		*dir_handle;
+	int		ret;
+	char	full_path[MAXPATHLEN];
+
+
+	if ((fd = flowoplib_fdnum(threadflow, flowop)) == -1) {
+		filebench_log(LOG_ERROR, "flowop NO fd");
+		return (FILEBENCH_ERROR);
+	}
+
+	if ((fileset = flowop->fo_fileset) == NULL) {
+		filebench_log(LOG_ERROR, "flowop NO fileset");
+		return (FILEBENCH_ERROR);
+	}
+
+	if ((dir = fileset_pick(fileset, FILESET_PICKDIR, 0, 0)) == NULL) {
+		filebench_log(LOG_DEBUG_SCRIPT,
+		    "flowop %s failed to pick directory from fileset %s",
+		    flowop->fo_name,
+		    avd_get_str(fileset->fs_name));
+		return (FILEBENCH_ERROR);
+	}
+
+	if ((ret = flowoplib_getdirpath(dir, full_path)) != FILEBENCH_OK)
+		return (ret);
+
+	flowop_beginop(threadflow, flowop);
+
+	/* open the directory */
+	if ((dir_handle = FB_OPENDIR(full_path)) == NULL) {
+		filebench_log(LOG_ERROR,
+		    "flowop %s failed to open directory in fileset %s\n",
+		    flowop->fo_name, avd_get_str(fileset->fs_name));
+		return (FILEBENCH_ERROR);
+	}
+
+	flowop_endop(threadflow, flowop, 0);
+
+	/* indicate that it is no longer busy */
+	fileset_unbusy(dir, FALSE, FALSE, 0);
+
+	threadflow->tf_fse[fd] = dir;
+	threadflow->tf_fd[fd].fd_num = dirfd(dir_handle);
+
+	filebench_log(LOG_DEBUG_SCRIPT,
+	    "flowop %s: opened %s fd[%d] = %d",
+	    flowop->fo_name, dir->fse_path, fd, threadflow->tf_fd[fd]);
+	return (FILEBENCH_OK);
+}
+
 /*
  * Emulate stat of a file. Picks an arbitrary filesetentry with
  * an existing file from the flowop's fileset, then performs a
@@ -2613,5 +2681,41 @@ flowoplib_print(threadflow_t *threadflow, flowop_t *flowop)
 	    threadflow->tf_name, threadflow->tf_instance,
 	    avd_get_str(flowop->fo_value));
 
+	return (FILEBENCH_OK);
+}
+
+/*
+ * Executes ioctl on a file. Opens the filename of the flowop,
+ * does an ioctl operation on it and closes it. Returns
+ * FILEBENCH_OK if successful, FILEBENCH_ERROR otherwise.
+ */
+static int
+flowoplib_ioctl(threadflow_t *threadflow, flowop_t *flowop)
+{
+	int fd = flowoplib_fdnum(threadflow, flowop);
+
+	if (threadflow->tf_fd[fd].fd_num == 0) {
+		filebench_log(LOG_ERROR,
+		    "flowop %s attempted to ioctl a closed fd %d",
+		    flowop->fo_name, fd);
+		return (FILEBENCH_ERROR);
+	}
+
+	char *filename = threadflow->tf_fse[fd]->fse_path;
+	unsigned long command = avd_get_int(flowop->fo_value);
+
+	flowop_beginop(threadflow, flowop);
+	if (FB_IOCTL(&threadflow->tf_fd[fd], command, NULL) == -1) {
+		flowop_endop(threadflow, flowop, 0);
+		filebench_log(LOG_ERROR,
+		    "ioctl failed, file %s command %lu: %s",
+		    filename, command, strerror(errno));
+		return (FILEBENCH_ERROR);
+	}
+	flowop_endop(threadflow, flowop, 0);
+
+	filebench_log(LOG_DEBUG_SCRIPT,
+		"ioctl file %s command %lu",
+		filename, command);
 	return (FILEBENCH_OK);
 }
