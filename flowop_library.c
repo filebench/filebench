@@ -1660,11 +1660,15 @@ flowoplib_createfile(threadflow_t *threadflow, flowop_t *flowop)
 
 	if ((err = flowoplib_pickfile(&file, flowop,
 	    FILESET_PICKNOEXIST, 0)) != FILEBENCH_OK) {
-		filebench_log(LOG_DEBUG_SCRIPT,
-		    "flowop %s failed to pick file from fileset %s",
-		    flowop->fo_name,
-		    avd_get_str(flowop->fo_fileset->fs_name));
-		return (err);
+		// fallback to existing files
+		if ((err = flowoplib_pickfile(&file, flowop,
+		    FILESET_PICKEXISTS, 0)) != FILEBENCH_OK) {
+			filebench_log(LOG_DEBUG_SCRIPT,
+			    "flowop %s failed to pick file from fileset %s",
+			    flowop->fo_name,
+			    avd_get_str(flowop->fo_fileset->fs_name));
+			return (err);
+		}
 	}
 
 	threadflow->tf_fse[fd] = file;
