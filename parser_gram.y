@@ -130,8 +130,10 @@ static void parser_enable_lathist(cmd_t *cmd);
 %token FSC_SYSTEM FSC_EVENTGEN FSC_ECHO FSC_RUN FSC_PSRUN FSC_VERSION FSC_ENABLE
 %token FSC_DOMULTISYNC
 
-%token FSV_STRING FSV_VAL_POSINT FSV_VAL_NEGINT FSV_VAL_BOOLEAN FSV_VARIABLE 
-%token FSV_WHITESTRING FSV_RANDUNI FSV_RANDTAB FSV_URAND FSV_RAND48
+%token <sval> FSV_STRING FSV_VARIABLE FSV_WHITESTRING
+%token <ival> FSV_VAL_POSINT FSV_VAL_NEGINT
+%token <bval> FSV_VAL_BOOLEAN
+%token FSV_RANDUNI FSV_RANDTAB FSV_URAND FSV_RAND48
 
 %token FSE_FILE FSE_FILES FSE_FILESET FSE_PROC FSE_THREAD FSE_FLOWOP FSE_CVAR
 %token FSE_RAND FSE_MODE FSE_MULTI
@@ -150,14 +152,6 @@ static void parser_enable_lathist(cmd_t *cmd);
 %token FSA_CLIENT FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC FSS_ROUND
 %token FSA_LVAR_ASSIGN FSA_ALLDONE FSA_FIRSTDONE FSA_TIMEOUT FSA_LATHIST
 %token FSA_NOREADAHEAD FSA_IOPRIO FSA_WRITEONLY FSA_PARAMETERS FSA_NOUSESTATS
-
-%type <ival> FSV_VAL_POSINT FSV_VAL_NEGINT
-%type <bval> FSV_VAL_BOOLEAN
-%type <sval> FSV_STRING FSV_WHITESTRING FSV_VARIABLE FSK_ASSIGN
-
-%type <ival> FSC_DEFINE FSC_SET FSC_RUN FSC_ENABLE FSC_PSRUN
-%type <ival> FSC_DOMULTISYNC
-%type <ival> FSE_FILE FSE_FILES FSE_PROC FSE_THREAD FSC_VERSION
 
 %type <sval> name
 
@@ -181,9 +175,8 @@ static void parser_enable_lathist(cmd_t *cmd);
 %type <list> whitevar_string whitevar_string_list
 %type <ival> attrs_define_thread attrs_flowop
 %type <ival> attrs_define_fileset attrs_define_file attrs_define_proc attrs_eventgen attrs_define_comp
-%type <ival> randvar_attr_name FSA_TYPE randtype_name
-%type <ival> randsrc_name FSA_RANDSRC em_attr_name
-%type <ival> FSS_TYPE FSS_SEED FSS_GAMMA FSS_MEAN FSS_MIN FSS_SRC
+%type <ival> randvar_attr_name randtype_name
+%type <ival> randsrc_name em_attr_name
 %type <ival> cvar_attr_name
 
 %type <rndtb>  probtabentry_list probtabentry
