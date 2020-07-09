@@ -478,7 +478,7 @@ preallocated_entries(int obj_type)
 		break;
 	case FILEBENCH_AVD:
 		entries = sizeof(filebench_shm->shm_avd_ptrs)
-						/ sizeof(avd_t);
+						/ sizeof(struct avd);
 		break;
 	case FILEBENCH_RANDDIST:
 		entries = sizeof(filebench_shm->shm_randdist)
