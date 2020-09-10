@@ -106,7 +106,7 @@ procflow_createproc(procflow_t *procflow)
 		char syscmd[1024];
 #endif
 
-		(void) sigignore(SIGINT);
+		signal(SIGINT, SIG_IGN);
 		filebench_log(LOG_DEBUG_SCRIPT,
 		    "Starting %s-%d", procflow->pf_name,
 		    procflow->pf_instance);

@@ -105,10 +105,6 @@ AC_CHECK_FUNCS([cftime])
 AC_CHECK_FUNC(
 	[_lwp_self],
         [ AC_DEFINE(HAVE_LWPS, 1, [ Define if you have lwps ])])
-# Check for sigignore() function: not available on FreeBSD
-AC_CHECK_FUNC(
-	[sigignore],
-        [ AC_DEFINE(HAVE_SIGIGNORE, 1, [ Define if you have sigignore ])])
 
 ####
 #### Check for more sophisticated functions

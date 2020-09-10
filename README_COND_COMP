@@ -174,11 +174,6 @@ HAVE_SHM_SHARE_MMU
 	SHM_SHARE_MMU flag for shmat() is defined on Solaris.
 	Use it, if possible.
 
-HAVE_SIGIGNORE
-
-	On FreeBSD sigignore is not available, so we emulate
-	it via sigaction()
-
 HAVE_SIGSEND
 
 	Solaris has sigsend() syscall that allows to

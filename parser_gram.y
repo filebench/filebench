@@ -1575,7 +1575,7 @@ cvars_mode(struct fbparams *fbparams)
 static void
 parser_abort(int arg)
 {
-	(void) sigignore(SIGINT);
+	signal(SIGINT, SIG_IGN);
 	filebench_log(LOG_INFO, "Aborting...");
 	filebench_shutdown(1);
 }

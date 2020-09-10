@@ -157,16 +157,6 @@ void filebench_plugin_funcvecinit(void);
 #define	FILEBENCH_RANDMAX FILEBENCH_RANDMAX32
 #endif
 
-#ifndef HAVE_SIGIGNORE
-/* No sigignore on FreeBSD */
-static inline int sigignore(int sig) {
-        struct sigaction sa;
-        bzero(&sa, sizeof(sa));
-        sa.sa_handler = SIG_IGN;
-        return (sigaction(sig, &sa, NULL));
-}
-#endif
-
 #define	KB (1024LL)
 #define	MB (KB * KB)
 #define	GB (KB * MB)
