@@ -1626,7 +1626,7 @@ fileset_populate(fileset_t *fileset)
 	 *	# ave size of file
 	 *	max size of file
 	 */
-	fileset->fs_meandepth = log(entries+leafdirs) / log(meandirwidth);
+	fileset->fs_meandepth = log(entries+leafdirs) / ((meandirwidth == 1) ? 0.1 : log(meandirwidth));
 
 	/* Has a random variable been supplied for dirdepth? */
 	if (fileset->fs_dirdepthrv) {
