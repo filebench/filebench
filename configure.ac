@@ -155,7 +155,7 @@ AC_CHECK_LIB([m],[pow])
 AC_CHECK_LIB([pthread], [pthread_mutex_lock])
 # Use Sun's additional mutex functionality if available
 AC_CHECK_FUNCS([ \
-	pthread_mutexattr_setrobust_np \
+	pthread_mutexattr_setrobust \
 	pthread_mutexattr_setprotocol \
 	pthread_mutexattr_setpshared \
 ])

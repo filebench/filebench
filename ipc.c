@@ -63,16 +63,16 @@ ipc_mutex_lock(pthread_mutex_t *mutex)
 
 	error = pthread_mutex_lock(mutex);
 
-#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST
 	if (error == EOWNERDEAD) {
-		if (pthread_mutex_consistent_np(mutex) != 0) {
+		if (pthread_mutex_consistent(mutex) != 0) {
 			filebench_log(LOG_FATAL, "mutex make consistent "
 			    "failed: %s", strerror(error));
 			return (-1);
 		}
 		return (0);
 	}
-#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST */
 
 	if (error != 0) {
 		filebench_log(LOG_FATAL, "mutex lock failed: %s",
@@ -92,16 +92,16 @@ ipc_mutex_unlock(pthread_mutex_t *mutex)
 
 	error = pthread_mutex_unlock(mutex);
 
-#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST
 	if (error == EOWNERDEAD) {
-		if (pthread_mutex_consistent_np(mutex) != 0) {
+		if (pthread_mutex_consistent(mutex) != 0) {
 			filebench_log(LOG_FATAL, "mutex make consistent "
 			    "failed: %s", strerror(error));
 			return (-1);
 		}
 		return (0);
 	}
-#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST */
 
 	if (error != 0) {
 		filebench_log(LOG_FATAL, "mutex unlock failed: %s",
@@ -142,13 +142,13 @@ ipc_mutexattr_init(int mtx_type)
 	}
 #endif /* HAVE_PTHREAD_MUTEXATTR_SETPROTOCOL */
 #endif /* HAVE_PTHREAD_MUTEXATTR_SETPSHARED */
-#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
+#ifdef HAVE_PTHREAD_MUTEXATTR_SETROBUST
 	if (mtx_type & IPC_MUTEX_ROBUST) {
-		if (pthread_mutexattr_setrobust_np(mtx_attrp,
-		    PTHREAD_MUTEX_ROBUST_NP) != 0) {
+		if (pthread_mutexattr_setrobust(mtx_attrp,
+		    PTHREAD_MUTEX_ROBUST) != 0) {
 			filebench_log(LOG_ERROR,
 			    "cannot set mutex attr "
-			    "PTHREAD_MUTEX_ROBUST_NP on this platform");
+			    "PTHREAD_MUTEX_ROBUST on this platform");
 			filebench_shutdown(1);
 		}
 		if (pthread_mutexattr_settype(mtx_attrp,
@@ -160,7 +160,7 @@ ipc_mutexattr_init(int mtx_type)
 			filebench_shutdown(1);
 		}
 	}
-#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP */
+#endif /* HAVE_PTHREAD_MUTEXATTR_SETROBUST */
 }
 
 /*

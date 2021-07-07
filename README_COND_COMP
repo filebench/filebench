@@ -152,7 +152,7 @@ HAVE_PREAD64
 	On FreeBSD function pread64() is not available.
 	So we use refular pread() instead.
 
-HAVE_PTHREAD_MUTEXATTR_SETROBUST_NP
+HAVE_PTHREAD_MUTEXATTR_SETROBUST
 
 	 Use robust mutexes if available.
 
