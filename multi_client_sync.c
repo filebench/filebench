@@ -98,18 +98,16 @@ int
 mc_sync_synchronize(int sync_point)
 {
 	char msg[MCS_MSGLENGTH];
-	int amnt;
 
 	(void) snprintf(msg, MCS_MSGLENGTH,
 	    "cmd=SYNC,id=xyzzy,name=%s,sample=%d\n",
 	    this_client_name, sync_point);
 	(void) send(mc_sync_sock_id, msg, strlen(msg), 0);
 
-	amnt = 0;
 	msg[0] = 0;
 
 	while (strchr(msg, '\n') == NULL)
-		amnt += recv(mc_sync_sock_id, msg, sizeof (msg), 0);
+		recv(mc_sync_sock_id, msg, sizeof (msg), 0);
 
 	filebench_log(LOG_INFO, "sync point %d succeeded!\n", sync_point);
 	return (FILEBENCH_OK);
