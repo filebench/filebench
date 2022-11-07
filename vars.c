@@ -417,7 +417,7 @@ var_find_alloc(char *name)
 }
 
 int
-var_assign_boolean(char *name, boolean_t bool)
+var_assign_boolean(char *name, boolean_t boolvar)
 {
 	var_t *var;
 
@@ -427,7 +427,7 @@ var_assign_boolean(char *name, boolean_t bool)
 		return -1;
 	}
 
-	VAR_SET_BOOL(var, bool);
+	VAR_SET_BOOL(var, boolvar);
 
 	return 0;
 }
@@ -786,7 +786,7 @@ var_lvar_assign_var(char *name, char *src_name)
 }
 
 var_t *
-var_lvar_assign_boolean(char *name, boolean_t bool)
+var_lvar_assign_boolean(char *name, boolean_t boolvar)
 {
 	var_t *var;
 
@@ -797,7 +797,7 @@ var_lvar_assign_boolean(char *name, boolean_t bool)
 		return NULL;
 	}
 
-	VAR_SET_BOOL(var, bool);
+	VAR_SET_BOOL(var, boolvar);
 
 	return var;
 }
