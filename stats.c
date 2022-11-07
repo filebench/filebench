@@ -88,6 +88,8 @@ stats_snap(void)
 	flowop_t *flowop;
 	char *str;
 	double total_time_sec;
+	hdr_histogram_t	*global_read_hdr_histogram = NULL;
+	hdr_histogram_t	*global_write_hdr_histogram = NULL;
 
 	if (!globalstats) {
 		filebench_log(LOG_ERROR,
@@ -114,6 +116,8 @@ stats_snap(void)
 	(void) memset(globalstats, 0, FLOW_TYPES * sizeof(struct flowstats));
 	globalstats->fs_stime = orig_starttime;
 	globalstats->fs_etime = gethrtime();
+	global_read_hdr_histogram = flowop_hdr_init();
+	global_write_hdr_histogram = flowop_hdr_init();
 
 	total_time_sec = (globalstats->fs_etime -
 			globalstats->fs_stime) / SEC2NS_FLOAT;
@@ -143,6 +147,8 @@ stats_snap(void)
 		/* Roll up per-flowop into global stats */
 		stats_add(&globalstats[flowop->fo_type], &flowop->fo_stats);
 		stats_add(&globalstats[FLOW_TYPE_GLOBAL], &flowop->fo_stats);
+		hdr_add(global_read_hdr_histogram, flowop->fo_read_hdr_histogram);
+		hdr_add(global_write_hdr_histogram, flowop->fo_write_hdr_histogram);
 
 		flowop_master = flowop_find_one(flowop->fo_name, FLOW_MASTER);
 		if (flowop_master) {
@@ -234,6 +240,27 @@ stats_snap(void)
 	    (iostat->fs_count + aiostat->fs_count) ?
 	    (iostat->fs_total_lat + aiostat->fs_total_lat) /
 	    ((iostat->fs_count + aiostat->fs_count) * SEC2MS_FLOAT) : 0);
+
+	printf("\n-------------------------------------------------------" \
+			"\nRead Latency(us):\n\n");
+	hdr_percentiles_print(global_read_hdr_histogram, stdout, 5, 1.0, CLASSIC);
+	printf("#[p95     = %12ld, p99            = %12ld]\n",
+			hdr_value_at_percentile(global_read_hdr_histogram, 95),
+			hdr_value_at_percentile(global_read_hdr_histogram, 99));
+	printf("#[p99.9   = %12ld, p99.99         = %12ld]\n",
+			hdr_value_at_percentile(global_read_hdr_histogram, 99),
+			hdr_value_at_percentile(global_read_hdr_histogram, 99.99));
+	fflush(stdout);
+	printf("\n-------------------------------------------------------" \
+			"\nWrite Latency(us):\n\n");
+	hdr_percentiles_print(global_write_hdr_histogram, stdout, 5, 1.0, CLASSIC);
+	printf("#[p95     = %12ld, p99            = %12ld]\n",
+			hdr_value_at_percentile(global_write_hdr_histogram, 95),
+			hdr_value_at_percentile(global_write_hdr_histogram, 99));
+	printf("#[p99.9   = %12ld, p99.99         = %12ld]\n",
+			hdr_value_at_percentile(global_write_hdr_histogram, 99.9),
+			hdr_value_at_percentile(global_write_hdr_histogram, 99.99));
+	fflush(stdout);
 
 	filebench_shm->shm_bequiet = 0;
 }

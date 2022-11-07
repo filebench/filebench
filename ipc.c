@@ -475,6 +475,14 @@ preallocated_entries(int obj_type)
 		entries = sizeof(filebench_shm->shm_cvar_lib_info)
 						/ sizeof(cvar_library_info_t);
 		break;
+	case FILEBENCH_HDR_HISTOGRAM:
+		entries = sizeof(filebench_shm->shm_hdr_histogram)
+						/ sizeof(hdr_histogram_t);
+		break;
+	case FILEBENCH_HDR_COUNTS:
+		entries = sizeof(filebench_shm->shm_hdr_counts)
+						/ (sizeof(int64_t) * FILEBENCH_COUNTS_PER_HISTOGRAM);
+		break;
 	default:
 		entries = -1;
 		filebench_log(LOG_ERROR, "preallocated_entries: "
@@ -585,6 +593,18 @@ ipc_malloc(int obj_type)
 			sizeof(cvar_library_info_t));
 		(void) ipc_mutex_unlock(&filebench_shm->shm_malloc_lock);
 		return ((char *)&filebench_shm->shm_cvar_lib_info[i]);
+
+	case FILEBENCH_HDR_HISTOGRAM:
+		(void) memset((char *)&filebench_shm->shm_hdr_histogram[i], 0,
+			sizeof(hdr_histogram_t));
+		(void) ipc_mutex_unlock(&filebench_shm->shm_malloc_lock);
+		return ((char *)&filebench_shm->shm_hdr_histogram[i]);
+
+	case FILEBENCH_HDR_COUNTS:
+		(void) memset((char *)&filebench_shm->shm_hdr_counts[i], 0,
+			sizeof(int64_t) * FILEBENCH_COUNTS_PER_HISTOGRAM);
+		(void) ipc_mutex_unlock(&filebench_shm->shm_malloc_lock);
+		return ((char *)&filebench_shm->shm_hdr_counts[i]);
 	}
 
 	filebench_log(LOG_ERROR, "Attempt to ipc_malloc unknown object type (%d)!",
@@ -662,6 +682,16 @@ ipc_free(int type, char *addr)
 	case FILEBENCH_CVAR_LIB_INFO:
 		base = (caddr_t)&filebench_shm->shm_cvar_lib_info[0];
 		size = sizeof(cvar_library_info_t);
+		break;
+
+	case FILEBENCH_HDR_HISTOGRAM:
+		base = (caddr_t)&filebench_shm->shm_hdr_histogram[0];
+		size = sizeof(hdr_histogram_t);
+		break;
+
+	case FILEBENCH_HDR_COUNTS:
+		base = (caddr_t)&filebench_shm->shm_hdr_counts[0];
+		size = sizeof(int64_t) * FILEBENCH_COUNTS_PER_HISTOGRAM;
 		break;
 	}
 
