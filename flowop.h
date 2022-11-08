@@ -66,6 +66,7 @@ typedef struct flowop {
 	avd_t		fo_fileindex;	/* Attr */
 	avd_t		fo_noreadahead; /* Attr */
 	struct flowstats	fo_stats;	/* Flow statistics */
+	hdr_histogram_t	*fo_hdr_histogram;		/* hdr_histogram for read/write */
 	pthread_cond_t	fo_cv;		/* Block/wakeup cv */
 	pthread_mutex_t	fo_lock;	/* Mutex around flowop */
 	void		*fo_private;	/* Flowop private scratch pad area */
@@ -150,5 +151,7 @@ void flowop_init(int ismaster);
 /* Local file system specific */
 void fb_lfs_funcvecinit();
 void fb_lfs_newflowops();
+
+hdr_histogram_t *fb_hdr_init();
 
 #endif	/* _FB_FLOWOP_H */

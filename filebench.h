@@ -124,6 +124,7 @@ typedef unsigned int uint_t;
 	#define pread64 pread
 #endif
 
+#include "hdr_histogram.h"
 #include "flag.h"
 #include "vars.h"
 #include "fb_cvar.h"
