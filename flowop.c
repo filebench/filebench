@@ -196,14 +196,14 @@ flowop_endop(threadflow_t *threadflow, flowop_t *flowop, int64_t bytes)
 		flowop->fo_stats.fs_rcount++;
 		controlstats.fs_rbytes += bytes;
 		controlstats.fs_rcount++;
-		hdr_record_value(flowop->fo_read_hdr_histogram, ll_delay / 1000);
+		hdr_record_value(flowop->fo_hdr_histogram, ll_delay / 1000);
 	} else if (flowop->fo_attrs & FLOW_ATTR_WRITE) {
 		threadflow->tf_stats.fs_wbytes += bytes;
 		threadflow->tf_stats.fs_wcount++;
 		flowop->fo_stats.fs_wcount++;
 		controlstats.fs_wbytes += bytes;
 		controlstats.fs_wcount++;
-		hdr_record_value(flowop->fo_write_hdr_histogram, ll_delay / 1000);
+		hdr_record_value(flowop->fo_hdr_histogram, ll_delay / 1000);
 	}
 
 	if (filebench_shm->lathist_enabled)
@@ -757,7 +757,15 @@ flowop_define_common(threadflow_t *threadflow, char *name, flowop_t *inherit,
 	flowop->fo_instance = instance;
 
 	if (1 == instance) {
-		flowop_hdrs_init(flowop);
+		if ((flowop->fo_attrs & FLOW_ATTR_READ) ||
+			(flowop->fo_attrs & FLOW_ATTR_WRITE)) {
+			flowop->fo_hdr_histogram = fb_hdr_init();
+			if (NULL == flowop->fo_hdr_histogram) {
+				filebench_log(LOG_ERROR,
+					"flowop_define: Can't malloc flowop");
+				return (NULL);
+			}
+		}
 	}
 
 	if (flowoplist_hdp == NULL)
@@ -1154,24 +1162,8 @@ flowop_add_from_proto(flowop_proto_t *list, int nops)
 	}
 }
 
-void
-flowop_hdr_close(hdr_histogram_t *hdr_histogram)
-{
-	if (hdr_histogram) {
-		ipc_free(FILEBENCH_HDR_COUNTS, (char *)hdr_histogram->counts);
-		ipc_free(FILEBENCH_HDR_HISTOGRAM, (char *)hdr_histogram);
-	}
-}
-
-void
-flowop_hdrs_close(flowop_t *flowop)
-{
-	flowop_hdr_close(flowop->fo_read_hdr_histogram);
-	flowop_hdr_close(flowop->fo_write_hdr_histogram);
-}
-
 hdr_histogram_t *
-flowop_hdr_init()
+fb_hdr_init()
 {
 	int64_t *hdr_counts = NULL;
 	struct hdr_histogram_bucket_config cfg;
@@ -1199,29 +1191,4 @@ flowop_hdr_init()
     hdr_init_preallocated(hdr_histogram, &cfg);
 
 	return hdr_histogram;
-}
-
-int
-flowop_hdrs_init(flowop_t *flowop)
-{
-	hdr_histogram_t *hdr_histogram = NULL;
-
-	if (NULL == flowop->fo_read_hdr_histogram) {
-		hdr_histogram = flowop_hdr_init();
-		if (NULL == hdr_histogram) {
-			return (FILEBENCH_NORSC);
-		}
-		flowop->fo_read_hdr_histogram = hdr_histogram;
-	}
-
-	if (NULL == flowop->fo_write_hdr_histogram) {
-		hdr_histogram = flowop_hdr_init();
-		if (NULL == hdr_histogram) {
-			flowop_hdr_close(flowop->fo_read_hdr_histogram);
-			return (FILEBENCH_NORSC);
-		}
-		flowop->fo_write_hdr_histogram = hdr_histogram;
-	}
-
-	return (FILEBENCH_OK);
 }

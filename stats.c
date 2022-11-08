@@ -116,8 +116,8 @@ stats_snap(void)
 	(void) memset(globalstats, 0, FLOW_TYPES * sizeof(struct flowstats));
 	globalstats->fs_stime = orig_starttime;
 	globalstats->fs_etime = gethrtime();
-	global_read_hdr_histogram = flowop_hdr_init();
-	global_write_hdr_histogram = flowop_hdr_init();
+	global_read_hdr_histogram = fb_hdr_init();
+	global_write_hdr_histogram = fb_hdr_init();
 
 	total_time_sec = (globalstats->fs_etime -
 			globalstats->fs_stime) / SEC2NS_FLOAT;
@@ -147,8 +147,11 @@ stats_snap(void)
 		/* Roll up per-flowop into global stats */
 		stats_add(&globalstats[flowop->fo_type], &flowop->fo_stats);
 		stats_add(&globalstats[FLOW_TYPE_GLOBAL], &flowop->fo_stats);
-		hdr_add(global_read_hdr_histogram, flowop->fo_read_hdr_histogram);
-		hdr_add(global_write_hdr_histogram, flowop->fo_write_hdr_histogram);
+		if (flowop->fo_attrs & FLOW_ATTR_READ) {
+			hdr_add(global_read_hdr_histogram, flowop->fo_hdr_histogram);
+		} else if (flowop->fo_attrs & FLOW_ATTR_WRITE) {
+			hdr_add(global_write_hdr_histogram, flowop->fo_hdr_histogram);
+		}
 
 		flowop_master = flowop_find_one(flowop->fo_name, FLOW_MASTER);
 		if (flowop_master) {

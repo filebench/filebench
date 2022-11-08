@@ -90,7 +90,8 @@
 #define	FILEBENCH_NRANDDISTS		(16)
 #define FILEBENCH_NCVARS		(16)
 #define FILEBENCH_NCVAR_LIB_INFO	(32)
-#define FILEBENCH_NHDR_HISTOGRAM	(FILEBENCH_NFLOWOPS)
+/* one flowop needs at most one hdr_histogram, the extra 2 is for global statistics */
+#define FILEBENCH_NHDR_HISTOGRAM	(FILEBENCH_NFLOWOPS + 2)
 /* 2560 is for hdr(1~60e3,2) */
 #define FILEBENCH_COUNTS_PER_HISTOGRAM	(2560)
 #define	FILEBENCH_MAXBITMAP		FILEBENCH_NFILESETENTRIES
@@ -246,7 +247,7 @@ typedef struct filebench_shm {
 	cvar_t		shm_cvar[FILEBENCH_NCVARS];
 	cvar_library_info_t shm_cvar_lib_info[FILEBENCH_NCVAR_LIB_INFO];
 	hdr_histogram_t	shm_hdr_histogram[FILEBENCH_NHDR_HISTOGRAM];
-	int64_t		shm_hdr_counts[FILEBENCH_NHDR_HISTOGRAM * 2][FILEBENCH_COUNTS_PER_HISTOGRAM];
+	int64_t		shm_hdr_counts[FILEBENCH_NHDR_HISTOGRAM][FILEBENCH_COUNTS_PER_HISTOGRAM];
 
 	/* these below are not regular pools and are allocated separately from ipc_malloc() */
 	char		shm_strings[FILEBENCH_STRINGMEMORY];
