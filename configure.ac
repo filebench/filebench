@@ -370,7 +370,8 @@ AC_TRY_COMPILE([
 # check for I/O priority system calls
 AC_MSG_CHECKING(for I/O priority system calls)
 AC_TRY_COMPILE([
-	#include <syscall.h>],
+	#include <syscall.h>
+	#include <unistd.h>],
   	[(void)syscall(__NR_ioprio_set, 0, 0, 0);
 	],[
 	    AC_DEFINE(HAVE_IOPRIO, 1, [ Define if you have I/O priority syscalls. ])
