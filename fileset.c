@@ -127,8 +127,11 @@ fileset_resolvepath(filesetentry_t *entry)
 		fsep = fsep->fse_parent;
 	}
 
-	s = malloc(strlen(path) + 1);
-	(void) fb_strlcpy(s, path, MAXPATHLEN);
+	size_t slen = strlen(path) + 1;
+	s = malloc(slen);
+	if (s == NULL)
+		return (NULL);
+	(void) fb_strlcpy(s, path, slen);
 	return (s);
 }
 
